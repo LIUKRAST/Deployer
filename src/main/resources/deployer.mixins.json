@@ -1,0 +1,38 @@
+{
+  "required": true,
+  "mixinextras": {
+    "minVersion": "0.5.0"
+  },
+  "package": "net.liukrast.deployer.lib.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ClientEventsMixin",
+    "FactoryGaugeDisplaySourceMixin",
+    "FactoryPanelBehaviourAccessor",
+    "FactoryPanelBehaviourIMixin",
+    "FactoryPanelBehaviourMixin",
+    "FactoryPanelBlockEntityMixin",
+    "FactoryPanelBlockMixin",
+    "FactoryPanelConnectionHandlerMixin",
+    "FactoryPanelModelMixin",
+    "FactoryPanelRendererMixin",
+    "FactoryPanelSupportBehaviourMixin",
+    "FilteringBehaviourMixin",
+    "FilteringRendererMixin",
+    "PackagerBlockEntityAccessor",
+    "PackageRepackageHelperMixin",
+    "RequestPromiseQueueMixin",
+    "StockTickerBlockEntityMixin",
+    "VersionedInventoryTrackerBehaviourMixin"
+  ],
+  "client": [
+    "AllIconsMixin",
+    "ValueSettingsClientMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
