@@ -1,4 +1,4 @@
-package net.liukrast.deployer.lib.ponder;
+package net.liukrast.deployer.lib.util.ponder;
 
 import com.simibubi.create.content.logistics.factoryBoard.*;
 import com.simibubi.create.content.redstone.nixieTube.NixieTubeBlockEntity;
@@ -6,7 +6,7 @@ import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
-import net.liukrast.deployer.lib.mixinI.IFPExtra;
+import net.liukrast.deployer.lib.mixinExtension.IFPExtension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -110,7 +110,7 @@ public class GaugeHelper {
             if (connection == null) {
                 connection = pb.targetedByLinks.get(from.pos());
                 if (connection == null) {
-                    connection = ((IFPExtra)pb).deployer$getExtra().get(from.pos());
+                    connection = ((IFPExtension)pb).deployer$getExtra().get(from.pos());
                     if(connection == null) return;
                 }
             }

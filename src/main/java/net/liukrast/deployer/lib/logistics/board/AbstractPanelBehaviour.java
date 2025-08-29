@@ -14,7 +14,7 @@ import net.liukrast.deployer.lib.logistics.board.connection.PanelConnection;
 import net.liukrast.deployer.lib.mixin.FactoryPanelBehaviourAccessor;
 import net.liukrast.deployer.lib.mixin.FactoryPanelBehaviourIMixin;
 import net.liukrast.deployer.lib.mixin.FilteringBehaviourMixin;
-import net.liukrast.deployer.lib.mixinI.IFPExtra;
+import net.liukrast.deployer.lib.mixinExtension.IFPExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
 import net.liukrast.deployer.lib.registry.DeployerRegistries;
 import net.minecraft.client.player.LocalPlayer;
@@ -243,7 +243,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * */
     public <T> void consumeForExtra(PanelConnection<T> panelConnection, BiConsumer<BlockPos, T> consumer) {
         Set<BlockPos> toRemove = new HashSet<>();
-        for(var connection : ((IFPExtra)this).deployer$getExtra().values()) {
+        for(var connection : ((IFPExtension)this).deployer$getExtra().values()) {
             var pos = connection.from.pos();
             if(!getWorld().isLoaded(pos)) return;
             var level = getWorld();
@@ -258,7 +258,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
             opt.ifPresent(t -> consumer.accept(pos, t));
 
         }
-        toRemove.forEach(pos -> ((IFPExtra)this).deployer$getExtra().remove(pos));
+        toRemove.forEach(pos -> ((IFPExtension)this).deployer$getExtra().remove(pos));
         if(!toRemove.isEmpty()) blockEntity.notifyUpdate();
     }
 
@@ -344,7 +344,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
         panelTag.put("Targeting", CatnipCodecUtils.encode(CatnipCodecs.set(FactoryPanelPosition.CODEC), targeting).orElseThrow());
         panelTag.put("TargetedBy", CatnipCodecUtils.encode(Codec.list(FactoryPanelConnection.CODEC), new ArrayList<>(targetedBy.values())).orElseThrow());
         panelTag.put("TargetedByLinks", CatnipCodecUtils.encode(Codec.list(FactoryPanelConnection.CODEC), new ArrayList<>(targetedByLinks.values())).orElseThrow());
-        IFPExtra extra = ((IFPExtra)this);
+        IFPExtension extra = ((IFPExtension)this);
         panelTag.put("TargetedByExtra", CatnipCodecUtils.encode(Codec.list(FactoryPanelConnection.CODEC), new ArrayList<>(extra.deployer$getExtra().values())).orElseThrow());
 
         if(withFilteringBehaviour()) {

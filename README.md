@@ -8,3 +8,6 @@ Below, you will find information about installation and features.
 *Working progress...*
 
 ## Features
+- Registering custom factory gauges
+- Creating an `AllIcons` child without mixing with the usage of [AllIconsHelper](src/main/java/net/liukrast/deployer/lib/util/AllIconsHelper.java)
+- Help to create custom gauge ponder scenes via [GaugeHelper](src/main/java/net/liukrast/deployer/lib/util/ponder/GaugeHelper.java)

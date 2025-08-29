@@ -9,7 +9,7 @@ import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.connection.ColoredFactoryPanelSupportBehaviour;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelConnection;
 import net.liukrast.deployer.lib.logistics.board.renderer.AbstractPanelRenderEvent;
-import net.liukrast.deployer.lib.mixinI.IFPExtra;
+import net.liukrast.deployer.lib.mixinExtension.IFPExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.neoforged.neoforge.common.NeoForge;
@@ -42,7 +42,7 @@ public class FactoryPanelRendererMixin {
             at = @At(value = "INVOKE", target = "Ljava/util/Map;values()Ljava/util/Collection;", ordinal = 0)
     )
     private void renderSafe(FactoryPanelBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay, CallbackInfo ci, @Local FactoryPanelBehaviour behaviour) {
-        for(FactoryPanelConnection connection : ((IFPExtra)behaviour).deployer$getExtra().values())
+        for(FactoryPanelConnection connection : ((IFPExtension)behaviour).deployer$getExtra().values())
             FactoryPanelRenderer.renderPath(behaviour, connection, partialTicks, ms, buffer, light, overlay);
     }
 

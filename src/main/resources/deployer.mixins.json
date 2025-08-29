@@ -19,11 +19,7 @@
     "FactoryPanelSupportBehaviourMixin",
     "FilteringBehaviourMixin",
     "FilteringRendererMixin",
-    "PackagerBlockEntityAccessor",
-    "PackageRepackageHelperMixin",
-    "RequestPromiseQueueMixin",
-    "StockTickerBlockEntityMixin",
-    "VersionedInventoryTrackerBehaviourMixin"
+    "PackageRepackageHelperMixin"
   ],
   "client": [
     "AllIconsMixin",

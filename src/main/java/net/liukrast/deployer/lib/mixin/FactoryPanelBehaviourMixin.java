@@ -16,7 +16,7 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBloc
 import net.createmod.catnip.codecs.CatnipCodecUtils;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelConnection;
-import net.liukrast.deployer.lib.mixinI.IFPExtra;
+import net.liukrast.deployer.lib.mixinExtension.IFPExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
 import net.liukrast.deployer.lib.registry.DeployerRegistries;
 import net.minecraft.core.BlockPos;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Mixin(FactoryPanelBehaviour.class)
-public abstract class FactoryPanelBehaviourMixin implements IFPExtra {
+public abstract class FactoryPanelBehaviourMixin implements IFPExtension {
     /* UNIQUE VARIABLES */
     @Unique private final Map<BlockPos, FactoryPanelConnection> deployer$targetedByExtra = new HashMap<>();
     /* SHADOWS */
