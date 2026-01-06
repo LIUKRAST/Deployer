@@ -54,7 +54,7 @@ public abstract class AbstractInventorySummary<K, V> {
      * @return Whether the stacks are considered "equal" or not
      * */
     public boolean isSameKeySameComponents(V stack1, V stack2) {
-        return type.valueHandler().equals(stack1, stack2);
+        return type.valueHandler().equalsIgnoreCount(stack1, stack2);
     }
 
     /**

@@ -2,9 +2,9 @@ modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
 [[mods]]
-modId="fluid"
+modId="package_test"
 version="1.0.0"
-displayName="Fluid Test"
+displayName="Package Test"
 credits="Credits"
 authors="LiukRast"
 description='''A test description'''
@@ -17,19 +17,19 @@ description='''A test description'''
 
 # The coremods config file path is not configurable and is always loaded from META-INF/coremods.json
 
-[[dependencies.fluid]]
+[[dependencies."package_test"]]
     modId="neoforge"
     type="required"
     versionRange="[${neo_version},)"
     ordering="NONE"
     side="BOTH"
-[[dependencies.fluid]]
+[[dependencies."package_test"]]
     modId="minecraft"
     type="required"
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
-[[dependencies.fluid]]
+[[dependencies."package_test"]]
     modId="create"
     type="required"
     versionRange="${create_version_range}"

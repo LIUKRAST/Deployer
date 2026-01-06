@@ -207,7 +207,7 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
                     V extracted = handler.extract(targetInv, valueHandler.create(valueHandler.fromValue(handler.getStackInSlot(targetInv, slot)), initialCount), true);
                     if (valueHandler.isEmpty(extracted))
                         continue;
-                    if(requestQueue && !valueHandler.equals(extracted, nextRequest.item()))
+                    if(requestQueue && !valueHandler.equalsIgnoreCount(extracted, nextRequest.item()))
                         continue;
 
                     boolean bulky = !handler.isBulky(valueHandler.fromValue(extracted));

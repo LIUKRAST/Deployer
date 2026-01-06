@@ -4,10 +4,10 @@ import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FluidConstants {
-    private FluidConstants() {}
+public class TestConstants {
+    private TestConstants() {}
 
-    public static final String MOD_ID = "fluid";
+    public static final String MOD_ID = "package_test";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 

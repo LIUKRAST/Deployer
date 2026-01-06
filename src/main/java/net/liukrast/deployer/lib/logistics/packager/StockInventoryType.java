@@ -14,8 +14,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -46,7 +44,7 @@ public abstract class StockInventoryType<K,V,H> {
         Codec<V> codec();
         StreamCodec<? extends ByteBuf, V> streamCodec();
         K fromValue(V key);
-        boolean equals(V a, V b);
+        boolean equalsIgnoreCount(V a, V b);
         boolean test(FilterItemStack filter, Level level, V value);
         int getCount(V value);
         void setCount(V value, int count);
@@ -108,7 +106,7 @@ public abstract class StockInventoryType<K,V,H> {
     public record OrderRenderData(int x, int y, int itemsX, int itemsY, int rowHeight, int colWidth, int orderY, int cols, Couple<Integer> hoveredSlot, PoseStack ms) {}
     public record SlotClickedData(int cols, boolean lmb, boolean rmb, boolean orderClicked) {}
 
-    public abstract BlockCapability<H, @Nullable Direction> getCapability();
+    public abstract BlockCapability<H, @Nullable Direction> getBlockCapability();
 
     public final SimpleRegistry<Block, GenericUnpackingHandler<V>> registry = SimpleRegistry.create();
 
@@ -123,7 +121,7 @@ public abstract class StockInventoryType<K,V,H> {
                 int sizeInventory = storageHandler.getSlots(inventory);
                 for(int i = 0; i < sizeInventory; ++i) {
                     V slot = storageHandler.getStackInSlot(inventory, i);
-                    if(valueHandler.equals(slot, stack)) {
+                    if(valueHandler.equalsIgnoreCount(slot, stack)) {
                         stack = storageHandler.insertItem(inventory, i, stack, simulate);
                         if (valueHandler.isEmpty(stack)) {
                             break;
@@ -171,7 +169,7 @@ public abstract class StockInventoryType<K,V,H> {
         if (targetBE == null)
             return false;
 
-        H targetInv = level.getCapability(getCapability(), pos, state, targetBE, null);
+        H targetInv = level.getCapability(getBlockCapability(), pos, state, targetBE, null);
         if (targetInv == null)
             return false;
 
@@ -212,7 +210,7 @@ public abstract class StockInventoryType<K,V,H> {
                     continue;
                 }
 
-                if (!valueHandler.equals(toInsert, itemInSlot))
+                if (!valueHandler.equalsIgnoreCount(toInsert, itemInSlot))
                     continue;
 
                 //TODO: Implement slot limit

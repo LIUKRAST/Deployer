@@ -2,7 +2,7 @@
 	"credit": "Made with Blockbench",
 	"parent": "fluid:item/bottle_transforms",
 	"textures": {
-		"0": "fluid:item/bottle/copper",
+		"0": "package_test:item/bottle/copper",
 		"particle": "fluid:item/bottle/copper_particle"
 	},
 	"elements": [

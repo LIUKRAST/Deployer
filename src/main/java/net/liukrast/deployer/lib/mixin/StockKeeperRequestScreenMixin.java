@@ -405,7 +405,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     @Unique
     private <K, V, H> V deployer$getOrderForV(StockInventoryType<K, V, H> type, V stack) {
         for (V entry : (List<V>) deployer$itemsToOrder.get(type))
-            if (type.valueHandler().equals(entry, stack))
+            if (type.valueHandler().equalsIgnoreCount(entry, stack))
                 return entry;
         return null;
     }

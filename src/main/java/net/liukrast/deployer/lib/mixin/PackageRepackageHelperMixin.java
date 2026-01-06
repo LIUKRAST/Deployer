@@ -131,7 +131,7 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
                     continue;
                 if (targetedEntry != null) {
                     targetAmount = type.valueHandler().getCount(targetedEntry);
-                    if(!type.valueHandler().equals(entry, targetedEntry))
+                    if(!type.valueHandler().equalsIgnoreCount(entry, targetedEntry))
                         continue;
                 }
 

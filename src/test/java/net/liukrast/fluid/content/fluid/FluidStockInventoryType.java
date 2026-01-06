@@ -14,7 +14,7 @@ import net.liukrast.deployer.lib.logistics.packager.GenericPackageItem;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.packagerLink.GenericRequestPromise;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
-import net.liukrast.fluid.FluidConstants;
+import net.liukrast.fluid.TestConstants;
 import net.liukrast.fluid.registry.RegisterDataComponents;
 import net.liukrast.fluid.registry.RegisterItems;
 import net.minecraft.client.gui.Font;
@@ -22,7 +22,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -64,7 +63,7 @@ public class FluidStockInventoryType extends StockInventoryType<Fluid, FluidStac
         }
 
         @Override
-        public boolean equals(FluidStack a, FluidStack b) {
+        public boolean equalsIgnoreCount(FluidStack a, FluidStack b) {
             return FluidStack.isSameFluidSameComponents(a, b);
         }
 
@@ -369,7 +368,7 @@ public class FluidStockInventoryType extends StockInventoryType<Fluid, FluidStac
 
         }
 
-        private static final ResourceLocation TEXTURE = FluidConstants.id("textures/gui/fluid_stock_inventory.png");
+        private static final ResourceLocation TEXTURE = TestConstants.id("textures/gui/fluid_stock_inventory.png");
 
         @Override
         public void renderOrderedItems(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY, List<FluidStack> itemsToOrder, AbstractInventorySummary<Fluid, FluidStack> forcedEntries, OrderRenderData data) {
@@ -423,7 +422,7 @@ public class FluidStockInventoryType extends StockInventoryType<Fluid, FluidStac
     }
 
     @Override
-    public BlockCapability<IFluidHandler, @Nullable Direction> getCapability() {
+    public BlockCapability<IFluidHandler, @Nullable Direction> getBlockCapability() {
         return Capabilities.FluidHandler.BLOCK;
     }
 }

@@ -1,6 +1,6 @@
 package net.liukrast.fluid.registry;
 
-import net.liukrast.fluid.FluidConstants;
+import net.liukrast.fluid.TestConstants;
 import net.liukrast.fluid.content.fluid.FluidPackagerBlock;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -12,8 +12,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class RegisterBlocks {
     private RegisterBlocks() {}
 
-    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(FluidConstants.MOD_ID);
-    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(FluidConstants.MOD_ID);
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(TestConstants.MOD_ID);
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(TestConstants.MOD_ID);
 
     public static final DeferredBlock<FluidPackagerBlock> FLUID_PACKAGER = BLOCKS.register("fluid_packager", () -> new FluidPackagerBlock(BlockBehaviour.Properties.of()));
 

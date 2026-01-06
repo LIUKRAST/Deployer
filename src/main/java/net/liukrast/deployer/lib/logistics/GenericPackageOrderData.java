@@ -2,6 +2,7 @@ package net.liukrast.deployer.lib.logistics;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import net.createmod.catnip.codecs.stream.CatnipStreamCodecBuilders;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -9,6 +10,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 import javax.annotation.Nullable;
+import java.rmi.registry.Registry;
 import java.util.Optional;
 
 public record GenericPackageOrderData<V>(int orderId, int linkIndex, boolean isFinalLink, int fragmentIndex, boolean isFinal, @Nullable GenericOrderContained<V> orderContext) {
@@ -27,7 +29,7 @@ public record GenericPackageOrderData<V>(int orderId, int linkIndex, boolean isF
         ).apply(instance, GenericPackageOrderData::new));
     }
 
-    public static <V> StreamCodec<RegistryFriendlyByteBuf, GenericPackageOrderData<V>> simpleStreamCodec(StreamCodec<RegistryFriendlyByteBuf, V> codec) {
+    public static <V> StreamCodec<? super RegistryFriendlyByteBuf, GenericPackageOrderData<V>> simpleStreamCodec(StreamCodec<? extends ByteBuf, V> codec) {
         return StreamCodec.composite(
                 ByteBufCodecs.INT, GenericPackageOrderData::orderId,
                 ByteBufCodecs.INT, GenericPackageOrderData::linkIndex,
