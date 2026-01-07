@@ -28,6 +28,7 @@ import java.util.Map;
 
 public class GenericOrderRequestPacket extends BlockEntityConfigurationPacket<StockTickerBlockEntity> {
     public static final StreamCodec<RegistryFriendlyByteBuf, GenericOrderRequestPacket> STREAM_CODEC = new StreamCodec<>() {
+
         @Override
         public @NotNull GenericOrderRequestPacket decode(@NotNull RegistryFriendlyByteBuf buf) {
             BlockPos pos = BlockPos.STREAM_CODEC.decode(buf);

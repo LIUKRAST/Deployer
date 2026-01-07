@@ -22,7 +22,7 @@ public record GenericOrder<V>(List<V> stacks) {
         ).apply(instance, GenericOrder::new));
     }
 
-    public static <V> StreamCodec<? extends ByteBuf, GenericOrder<V>> simpleStreamCodec(StreamCodec<? extends ByteBuf, V> codec) {
+    public static <B extends ByteBuf, V> StreamCodec<B, GenericOrder<V>> simpleStreamCodec(StreamCodec<B, V> codec) {
         return CatnipStreamCodecBuilders.list(codec)
                 .map(GenericOrder::new, GenericOrder::stacks);
     }

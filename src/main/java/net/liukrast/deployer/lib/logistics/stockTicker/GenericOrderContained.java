@@ -34,7 +34,7 @@ public record GenericOrderContained<V>(GenericOrder<V> orderedStacks) {
         );
     }
 
-    public static <V> StreamCodec<? super ByteBuf, GenericOrderContained<V>> simpleStreamCodec(StreamCodec<? extends ByteBuf, V> codec) {
+    public static <B extends ByteBuf, V> StreamCodec<B, GenericOrderContained<V>> simpleStreamCodec(StreamCodec<B, V> codec) {
         return StreamCodec.composite(
                 GenericOrder.simpleStreamCodec(codec), GenericOrderContained::orderedStacks,
                 GenericOrderContained::new

@@ -29,7 +29,7 @@ public record GenericPackageOrderData<V>(int orderId, int linkIndex, boolean isF
         ).apply(instance, GenericPackageOrderData::new));
     }
 
-    public static <V> StreamCodec<? super RegistryFriendlyByteBuf, GenericPackageOrderData<V>> simpleStreamCodec(StreamCodec<? extends ByteBuf, V> codec) {
+    public static <B extends ByteBuf, V> StreamCodec<B, GenericPackageOrderData<V>> simpleStreamCodec(StreamCodec<B, V> codec) {
         return StreamCodec.composite(
                 ByteBufCodecs.INT, GenericPackageOrderData::orderId,
                 ByteBufCodecs.INT, GenericPackageOrderData::linkIndex,
