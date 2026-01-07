@@ -8,9 +8,11 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntity;
 import com.simibubi.create.content.logistics.packager.*;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlock;
 import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.CapManipulationBehaviourBase;
@@ -36,47 +38,90 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
- * This class generalizes the concept of a "Packager",
+ * Generalization of {@link PackagerBlockEntity} to handler packages containing any other content,
  * making it able to pack/unpack non-item related packages 
  * */
 public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEntity {
     public CapManipulationBehaviourBase<H, ? extends CapManipulationBehaviourBase<?,?>> targetInventory;
     private AbstractInventorySummary<K,V> availableItems;
 
+    /**
+     * Main block entity constructor.
+     * @param typeIn be type
+     * @param pos BlockPosition
+     * @param state BlockState
+     * */
     public AbstractPackagerBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
 
+    /**
+     * @return Whether the packager can connect to another block entity or not
+     * @param target The block entity involved
+     * */
     public boolean supportsBlockEntity(BlockEntity target) {
         return ((PackagerBlockEntityAccessor)this).invokeSupportsBlockEntity(target);
     }
 
+    /**
+     * @return The capability manipulation behavior for your stock type
+     * */
     protected abstract CapManipulationBehaviourBase<H, ? extends CapManipulationBehaviourBase<?,?>> createTargetInventory();
+
+    /**
+     * @return The {@link StockInventoryType} for this packager
+     * */
     public abstract StockInventoryType<K,V,H> getStockType();
 
+    /**
+     * Registers behaviours to the block entity
+     * */
+    @ApiStatus.OverrideOnly
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
         behaviours.add(targetInventory = createTargetInventory());
     }
 
+    /**
+     * <strong>Do not invoke this, use {@link AbstractPackagerBlockEntity#getAvailableStacks()} instead</strong>
+     * */
     @ApiStatus.Internal
+    @Deprecated
     @Override
     public InventorySummary getAvailableItems() {
         throw new IllegalCallerException("This function should not be invoked on abstract packagers");
     }
 
+    /**
+     * <strong>Do not invoke this, use {@link AbstractPackagerBlockEntity#attemptToSendSpecial(List)} instead</strong>
+     * */
     @ApiStatus.Internal
+    @Deprecated
     @Override
     public void attemptToSend(List<PackagingRequest> queuedRequests) {
         throw new IllegalCallerException("This function should not be invoked on abstract packagers");
     }
 
+    /**
+     * Triggers a check of the available stock in the connected inventory.
+     * <p>
+     * This method forces an immediate refresh of the cached inventory state by calling
+     * {@link #getAvailableStacks()}, which scans the target inventory and updates the
+     * internal {@link AbstractInventorySummary}.
+     * <p>
+     * This is typically called after packaging operations or when the inventory state
+     * may have changed and needs to be re-evaluated (e.g., after extracting items for
+     * a package, or when new items arrive in the connected inventory).
+     */
     @Override
     public void triggerStockCheck() {
         getAvailableStacks();
     }
 
+    /**
+     * @return A summary of all stacks inside this packager
+     * */
     @SuppressWarnings("UnusedReturnValue")
     public AbstractInventorySummary<K,V> getAvailableStacks() {
         if (availableItems != null && ((VITBExtension)((PackagerBlockEntityAccessor)this).getInvVersionTracker()).deployer$stillWaiting(targetInventory.getInventory()))
@@ -152,10 +197,21 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
                     ((RPQExtension)queue).deployer$genericEnteredSystem(type, entry, -handler.getCount(entry));
     }
 
+    /**
+     * Tries to package a request from the stock inventory
+     * @param queuedRequests A list of requests from the storage
+     * */
     public void attemptToSendSpecial(@Nullable List<GenericPackagingRequest<V>> queuedRequests) {
         attemptToSendSpecial(queuedRequests, 0, true);
     }
 
+    /**
+     * Same as {@link AbstractPackagerBlockEntity#attemptToSendSpecial(List)}
+     * @param queuedRequests A list of requests from the storage
+     * @param index The package type index,
+     *              learn more at {@link net.liukrast.deployer.lib.logistics.packagerLink.LogisticsGenericManager#broadcastAllPackageRequest(PackageOrderWithCrafts, UUID, LogisticallyLinkedBehaviour.RequestType, Map, String)}
+     * @param isFinal Whether this is the last package type index, learn more at {@link net.liukrast.deployer.lib.logistics.packagerLink.LogisticsGenericManager#broadcastAllPackageRequest(PackageOrderWithCrafts, UUID, LogisticallyLinkedBehaviour.RequestType, Map, String)}
+     * */
     public void attemptToSendSpecial(@Nullable List<GenericPackagingRequest<V>> queuedRequests, int index, boolean isFinal) {
         if (queuedRequests == null && (!heldBox.isEmpty() || animationTicks != 0 || buttonCooldown > 0))
             return;
@@ -300,11 +356,20 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         notifyUpdate();
     }
 
+    /**
+     * <strong>Do not invoke this, use {@link AbstractPackagerBlockEntity#isTargetingSameContainer(IdentifiedContainer)} instead</strong>
+     * */
+    @Deprecated
+    @ApiStatus.Internal
     @Override
     public boolean isTargetingSameInventory(@Nullable IdentifiedInventory inventory) {
         throw new IllegalCallerException("Should not be invoked in FluidPackagerBlockEntity");
     }
 
+    /**
+     * @return whether this packager is matching the same inventory as specified in the parameter
+     * @param inventory The inventory to check
+     * */
     public boolean isTargetingSameContainer(@Nullable IdentifiedContainer<H> inventory) {
         if (inventory == null)
             return false;
@@ -330,6 +395,7 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
 
         // If a contained ItemStack instance is the same, we can be pretty sure these
         // inventories are the same (works for compound inventories)
+        //TODO: We cannot be sure of this for other stack types
         for (int i = 0; i < sh.getSlots(second); i++) {
             V stackInSlot = sh.getStackInSlot(second, i);
             if (vh.isEmpty(stackInSlot))
@@ -371,6 +437,12 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         }
     }
 
+    /**
+     * Unwraps a box and puts it inside the packager storage
+     * @return Whether the unwrapping went successfully
+     * @param box the box to unwrap
+     * @param simulate Whether you actually want to perform the action or you only want to check if the action is possible
+     * */
     @Override
     public boolean unwrapBox(ItemStack box, boolean simulate) {
         /* We avoid unpacking boxes that are not for this packager.

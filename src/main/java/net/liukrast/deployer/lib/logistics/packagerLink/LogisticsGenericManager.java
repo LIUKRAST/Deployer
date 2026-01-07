@@ -85,6 +85,9 @@ public class LogisticsGenericManager {
         return true;
     }
 
+    /**
+     *
+     * */
     @SuppressWarnings("unchecked")
     public static void broadcastAllPackageRequest(PackageOrderWithCrafts defaultOrder, UUID freqId, LogisticallyLinkedBehaviour.RequestType type, Map<StockInventoryType<?,?,?>, GenericOrderContained<?>> rq, String address) {
         if(defaultOrder.isEmpty() && rq.values().stream().allMatch(GenericOrderContained::isEmpty))

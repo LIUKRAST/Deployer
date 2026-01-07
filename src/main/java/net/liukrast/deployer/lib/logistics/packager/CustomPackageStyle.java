@@ -6,6 +6,10 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * @param idAndPackage defines the mod ID you're using and the package name. For instance, a mod that adds {@code bottle} packages should input {@code mod_id:bottle}
  */
+
+/**
+ * A class that allows to create package styles
+ * */
 public record CustomPackageStyle(ResourceLocation idAndPackage, String type, int width, int height, float riggingOffset, boolean rare) {
     public ResourceLocation getItemId() {
         String size = "_" + width + "x" + height;

@@ -34,6 +34,7 @@ public record GenericOrderContained<V>(GenericOrder<V> orderedStacks) {
         );
     }
 
+    //TODO: Porcodio trasformare in un processore con .apply
     public static <B extends ByteBuf, V> StreamCodec<B, GenericOrderContained<V>> simpleStreamCodec(StreamCodec<B, V> codec) {
         return StreamCodec.composite(
                 GenericOrder.simpleStreamCodec(codec), GenericOrderContained::orderedStacks,

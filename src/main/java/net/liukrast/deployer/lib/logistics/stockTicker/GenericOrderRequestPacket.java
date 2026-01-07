@@ -19,6 +19,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GenericOrderRequestPacket extends BlockEntityConfigurationPacket<StockTickerBlockEntity> {
-    public static final StreamCodec<RegistryFriendlyByteBuf, GenericOrderRequestPacket> STREAM_CODEC = new StreamCodec<>() {
+    public static final StreamCodec<? super RegistryFriendlyByteBuf, GenericOrderRequestPacket> STREAM_CODEC = new StreamCodec<>() {
 
         @Override
         public @NotNull GenericOrderRequestPacket decode(@NotNull RegistryFriendlyByteBuf buf) {
@@ -38,7 +39,7 @@ public class GenericOrderRequestPacket extends BlockEntityConfigurationPacket<St
             for(ResourceLocation otherType : otherTypes) {
                 var type = DeployerRegistries.STOCK_INVENTORY.get(otherType);
                 assert type != null;
-                GenericOrderContained<?> order = GenericOrderContained.simpleStreamCodec(type.valueHandler().streamCodec()).decode(buf);
+                GenericOrderContained<?> order = ((StreamCodec<ByteBuf, GenericOrderContained<?>>)(StreamCodec<?,?>)GenericOrderContained.simpleStreamCodec(type.valueHandler().streamCodec())).decode(buf);
                 map.put(type, order);
             }
             String address = ByteBufCodecs.STRING_UTF8.decode(buf);
@@ -56,8 +57,8 @@ public class GenericOrderRequestPacket extends BlockEntityConfigurationPacket<St
             for(var entry : p.types.entrySet()) {
                 var type = entry.getKey();
                 toEncodeKeys.add(DeployerRegistries.STOCK_INVENTORY.getKey(entry.getKey()));
-                StreamCodec<RegistryFriendlyByteBuf, Object> vC = (StreamCodec<RegistryFriendlyByteBuf, Object>) type.valueHandler().streamCodec();
-                StreamCodec<? super ByteBuf, GenericOrderContained<Object>> codec = GenericOrderContained.simpleStreamCodec(vC);
+                var vC = type.valueHandler().streamCodec();
+                StreamCodec<ByteBuf, GenericOrderContained<Object>> codec = (StreamCodec<ByteBuf, GenericOrderContained<Object>>) (StreamCodec<?,?>)GenericOrderContained.simpleStreamCodec(type.valueHandler().streamCodec());
                 toEncodeValues.add(() -> codec.encode(buf, (GenericOrderContained<Object>) entry.getValue()));
             }
             ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs.list()).encode(buf, toEncodeKeys);

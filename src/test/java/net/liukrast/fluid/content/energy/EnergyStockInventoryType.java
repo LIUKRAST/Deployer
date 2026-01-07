@@ -15,6 +15,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -41,7 +42,7 @@ public class EnergyStockInventoryType extends StockInventoryType<Energy, EnergyS
         }
 
         @Override
-        public StreamCodec<? extends ByteBuf, EnergyStack> streamCodec() {
+        public StreamCodec<ByteBuf, EnergyStack> streamCodec() {
             return EnergyStack.STREAM_CODEC;
         }
 

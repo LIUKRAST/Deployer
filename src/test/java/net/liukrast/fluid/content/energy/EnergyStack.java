@@ -2,6 +2,7 @@ package net.liukrast.fluid.content.energy;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 public class EnergyStack {
@@ -12,9 +13,9 @@ public class EnergyStack {
             EnergyStack::getAmount
     );
 
-    public static final StreamCodec<ByteBuf, EnergyStack> STREAM_CODEC = StreamCodec.of(
-            (buf, val) -> buf.writeInt(val.getAmount()),
-            buf -> new EnergyStack(buf.readInt())
+    public static final StreamCodec<ByteBuf, EnergyStack> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.INT, EnergyStack::getAmount,
+            EnergyStack::new
     );
 
     private int amount;
