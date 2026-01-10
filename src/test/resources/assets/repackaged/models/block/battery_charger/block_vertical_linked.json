@@ -1,6 +1,0 @@
-{
-	"parent": "repackaged:block/battery_charge/block_vertical",
-	"textures": {
-		"0": "repackaged:block/battery_charger_linked"
-	}
-}
