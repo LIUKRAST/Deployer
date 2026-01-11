@@ -16,6 +16,7 @@ repositories {
     maven { url = "https://maven.blamejared.com/"}
     maven { url = "https://cursemaven.com"}
     maven { url = "https://maven.liukrast.net" }
+    maven { url = "https://api.modrinth.com/maven" }
     flatDir {
         dirs 'libs'
     }
@@ -117,6 +118,9 @@ dependencies {
     runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
     implementation fileTree(dir: "${rootDir}/libs", include: ['*.jar'])
+
+    //Optional dependency
+    implementation "maven.modrinth:jade:${project.jade_version}"
 
 }
 
