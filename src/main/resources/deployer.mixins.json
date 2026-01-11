@@ -27,6 +27,7 @@
 	"LogisticallyLinkedBehaviourMixin",
 	"LogisticallyLinkedClientHandlerMixin",
 	"LogisticsManagerAccessor",
+	"PackageEntityMixin",
 	"PackageItemMixin",
 	"PackagerBlockEntityAccessor",
 	"PackagerBlockEntityMixin",

@@ -110,7 +110,6 @@ dependencies {
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
 
     implementation(jarJar("io.github.llamalad7:mixinextras-neoforge:0.5.0"))
-    implementation("net.liukrast:repackaged-1.21.1:0.0.2")
 
     // compile against the JEI API but do not include it at runtime
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
@@ -120,7 +119,7 @@ dependencies {
     implementation fileTree(dir: "${rootDir}/libs", include: ['*.jar'])
 
     //Optional dependency
-    implementation "maven.modrinth:jade:${jade_version}"
+    compileOnly("maven.modrinth:jade:${jade_version}")
 
 }
 

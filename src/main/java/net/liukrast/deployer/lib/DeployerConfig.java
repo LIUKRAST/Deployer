@@ -13,6 +13,10 @@ public class DeployerConfig {
                 .comment("Caching all input values to display when non instant updates are still processing")
                 .define("panelCaching", true);
 
+        public static final ModConfigSpec.BooleanValue PACKAGE_GOGGLE_INFO = BUILDER
+                .comment("Adds a simple goggle overlay on package entities")
+                .define("packageGoggleInformation", true);
+
         static final ModConfigSpec SPEC = BUILDER.build();
     }
 
