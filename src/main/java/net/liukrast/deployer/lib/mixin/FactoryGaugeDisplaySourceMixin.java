@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 @Mixin(FactoryGaugeDisplaySource.class)
 public abstract class FactoryGaugeDisplaySourceMixin extends ValueListDisplaySource {
     /*
-    * Abstract panel behaviours will ignore the default display link
+    * Abstract panel behaviors will ignore the default display link
     * */
     @Inject(
             method = "createEntry",

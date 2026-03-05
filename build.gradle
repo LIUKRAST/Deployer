@@ -1,3 +1,6 @@
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -5,7 +8,11 @@ plugins {
     id 'idea'
 }
 
-version = mod_version
+def timeFormatter = DateTimeFormatter.ofPattern("HH-mm-ss")
+
+version = development_mode
+        ? "${mod_version}-${LocalTime.now().format(timeFormatter)}"
+        : mod_version
 group = mod_group_id
 
 repositories {

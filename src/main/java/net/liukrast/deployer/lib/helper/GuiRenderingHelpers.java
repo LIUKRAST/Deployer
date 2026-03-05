@@ -28,8 +28,8 @@ import java.util.Optional;
 /**
  * Helper class that contains several methods related to GUI rendering
  * */
-public class GuiRenderingHelper {
-    private GuiRenderingHelper() {}
+public class GuiRenderingHelpers {
+    private GuiRenderingHelpers() {}
 
     /**
      * Renders a fluid sprite in a box, in GUI context
@@ -41,6 +41,7 @@ public class GuiRenderingHelper {
      * @param height The box height
      * */
     public static void renderFluid(GuiGraphics graphics, FluidStack stack, int x, int y, int width, int height) {
+        if(stack.isEmpty()) return;
         RenderSystem.enableBlend();
 
         Fluid fluid = stack.getFluid();

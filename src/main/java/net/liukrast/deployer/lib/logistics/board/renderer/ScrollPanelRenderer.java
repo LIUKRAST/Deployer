@@ -6,6 +6,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBox;
 import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.outliner.Outliner;
+import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.ScrollOptionPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.ScrollPanelBehaviour;
 import net.minecraft.client.Minecraft;
@@ -27,54 +28,32 @@ import java.util.List;
 
 @ApiStatus.Internal
 public class ScrollPanelRenderer {
-
-    /**
-     * Updates the highlighting and hover tooltip for all active scroll panel behaviors
-     * that the player is currently looking at.
-     * Checks if the block is a SmartBlockEntity, iterates its behaviors, and displays
-     * outlines and tooltips for panels that are hit and active.
-     */
-    public static void tick() {
+    public static void tick(AbstractPanelBehaviour behaviour) {
+        if (!(behaviour instanceof ScrollPanelBehaviour scroll))
+            return;
+        /*if (!behaviour.isActive()) {
+            Outliner.getInstance().remove(behaviour);
+            continue;
+        }*/
         Minecraft mc = Minecraft.getInstance();
-        HitResult target = mc.hitResult;
-        if (!(target instanceof BlockHitResult result))
+        BlockHitResult target = (BlockHitResult) mc.hitResult;
+
+        assert mc.player != null;
+        ItemStack mainHandItem = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
+        boolean clipboard = behaviour.bypassesInput(mainHandItem);
+        assert target != null;
+        boolean highlight = behaviour.testHit(target.getLocation()) && !clipboard;
+
+        addBox(target.getBlockPos(), target.getDirection(), scroll, highlight);
+
+
+        if (!highlight)
             return;
 
-        ClientLevel world = mc.level;
-        BlockPos pos = result.getBlockPos();
-        Direction face = result.getDirection();
-        boolean highlightFound = false;
-
-        assert world != null;
-        if (!(world.getBlockEntity(pos) instanceof SmartBlockEntity sbe))
-            return;
-
-        for (BlockEntityBehaviour blockEntityBehaviour : sbe.getAllBehaviours()) {
-            if (!(blockEntityBehaviour instanceof ScrollPanelBehaviour behaviour))
-                continue;
-
-            if (!behaviour.isActive()) {
-                Outliner.getInstance().remove(behaviour);
-                continue;
-            }
-
-            assert mc.player != null;
-            ItemStack mainHandItem = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
-            boolean clipboard = behaviour.bypassesInput(mainHandItem);
-            boolean highlight = behaviour.testHit(target.getLocation()) && !clipboard && !highlightFound;
-
-            addBox(pos, face, behaviour, highlight);
-
-
-            if (!highlight)
-                continue;
-
-            highlightFound = true;
-            List<MutableComponent> tip = new ArrayList<>();
-            tip.add(behaviour.label.copy());
-            tip.add(CreateLang.translateDirect("gui.value_settings.hold_to_edit"));
-            CreateClient.VALUE_SETTINGS_HANDLER.showHoverTip(tip);
-        }
+        List<MutableComponent> tip = new ArrayList<>();
+        tip.add(scroll.label.copy());
+        tip.add(CreateLang.translateDirect("gui.value_settings.hold_to_edit"));
+        CreateClient.VALUE_SETTINGS_HANDLER.showHoverTip(tip);
     }
 
     /**

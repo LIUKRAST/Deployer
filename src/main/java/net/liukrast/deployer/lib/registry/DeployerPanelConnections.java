@@ -6,6 +6,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringB
 import net.liukrast.deployer.lib.DeployerConstants;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelConnection;
+import net.liukrast.deployer.lib.logistics.board.connection.StockConnection;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Defines all the default connections. You can obviously register your own
@@ -26,11 +28,7 @@ public class DeployerPanelConnections {
     private static final DeferredRegister<PanelConnection<?>> CONNECTIONS = DeferredRegister.create(DeployerRegistries.PANEL_CONNECTION, DeployerConstants.MOD_ID);
 
     public static final DeferredHolder<PanelConnection<?>, PanelConnection<ItemStack>> ITEM_STACK = CONNECTIONS.register("filter", () -> new PanelConnection<>(FilteringBehaviour::getFilter));
-    public static final DeferredHolder<PanelConnection<?>, PanelConnection<FluidStack>> FLUID_STACK = CONNECTIONS.register("fluid_filter", () -> new PanelConnection<>(b -> {
-        var handler = b.getFilter().getCapability(Capabilities.FluidHandler.ITEM);
-        if(handler == null || handler.getTanks() == 0) return FluidStack.EMPTY;
-        return handler.getFluidInTank(0);
-    }));
+    public static final DeferredHolder<PanelConnection<?>, PanelConnection<StockConnection>> STOCK_CONNECTION = CONNECTIONS.register("stock_connection", () -> new PanelConnection<>(fb -> pr -> {}));
     public static final DeferredHolder<PanelConnection<?>, PanelConnection<Integer>> REDSTONE = CONNECTIONS.register("redstone", () -> new PanelConnection<>(b -> b.satisfied && b.count != 0 ? 15 : 0));
     public static final DeferredHolder<PanelConnection<?>, PanelConnection<Integer>> INTEGER = CONNECTIONS.register("integer", () -> new PanelConnection<>(FactoryPanelBehaviour::getLevelInStorage));
     public static final DeferredHolder<PanelConnection<?>, PanelConnection<String>> STRING = CONNECTIONS.register("string", () -> new PanelConnection<>(b -> {

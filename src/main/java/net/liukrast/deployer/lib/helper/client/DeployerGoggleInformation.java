@@ -1,4 +1,4 @@
-package net.liukrast.deployer.lib.helper;
+package net.liukrast.deployer.lib.helper.client;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import net.minecraft.core.BlockPos;

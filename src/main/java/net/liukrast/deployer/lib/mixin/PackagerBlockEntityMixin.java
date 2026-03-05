@@ -40,11 +40,11 @@ public abstract class PackagerBlockEntityMixin extends SmartBlockEntity {
         super(type, pos, state);
     }
 
-    @SuppressWarnings("DisallowedTargetInsn")
-    @WrapWithCondition(method = "addBehaviours", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z", ordinal = 0))
-    private <E> boolean addBehaviours(List<E> instance, E e) {
+    @WrapOperation(method = "addBehaviours", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z", ordinal = 0))
+    private <E> boolean addBehaviours(List<E> instance, E e, Operation<Boolean> original) {
         var i = PackagerBlockEntity.class.cast(this);
-        return !(i instanceof AbstractPackagerBlockEntity<?,?,?>);
+        if (!(i instanceof AbstractPackagerBlockEntity<?, ?, ?>)) return original.call(instance, e);
+        return false;
     }
 
     @WrapOperation(method = {"lazyTick","activate"}, at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/packager/PackagerBlockEntity;attemptToSend(Ljava/util/List;)V"))

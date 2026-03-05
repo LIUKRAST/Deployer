@@ -5,7 +5,7 @@ import com.simibubi.create.content.logistics.box.PackageEntity;
 import net.createmod.catnip.lang.LangBuilder;
 import net.liukrast.deployer.lib.DeployerConfig;
 import net.liukrast.deployer.lib.DeployerConstants;
-import net.liukrast.deployer.lib.helper.DeployerGoggleInformation;
+import net.liukrast.deployer.lib.helper.client.DeployerGoggleInformation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;

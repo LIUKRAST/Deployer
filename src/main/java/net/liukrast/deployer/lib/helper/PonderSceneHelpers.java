@@ -23,8 +23,8 @@ import java.util.function.Consumer;
  * Helper class that contains several methods to help developers create ponder scenes
  * */
 @SuppressWarnings("unused")
-public class PonderSceneHelper {
-    private PonderSceneHelper() {}
+public class PonderSceneHelpers {
+    private PonderSceneHelpers() {}
 
     /**
      * Automatically initializes a gauge scene, shows the baseplate, sets Y and view, and starts showing the init area

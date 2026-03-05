@@ -1,5 +1,6 @@
 package net.liukrast.deployer.lib;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.liukrast.deployer.lib.registry.*;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -25,6 +26,10 @@ public class Deployer {
         container.registerConfig(ModConfig.Type.SERVER, DeployerConfig.Server.SPEC);
 
         if(ModList.get().isLoaded("psic_compat")) DeployerConstants.PSIC_INSTALLED = true;
+    }
+
+    public static void test(PoseStack ms) {
+        ms.translate(8/16f,0,0.5);
     }
 
     /* MOD BUS EVENTS */

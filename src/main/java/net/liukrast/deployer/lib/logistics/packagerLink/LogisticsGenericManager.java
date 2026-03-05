@@ -117,8 +117,8 @@ public class LogisticsGenericManager {
             while(it.hasNext()) {
                 Map.Entry<StockInventoryType<?, ?, ?>, GenericOrderContained<?>> entry = it.next();
                 boolean isLast = !it.hasNext();
-                broadcastPackageRequest((StockInventoryType<Object, Object, Object>) entry.getKey(), freqId, type, (GenericOrderContained<Object>) entry.getValue(), null, address, () -> id, index, isLast);
-                index++;
+                if(broadcastPackageRequest((StockInventoryType<Object, Object, Object>) entry.getKey(), freqId, type, (GenericOrderContained<Object>) entry.getValue(), null, address, () -> id, index, isLast))
+                    index++;
             }
             requests.values().forEach(pr -> PRExtension.class.cast(pr).deployer$flag());
         }

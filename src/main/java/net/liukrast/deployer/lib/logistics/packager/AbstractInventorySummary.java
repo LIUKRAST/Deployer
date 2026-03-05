@@ -36,8 +36,9 @@ public abstract class AbstractInventorySummary<K, V> {
     /**
      * @param stack The stack involved
      * @return The count of that stack
+     * DO not confuse with {@link AbstractInventorySummary#getCountOf(Object)}. This only calculates the count of the input stack, not the count of these stacks in the summary
      * */
-    public int getCount(V stack) {
+    protected int getCount(V stack) {
         return type.valueHandler().getCount(stack);
     }
     /**
@@ -147,7 +148,8 @@ public abstract class AbstractInventorySummary<K, V> {
             if(isSameKeySameComponents(existing, stack)) {
                 int existingCount = getCount(existing);
                 int resultCount;
-                if(existingCount > Integer.MAX_VALUE - count) resultCount = Integer.MAX_VALUE;
+
+                if(count >= 0 && existingCount > Integer.MAX_VALUE - count) resultCount = Integer.MAX_VALUE;
                 else resultCount = existingCount + count;
                 if(getCount(existing) < BigItemStack.INF)
                     setCount(existing, resultCount);

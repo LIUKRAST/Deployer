@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.simibubi.create.api.registry.SimpleRegistry;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
+import it.unimi.dsi.fastutil.Hash;
 import net.createmod.catnip.data.Couple;
 import net.liukrast.deployer.lib.logistics.GenericPackageOrderData;
 import net.liukrast.deployer.lib.logistics.packagerLink.GenericRequestPromise;
@@ -96,6 +97,7 @@ public abstract class StockInventoryType<K,V,H> {
         public StreamCodec<RegistryFriendlyByteBuf, GenericOrderContained<V>> orderContainedStreamCodec() {
             return orderContainedStreamCodec;
         }
+        public abstract Hash.Strategy<? super V> hashStrategy();
         public abstract K fromValue(V key);
         public abstract boolean equalsIgnoreCount(V a, V b);
         public abstract boolean test(FilterItemStack filter, Level level, V value);
@@ -165,6 +167,12 @@ public abstract class StockInventoryType<K,V,H> {
         default int getRowHeight() {
             return 20;
         }
+
+        default String getPromiseItemName(V stack) {
+            return "Value not set";
+        }
+        default void renderGaugeSlotInput(GuiGraphics graphics, V stack, int mouseX, int mouseY, int x, int y, boolean restocker, Font font) {}
+        default void renderGaugeSlotOutput(GuiGraphics graphics, V stack, int mouseX, int mouseY, int x, int y, Font font) {}
     }
 
     public record CategoryRenderData(int x, int y, int itemsX, int itemsY, int categoryY, int rowHeight, int colWidth, int cols, List<StockKeeperRequestScreen.CategoryEntry> categories, float currentScroll, int windowHeight, Couple<Integer> hoveredSlot, int categoryIndex, PoseStack ms, Font font) {}

@@ -1,23 +1,30 @@
 package net.liukrast.deployer.lib.logistics.board;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.Codec;
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.*;
+import com.simibubi.create.content.logistics.packagerLink.RequestPromise;
+import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.createmod.catnip.codecs.CatnipCodecUtils;
 import net.createmod.catnip.codecs.CatnipCodecs;
 import net.createmod.catnip.gui.ScreenOpener;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelConnection;
+import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.mixin.FactoryPanelBehaviourAccessor;
-import net.liukrast.deployer.lib.mixin.FactoryPanelBehaviourIMixin;
 import net.liukrast.deployer.lib.mixin.FilteringBehaviourMixin;
 import net.liukrast.deployer.lib.mixinExtensions.FPBExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
 import net.liukrast.deployer.lib.registry.DeployerRegistries;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -28,6 +35,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -164,6 +173,12 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * */
     public boolean withFilteringBehaviour() {
         return false;
+    }
+
+    public BigItemStack addToFactoryCraftingScreen(int amount) {
+        return getConnectionValue(DeployerPanelConnections.ITEM_STACK)
+                .map(stack -> new BigItemStack(stack, amount))
+                .orElse(new BigItemStack(ItemStack.EMPTY, 0));
     }
 
     /**
@@ -337,7 +352,11 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * */
     @SuppressWarnings({"JavadocReference", "unused"})
     public int getTimer() {
-        return ((FactoryPanelBehaviourAccessor)this).timer();
+        return ((FactoryPanelBehaviourAccessor)this).deployer$getTimer();
+    }
+
+    protected void setTimer(int value) {
+        ((FactoryPanelBehaviourAccessor)this).deployer$setTimer(value);
     }
 
     /**
@@ -345,7 +364,15 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * */
     @SuppressWarnings({"JavadocReference", "unused"})
     public int getLastReportedLevelInStorage() {
-        return ((FactoryPanelBehaviourAccessor)this).lastReportedLevelInStorage();
+        return ((FactoryPanelBehaviourAccessor)this).deployer$getLastReportedLevelInStorage();
+    }
+
+    /**
+     * Allows to set {@link FactoryPanelBehaviour#lastReportedLevelInStorage}
+     * */
+    @SuppressWarnings({"JavadocReference", "unused"})
+    protected void setLastReportedLevelInStorage(int value) {
+        ((FactoryPanelBehaviourAccessor)this).deployer$setLastReportedLevelInStorage(value);
     }
 
     /**
@@ -353,7 +380,11 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * */
     @SuppressWarnings({"JavadocReference", "unused"})
     public int getLastReportedUnloadedLinks() {
-        return ((FactoryPanelBehaviourAccessor)this).lastReportedUnloadedLinks();
+        return ((FactoryPanelBehaviourAccessor)this).deployer$getLastReportedUnloadedLinks();
+    }
+
+    protected void setLastReportedUnloadedLinks(int value) {
+        ((FactoryPanelBehaviourAccessor)this).deployer$setLastReportedUnloadedLinks(value);
     }
 
     /**
@@ -361,7 +392,15 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * */
     @SuppressWarnings({"JavadocReference", "unused"})
     public int getLastReportedPromises() {
-        return ((FactoryPanelBehaviourAccessor)this).lastReportedPromises();
+        return ((FactoryPanelBehaviourAccessor)this).deployer$getLastReportedPromises();
+    }
+
+    protected void setLastReportedPromises(int value) {
+        ((FactoryPanelBehaviourAccessor)this).deployer$setLastReportedPromises(value);
+    }
+
+    protected int getPromiseExpiryTimeInTicks() {
+        return ((FactoryPanelBehaviourAccessor)this).deployer$invokeGetPromiseExpiryTimeInTicks();
     }
 
     /**
@@ -485,7 +524,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
             if(behaviour == null) continue;
             behaviour.checkForRedstoneInput();
         }
-        ((FactoryPanelBehaviourIMixin)this).invokeNotifyRedstoneOutputs();
+        ((FactoryPanelBehaviourAccessor)this).deployer$invokeNotifyRedstoneOutputs();
     }
 
     /**
@@ -511,6 +550,10 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
     public ItemRequirement getRequiredItems() {
         return isActive() ? new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, getItem())
                 : ItemRequirement.NONE;
+    }
+
+    public void tickStorageMonitor() {
+        ((FactoryPanelBehaviourAccessor) this).deployer$invokeTickStorageMonitor();
     }
 
     /**
@@ -546,4 +589,27 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
             return this;
         }
     }
+
+    @Nullable
+    public BlockEntity getAttachedBlockEntity() {
+        FactoryPanelBlockEntity panelBE = panelBE();
+        BlockState state = panelBE.getBlockState();
+        if(!panelBE.restocker || !AllBlocks.FACTORY_GAUGE.has(state))
+            return null;
+        BlockPos packagerPos = panelBE.getBlockPos().relative(FactoryPanelBlock.connectedDirection(state)
+                .getOpposite());
+        assert panelBE.getLevel() != null;
+        if (!panelBE.getLevel().isLoaded(packagerPos))
+            return null;
+        return panelBE.getLevel().getBlockEntity(packagerPos);
+    }
+
+    public int getDefaultConnectionAmount() {
+        return 1;
+    }
+
+    public void addPromises(RequestPromiseQueue queue) {
+        queue.add(new RequestPromise(new BigItemStack(getFilter(), recipeOutput)));
+    }
+
 }

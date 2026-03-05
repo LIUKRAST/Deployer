@@ -28,6 +28,10 @@ public class DeployerConfig {
                 .comment("Allows create to interact with blocks that provide block capability, even though they have no block entity")
                 .define("blockCapabilityFix", true);
 
+        public static final ModConfigSpec.BooleanValue FROGPORT_LIMIT = BUILDER
+                .comment("Makes so frogport do not export packages to chain drives if the chain drive has reached the package limit")
+                .define("frogPortLimit", false);
+
         static final ModConfigSpec SPEC = BUILDER.build();
     }
 }

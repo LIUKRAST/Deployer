@@ -24,7 +24,7 @@ import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.outliner.Outline;
 import net.createmod.catnip.outliner.Outliner;
 import net.createmod.catnip.theme.Color;
-import net.liukrast.deployer.lib.helper.DeployerGoggleInformation;
+import net.liukrast.deployer.lib.helper.client.DeployerGoggleInformation;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;

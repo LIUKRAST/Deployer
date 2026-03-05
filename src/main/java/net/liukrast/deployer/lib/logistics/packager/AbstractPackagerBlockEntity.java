@@ -201,12 +201,20 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         if (promiseQueues.isEmpty())
             return;
 
-        for (V entry : after.getStacks())
-            before.add(entry, -handler.getCount(entry));
-        for (RequestPromiseQueue queue : promiseQueues)
-            for (V entry : before.getStacks())
-                if (handler.getCount(entry) < 0)
-                    ((RPQExtension)queue).deployer$genericEnteredSystem(type, entry, -handler.getCount(entry));
+        // Instead of using negative values, we use another approach
+        for (V entry : after.getStacks()) {
+            int beforeCount = before.getCountOf(entry);
+            int afterCount  = handler.getCount(entry);
+
+            if (afterCount > beforeCount) {
+                int entered = afterCount - beforeCount;
+
+                for (RequestPromiseQueue queue : promiseQueues) {
+                    ((RPQExtension) queue)
+                            .deployer$genericEnteredSystem(type, entry, entered);
+                }
+            }
+        }
     }
 
     /**
