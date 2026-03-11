@@ -37,7 +37,7 @@ import java.util.Map;
 public abstract class PackageRepackageHelperMixin implements PRHExtension {
 
     @Unique
-    private final Map<StockInventoryType<?,?,?>, Map<Integer, List<ItemStack>>> deployer$collectedPackages = new HashMap<>();
+    private final Map<StockInventoryType<?, ?, ?>, Map<Integer, List<ItemStack>>> deployer$collectedPackages = new HashMap<>();
 
     @Inject(method = "clear", at = @At("TAIL"))
     private void clear(CallbackInfo ci) {
@@ -46,13 +46,13 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
 
     @Inject(method = "isFragmented", at = @At("RETURN"), cancellable = true)
     private void isFragmented(ItemStack box, CallbackInfoReturnable<Boolean> cir) {
-        if(!(box.getItem() instanceof GenericPackageItem generic)) return;
+        if (!(box.getItem() instanceof GenericPackageItem generic)) return;
         cir.setReturnValue(box.has(generic.getType().packageHandler().packageOrderData()));
     }
 
     @ModifyVariable(method = "addPackageFragment", at = @At("STORE"), name = "collectedOrder")
     private List<ItemStack> addPackageFragment(List<ItemStack> value, @Local(argsOnly = true, name = "arg1") ItemStack box, @Local(name = "collectedOrderId") int collectedOrderId) {
-        if(!(box.getItem() instanceof GenericPackageItem item)) return value;
+        if (!(box.getItem() instanceof GenericPackageItem item)) return value;
         return deployer$collectedPackages
                 .computeIfAbsent(item.getType(), $ -> new HashMap<>())
                 .computeIfAbsent(collectedOrderId, $ -> Lists.newArrayList());
@@ -60,14 +60,14 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
 
     @WrapOperation(method = "addPackageFragment", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/packager/repackager/PackageRepackageHelper;isOrderComplete(I)Z"))
     private boolean addPackageFragment(PackageRepackageHelper instance, int orderId, Operation<Boolean> original, @Local(argsOnly = true, name = "arg1") ItemStack box) {
-        if(!(box.getItem() instanceof GenericPackageItem item)) return original.call(instance, orderId);
+        if (!(box.getItem() instanceof GenericPackageItem item)) return original.call(instance, orderId);
         return deployer$isOrderComplete(item.getType(), orderId);
     }
 
     @Inject(method = "repack", at = @At("RETURN"))
     private void repack(int orderId, RandomSource r, CallbackInfoReturnable<List<BigItemStack>> cir) {
         var list = cir.getReturnValue();
-        for(StockInventoryType<?,?,?> type : deployer$collectedPackages.keySet()) {
+        for (StockInventoryType<?, ?, ?> type : deployer$collectedPackages.keySet()) {
             list.addAll(deployer$repack(type, orderId, r));
         }
     }
@@ -80,15 +80,15 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
         GenericOrderContained<V> orderContext = null;
         AbstractInventorySummary<K, V> summary = type.networkHandler().createSummary();
         var li = deployer$collectedPackages.computeIfAbsent(type, $ -> new HashMap<>()).get(orderId);
-        if(li != null) {
+        if (li != null) {
             for (ItemStack box : li) {
                 address = PackageItem.getAddress(box);
                 var c = box.get(DeployerDataComponents.ORDER_STOCK_TYPE_DATA);
-                if(c != null) typeData = c;
+                if (c != null) typeData = c;
                 var comp = type.packageHandler().packageOrderData();
                 if (box.has(comp)) {
                     var compGot = box.get(comp);
-                    if(compGot != null) {
+                    if (compGot != null) {
                         GenericOrderContained<V> context = compGot.orderContext();
                         if (context != null && !context.isEmpty())
                             orderContext = context;
@@ -136,7 +136,7 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
                     continue;
                 if (targetedEntry != null) {
                     targetAmount = type.valueHandler().getCount(targetedEntry);
-                    if(!type.valueHandler().equalsIgnoreCount(entry, targetedEntry))
+                    if (!type.valueHandler().equalsIgnoreCount(entry, targetedEntry))
                         continue;
                 }
 
@@ -148,7 +148,7 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
 
                     V output = type.valueHandler().copyWithCount(entry, removedAmount);
                     targetAmount -= removedAmount;
-                    if(targetedEntry != null)
+                    if (targetedEntry != null)
                         type.valueHandler().setCount(targetedEntry, targetAmount);
                     type.valueHandler().setCount(entry, type.valueHandler().getCount(entry) - removedAmount);
                     outputSlots.add(output);
@@ -180,7 +180,7 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
 
         for (BigItemStack box : exportingPackages) {
             PackageItem.addAddress(box.stack, address);
-            if(typeData != null) box.stack.set(DeployerDataComponents.ORDER_STOCK_TYPE_DATA, typeData);
+            if (typeData != null) box.stack.set(DeployerDataComponents.ORDER_STOCK_TYPE_DATA, typeData);
         }
 
         for (int i = 0; i < exportingPackages.size(); i++) {
@@ -196,7 +196,7 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
     }
 
     @Override
-    public <K,V,H> boolean deployer$isOrderComplete(StockInventoryType<K, V, H> type, int orderId) {
+    public <K, V, H> boolean deployer$isOrderComplete(StockInventoryType<K, V, H> type, int orderId) {
         boolean finalLinkReached = false;
         Links:
         for (int linkCounter = 0; linkCounter < 1000; linkCounter++) {
@@ -226,17 +226,17 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
     private List<BigItemStack> repackBasedOnRecipes(List<BigItemStack> original) {
         List<ItemStack> copied = original.stream().map(big -> big.stack.copy()).toList();
         List<ItemStack> result = NonNullList.withSize(copied.size(), ItemStack.EMPTY);
-        for(var stack : copied) {
-            for(int i = 0; i < result.size(); i++) {
+        for (var stack : copied) {
+            for (int i = 0; i < result.size(); i++) {
                 var slot = result.get(i);
-                if(slot.isEmpty()) {
+                if (slot.isEmpty()) {
                     result.set(i, stack);
                     break;
-                } else if(ItemStack.isSameItemSameComponents(stack, slot)) {
+                } else if (ItemStack.isSameItemSameComponents(stack, slot)) {
                     int canPut = slot.getMaxStackSize() - slot.getCount();
-                    slot.setCount(slot.getCount() + Mth.clamp(stack.getCount(),0,canPut));
-                    stack.setCount(Math.max(stack.getCount()-canPut, 0));
-                    if(stack.getCount() == 0) break;
+                    slot.setCount(slot.getCount() + Mth.clamp(stack.getCount(), 0, canPut));
+                    stack.setCount(Math.max(stack.getCount() - canPut, 0));
+                    if (stack.getCount() == 0) break;
                 }
             }
         }
@@ -246,5 +246,13 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
     @WrapOperation(method = "repackBasedOnRecipes", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;copyWithCount(I)Lnet/minecraft/world/item/ItemStack;", ordinal = 0))
     private ItemStack repackBasedOnRecipes(ItemStack instance, int i, Operation<ItemStack> original) {
         return instance.copy();
+    }
+
+    @Inject(method = "isOrderComplete", at = @At("HEAD"), cancellable = true)
+    private void isOrderComplete(int orderId, CallbackInfoReturnable<Boolean> cir) {
+        if(this instanceof net.liukrast.deployer.lib.helper.extensions.PRHExtension prh) {
+            cir.setReturnValue(prh.isOrderComplete(orderId));
+            cir.cancel();
+        }
     }
 }

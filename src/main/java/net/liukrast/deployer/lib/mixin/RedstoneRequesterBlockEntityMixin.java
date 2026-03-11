@@ -43,6 +43,7 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
     @Unique
     private final Map<StockInventoryType<?,?,?>, GenericOrderContained<?>> deployer$encodedRequests = new HashMap<>();
 
+    @Deprecated
     @Unique
     private boolean deployer$triggerRequest$local$anySucceeded;
 
@@ -58,7 +59,7 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
     @SuppressWarnings("unchecked")
     @Override
     public <K, V, H> GenericOrderContained<V> deployer$getEncodedRequest(StockInventoryType<K, V, H> type) {
-        return (GenericOrderContained<V>) deployer$encodedRequests.computeIfAbsent(type, t -> GenericOrderContained.empty());
+        return (GenericOrderContained<V>) deployer$encodedRequests.getOrDefault(type, GenericOrderContained.empty());
     }
 
     @Inject(method = "triggerRequest", at = @At("HEAD"), cancellable = true)
@@ -70,10 +71,9 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
         this.deployer$triggerRequest$local$anySucceeded = anySucceeded;
     }
 
-    @SuppressWarnings("unchecked")
     @Unique
     private <K,V,H> boolean deployer$triggerRequest(StockInventoryType<K, V, H> type, CallbackInfo ci) {
-        GenericOrderContained<V> encodedRequest = (GenericOrderContained<V>) deployer$encodedRequests.computeIfAbsent(type, t -> GenericOrderContained.empty());
+        GenericOrderContained<V> encodedRequest = deployer$getEncodedRequest(type);
 
         if(encodedRequest.isEmpty())
             return false;

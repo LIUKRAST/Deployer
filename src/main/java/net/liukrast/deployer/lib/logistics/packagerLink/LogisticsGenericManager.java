@@ -98,7 +98,8 @@ public class LogisticsGenericManager {
      * */
     @SuppressWarnings("unchecked")
     public static boolean broadcastAllPackageRequest(PackageOrderWithCrafts defaultOrder, UUID freqId, LogisticallyLinkedBehaviour.RequestType type, Map<StockInventoryType<?,?,?>, GenericOrderContained<?>> rq, String address) {
-        if(defaultOrder.isEmpty() && rq.values().stream().allMatch(GenericOrderContained::isEmpty))
+        boolean stockOrdersEmpty = rq.values().stream().allMatch(GenericOrderContained::isEmpty);
+        if(defaultOrder.isEmpty() && stockOrdersEmpty)
             return false;
         Multimap<PackagerBlockEntity, PackagingRequest> requests = LogisticsManager.findPackagersForRequest(freqId, defaultOrder, null, address);
 
@@ -111,11 +112,12 @@ public class LogisticsGenericManager {
         int id = vals.isEmpty() ? LogisticsManagerAccessor.getR().nextInt() :
                 Optional.ofNullable(vals.iterator().next()).map(PackagingRequest::orderId)
                         .orElseGet(() -> LogisticsManagerAccessor.getR().nextInt());
-        if(!rq.isEmpty()) {
+        if(!rq.isEmpty() && !stockOrdersEmpty) {
             int index = vals.isEmpty() ? 0 : 1;
             Iterator<Map.Entry<StockInventoryType<?, ?, ?>, GenericOrderContained<?>>> it = rq.entrySet().iterator();
             while(it.hasNext()) {
                 Map.Entry<StockInventoryType<?, ?, ?>, GenericOrderContained<?>> entry = it.next();
+                if(rq.isEmpty()) continue;
                 boolean isLast = !it.hasNext();
                 if(broadcastPackageRequest((StockInventoryType<Object, Object, Object>) entry.getKey(), freqId, type, (GenericOrderContained<Object>) entry.getValue(), null, address, () -> id, index, isLast))
                     index++;

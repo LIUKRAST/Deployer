@@ -1,16 +1,10 @@
 # ![deployer.png](src/main/resources/deployer.png)
 Deployer is a [Create]() library addon built to bring stability over delicate non-modular code in create.
 
-A lot of features, like packages,
-factory gauges and others are often coded in create without thinking about possible addons that want to expand that feature,
-and here is where we come on.
+Our philosophy is "less compatibility, more stability" which makes every feature in the mod coded while thinking about any kind of modification from other mods. We prefer other mods to just not support our features, instead of just crashing.
+**This doesn't mean we don't care about compatibility! Please let us know if theres any mod you want to see compatible with Deployer!**
 
-Deployer aims to bring stability over this topic, by modifying create code in a very precise way:
-
-- We do not overwrite any of the original function, which is the main reason of mod incompatibility
-- Every code injection is as precise as possible, and studied to be compatible with eventual code changes
-- We leave create's code implementation the same on most things, so that other mods will not find any strange behaviour on their blocks
-
+### Deployer is still in beta and might still cause crashes with other mods. We will work on that 24h/7
 
 ## Features
 
@@ -41,4 +35,4 @@ This is configurable through the server config
 
 <img src="fluid_fix.png" style="width:300px"> For example, cauldrons couldn't be handled before
 
-## Please remember that Deployer is still under development and under his first stages
+### Please remember that Deployer is still under development and under his first stages

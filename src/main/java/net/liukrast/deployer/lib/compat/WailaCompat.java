@@ -1,4 +1,4 @@
-package net.liukrast.deployer.lib;
+package net.liukrast.deployer.lib.compat;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
@@ -12,7 +12,7 @@ import snownee.jade.api.WailaPlugin;
 
 @SuppressWarnings("unused")
 @WailaPlugin
-public class DeployerWailaPlugin implements IWailaPlugin {
+public class WailaCompat implements IWailaPlugin {
 
     @Override
     public void registerClient(IWailaClientRegistration registration) {
