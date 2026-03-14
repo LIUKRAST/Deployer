@@ -1,4 +1,4 @@
-package net.liukrast.deployer.lib.mixin;
+package net.liukrast.deployer.lib.mixin.accessors;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(FilteringBehaviour.class)
-public interface FilteringBehaviourMixin {
+public interface FilteringBehaviourAccessor {
     @Accessor("slotPositioning")
     void setValueBoxTransform(ValueBoxTransform value);
 }

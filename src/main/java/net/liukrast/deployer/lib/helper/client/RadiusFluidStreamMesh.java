@@ -3,7 +3,7 @@ package net.liukrast.deployer.lib.helper.client;
 import dev.engine_room.flywheel.api.vertex.MutableVertexList;
 import dev.engine_room.flywheel.lib.model.QuadMesh;
 import net.createmod.catnip.data.Iterate;
-import net.liukrast.deployer.lib.mixin.FluidMeshAccessor;
+import net.liukrast.deployer.lib.mixin.accessors.FluidMeshAccessor;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Mth;

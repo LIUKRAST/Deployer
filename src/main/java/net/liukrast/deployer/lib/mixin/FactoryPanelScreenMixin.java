@@ -1,15 +1,17 @@
 package net.liukrast.deployer.lib.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
-import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConnection;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
 import net.createmod.catnip.gui.AbstractSimiScreen;
+import net.liukrast.deployer.lib.helper.ClientRegisterHelpers;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
+import net.liukrast.deployer.lib.logistics.board.GaugeSlot;
 import net.liukrast.deployer.lib.logistics.board.StockInventoryHolder;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
@@ -20,23 +22,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
 @Mixin(FactoryPanelScreen.class)
 public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
-    @Shadow
-    private boolean restocker;
 
-    @Shadow
-    private List<BigItemStack> inputConfig;
-
-    @Shadow
-    private BigItemStack outputConfig;
-
-    @Shadow
-    private FactoryPanelBehaviour behaviour;
+    @Shadow private boolean restocker;
+    @Shadow private List<BigItemStack> inputConfig;
+    @Shadow private BigItemStack outputConfig;
+    @Shadow private FactoryPanelBehaviour behaviour;
 
     @WrapOperation(
             method = "updateConfigs",
@@ -45,15 +40,25 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     target = "com/simibubi/create/content/logistics/BigItemStack"
             )
     )
+    @SuppressWarnings("unchecked")
     private BigItemStack updateConfigs(ItemStack stack, int count, Operation<BigItemStack> original) {
-        if(behaviour instanceof AbstractPanelBehaviour apb) return apb.addToFactoryCraftingScreen(count);
+        if (behaviour instanceof AbstractPanelBehaviour apb) {
+            GaugeSlot<?, AbstractPanelBehaviour> slot = (GaugeSlot<?, AbstractPanelBehaviour>) ClientRegisterHelpers.getSlot(apb.getPanelType());
+            if (slot == null)
+                return new BigItemStack(ItemStack.EMPTY, 0);
+            return slot.createHolder(apb);
+        }
         return original.call(stack, count);
     }
 
-    @Inject(method = "lambda$updateConfigs$0", at = @At("RETURN"), cancellable = true)
-    private void lambda$updateConfigs$0(FactoryPanelConnection c, CallbackInfoReturnable<BigItemStack> cir, @Local(name = "b") FactoryPanelBehaviour b) {
-        if(!(b instanceof AbstractPanelBehaviour apb)) return;
-        cir.setReturnValue(apb.addToFactoryCraftingScreen(c.amount));
+    @ModifyReturnValue(method = "lambda$updateConfigs$0", at = @At("RETURN"))
+    @SuppressWarnings("unchecked")
+    private BigItemStack lambda$updateConfigs$0(BigItemStack original, @Local(name = "b") FactoryPanelBehaviour b) {
+        if(!(b instanceof AbstractPanelBehaviour apb)) return original;
+        GaugeSlot<?, AbstractPanelBehaviour> slot = (GaugeSlot<?, AbstractPanelBehaviour>) ClientRegisterHelpers.getSlot(apb.getPanelType());
+        if (slot == null)
+            return new BigItemStack(ItemStack.EMPTY, 0);
+        return slot.createHolder(apb);
     }
 
     @ModifyExpressionValue(
@@ -107,7 +112,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
 
     @ModifyArg(method = "mouseScrolled", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Mth;clamp(III)I"), index = 0)
     private int mouseScrolled(int original, @Local(name = "itemStack") BigItemStack stack, @Local(argsOnly = true, ordinal = 3) double scrollY) {
-        if(stack instanceof StockInventoryHolder<?> holder) return (int) (stack.count + Math.signum(scrollY) * holder.getStockInventoryType().packageHandler().scrollAmount(hasControlDown(), hasShiftDown(), hasAltDown()));
+        if(stack instanceof StockInventoryHolder<?>) return (int) (stack.count + Math.signum(scrollY) * 1);//holder.getStockInventoryType().packageHandler().scrollAmount(hasControlDown(), hasShiftDown(), hasAltDown()));
         return original;
     }
 

@@ -1,4 +1,4 @@
-package net.liukrast.deployer.lib.mixin;
+package net.liukrast.deployer.lib.mixin.accessors;
 
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticEffectHandler;

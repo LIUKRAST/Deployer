@@ -8,9 +8,8 @@ import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorBlockEnti
 import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorPackage;
 import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorRenderer;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.liukrast.deployer.lib.event.PackageRenderEvent;
+import net.liukrast.deployer.lib.helper.ClientRegisterHelpers;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.ArrayList;
@@ -20,9 +19,6 @@ import java.util.List;
 
 @Mixin(ChainConveyorRenderer.class)
 public class ChainConveyorRendererMixin {
-    @Unique
-    private static final List<PackageRenderEvent.SuperByteBufferFactory> deployer$EXTENSIONS = PackageRenderEvent.dispatchChainConveyor();
-
     @Definition(id = "SuperByteBuffer", type = SuperByteBuffer.class)
     @Expression("new SuperByteBuffer[]{?,?}")
     @ModifyExpressionValue(method = "renderBox", at = @At("MIXINEXTRAS:EXPRESSION"))
@@ -33,7 +29,7 @@ public class ChainConveyorRendererMixin {
             @Local(argsOnly = true) float partialTicks
             ) {
         List<SuperByteBuffer> allAdded = new ArrayList<>();
-        for(var ext : deployer$EXTENSIONS) {
+        for(var ext : ClientRegisterHelpers.getChainRenderers()) {
             SuperByteBuffer[] buffers = ext.create(be, box, partialTicks);
             if(buffers != null && buffers.length > 0) {
                 Collections.addAll(allAdded, buffers);

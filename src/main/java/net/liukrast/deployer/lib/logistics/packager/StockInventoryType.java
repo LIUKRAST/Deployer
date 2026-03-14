@@ -1,12 +1,9 @@
 package net.liukrast.deployer.lib.logistics.packager;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.Codec;
 import com.simibubi.create.api.registry.SimpleRegistry;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
-import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
 import it.unimi.dsi.fastutil.Hash;
-import net.createmod.catnip.data.Couple;
 import net.liukrast.deployer.lib.logistics.GenericPackageOrderData;
 import net.liukrast.deployer.lib.logistics.packagerLink.GenericRequestPromise;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrder;
@@ -25,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.BlockCapability;
+import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +43,6 @@ public abstract class StockInventoryType<K,V,H> {
     @NotNull public abstract IStorageHandler<K,V,H> storageHandler();
     @NotNull public abstract INetworkHandler<K,V,H> networkHandler();
     @NotNull public abstract IPackageHandler<K,V,H> packageHandler();
-    @NotNull public abstract ItemStack getIcon();
 
     public abstract static class IValueHandler<K,V,H> {
         private final Codec<V> codec;
@@ -55,25 +52,35 @@ public abstract class StockInventoryType<K,V,H> {
         private final StreamCodec<RegistryFriendlyByteBuf, GenericOrder<V>> orderStreamCodec;
         private final StreamCodec<RegistryFriendlyByteBuf, GenericOrderContained<V>> orderContainedStreamCodec;
 
+
         public IValueHandler(
                 Codec<V> codec,
                 StreamCodec<? super RegistryFriendlyByteBuf, V> streamCodec
         ) {
-            this(codec, GenericOrder::simpleCodec, GenericOrderContained::fromOrderCodec, streamCodec, GenericOrder::simpleStreamCodec, GenericOrderContained::fromOrderStreamCodec);
+            this(codec,
+                    GenericOrder::simpleCodec,
+                    GenericOrderContained::fromOrderCodec,
+                    streamCodec,
+                    GenericOrder::simpleStreamCodec,
+                    GenericOrderContained::fromOrderStreamCodec
+            );
         }
 
-        public IValueHandler(Codec<V> codec,
-                             Function<Codec<V>, Codec<GenericOrder<V>>> orderFactory,
-                             BiFunction<Codec<GenericOrder<V>>, Codec<V>, Codec<GenericOrderContained<V>>> orderContainedFactory,
-                             StreamCodec<? super RegistryFriendlyByteBuf, V> streamCodec,
-                             Function<StreamCodec<? super RegistryFriendlyByteBuf, V>, StreamCodec<RegistryFriendlyByteBuf, GenericOrder<V>>> orderStreamFactory,
-                             Function<StreamCodec<RegistryFriendlyByteBuf, GenericOrder<V>>, StreamCodec<RegistryFriendlyByteBuf, GenericOrderContained<V>>> orderContainedStreamFactory
+
+        public IValueHandler(
+                Codec<V> codec,
+                BiFunction<Codec<V>, Hash.Strategy<? super V>, Codec<GenericOrder<V>>> orderFactory,
+                TriFunction<Codec<GenericOrder<V>>, Codec<V>, Hash.Strategy<? super V>, Codec<GenericOrderContained<V>>> orderContainedFactory,
+                StreamCodec<? super RegistryFriendlyByteBuf, V> streamCodec,
+                BiFunction<StreamCodec<? super RegistryFriendlyByteBuf, V>, Hash.Strategy<? super V>, StreamCodec<RegistryFriendlyByteBuf, GenericOrder<V>>> orderStreamFactory,
+                Function<StreamCodec<RegistryFriendlyByteBuf, GenericOrder<V>>, StreamCodec<RegistryFriendlyByteBuf, GenericOrderContained<V>>> orderContainedStreamFactory
         ) {
             this.codec = codec;
-            this.orderCodec = orderFactory.apply(codec);
-            this.orderContainedCodec = orderContainedFactory.apply(orderCodec, codec);
             this.streamCodec = streamCodec;
-            this.orderStreamCodec = orderStreamFactory.apply(streamCodec);
+
+            this.orderCodec = orderFactory.apply(codec, hashStrategy());
+            this.orderContainedCodec = orderContainedFactory.apply(orderCodec, codec, hashStrategy());
+            this.orderStreamCodec = orderStreamFactory.apply(streamCodec, hashStrategy());
             this.orderContainedStreamCodec = orderContainedStreamFactory.apply(orderStreamCodec);
         }
 
@@ -97,9 +104,12 @@ public abstract class StockInventoryType<K,V,H> {
         public StreamCodec<RegistryFriendlyByteBuf, GenericOrderContained<V>> orderContainedStreamCodec() {
             return orderContainedStreamCodec;
         }
+
+        public GenericOrderContained<V> createContained(List<V> itemsToOrder) {
+            return GenericOrderContained.simple(itemsToOrder, hashStrategy());
+        }
         public abstract Hash.Strategy<? super V> hashStrategy();
         public abstract K fromValue(V key);
-        public abstract boolean equalsIgnoreCount(V a, V b);
         public abstract boolean test(FilterItemStack filter, Level level, V value);
         public abstract int getCount(V value);
         public abstract void setCount(V value, int count);
@@ -130,6 +140,8 @@ public abstract class StockInventoryType<K,V,H> {
         AbstractInventorySummary<K, V> createSummary();
         AbstractInventorySummary<K,V> empty();
         DataComponentType<? super GenericPackageOrderData<V>> getComponent();
+
+
     }
 
     public interface IPackageHandler<K,V,H> {
@@ -143,40 +155,13 @@ public abstract class StockInventoryType<K,V,H> {
             setBoxContent(box, handler);
             return box;
         }
-        int clickAmount(boolean ctrlDown, boolean shiftDown, boolean altDown);
-        int scrollAmount(boolean ctrlDown, boolean shiftDown, boolean altDown);
-        default boolean shouldRenderSearchBar() {
-            return true;
-        }
-        boolean matchesModSearch(V stack, String searchValue);
-        boolean matchesTagSearch(V stack, String searchValue);
-        boolean matchesSearch(V stack, String searchValue);
-        void renderCategory(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY, List<V> categoryStacks, List<V> itemsToOrder, AbstractInventorySummary<K, V> forcedEntries, CategoryRenderData data);
-        void renderOrderedItems(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY, List<V> itemsToOrder, AbstractInventorySummary<K, V> forcedEntries, OrderRenderData data);
-        void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks, V entry, Font font, boolean isOrder);
         default void setOrder(ItemStack box, int orderId, int linkIndex, boolean isFinalLink, int fragmentIndex, boolean isFinal, @Nullable GenericOrderContained<V> orderContext) {
             GenericPackageOrderData<V> order = new GenericPackageOrderData<>(orderId, linkIndex, isFinalLink, fragmentIndex, isFinal, orderContext);
             box.set(packageOrderData(), order);
         }
         void appendHoverText(ItemStack stack, Item.TooltipContext tooltipContext, List<Component> tooltipComponents,
                              TooltipFlag tooltipFlag, H handler);
-        default int getColWidth() {
-            return 20;
-        }
-
-        default int getRowHeight() {
-            return 20;
-        }
-
-        default String getPromiseItemName(V stack) {
-            return "Value not set";
-        }
-        default void renderGaugeSlotInput(GuiGraphics graphics, V stack, int mouseX, int mouseY, int x, int y, boolean restocker, Font font) {}
-        default void renderGaugeSlotOutput(GuiGraphics graphics, V stack, int mouseX, int mouseY, int x, int y, Font font) {}
     }
-
-    public record CategoryRenderData(int x, int y, int itemsX, int itemsY, int categoryY, int rowHeight, int colWidth, int cols, List<StockKeeperRequestScreen.CategoryEntry> categories, float currentScroll, int windowHeight, Couple<Integer> hoveredSlot, int categoryIndex, PoseStack ms, Font font) {}
-    public record OrderRenderData(int x, int y, int itemsX, int itemsY, int rowHeight, int colWidth, int orderY, int cols, Couple<Integer> hoveredSlot, PoseStack ms) {}
 
     public abstract BlockCapability<H, @Nullable Direction> getBlockCapability();
 
@@ -193,7 +178,7 @@ public abstract class StockInventoryType<K,V,H> {
                 int sizeInventory = storageHandler.getSlots(inventory);
                 for(int i = 0; i < sizeInventory; ++i) {
                     V slot = storageHandler.getStackInSlot(inventory, i);
-                    if(valueHandler.equalsIgnoreCount(slot, stack)) {
+                    if(valueHandler.hashStrategy().equals(slot, stack)) {
                         stack = storageHandler.insertItem(inventory, i, stack, simulate);
                         if (valueHandler.isEmpty(stack)) {
                             break;
@@ -282,7 +267,7 @@ public abstract class StockInventoryType<K,V,H> {
                     continue;
                 }
 
-                if (!valueHandler.equalsIgnoreCount(toInsert, itemInSlot))
+                if (!valueHandler.hashStrategy().equals(toInsert, itemInSlot))
                     continue;
 
                 //TODO: Implement slot limit

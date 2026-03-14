@@ -4,7 +4,7 @@ import dev.engine_room.flywheel.api.model.Model;
 import dev.engine_room.flywheel.lib.model.SingleMeshModel;
 import dev.engine_room.flywheel.lib.util.RendererReloadCache;
 import net.liukrast.deployer.lib.helper.client.RadiusFluidStreamMesh;
-import net.liukrast.deployer.lib.mixin.FluidMeshAccessor;
+import net.liukrast.deployer.lib.mixin.accessors.FluidMeshAccessor;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 public class VisualHelpers {

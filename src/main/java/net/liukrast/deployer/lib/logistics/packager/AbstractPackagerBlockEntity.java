@@ -22,7 +22,7 @@ import net.createmod.catnip.math.BlockFace;
 import net.liukrast.deployer.lib.logistics.GenericPackageOrderData;
 import net.liukrast.deployer.lib.logistics.OrderStockTypeData;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
-import net.liukrast.deployer.lib.mixin.PackagerBlockEntityAccessor;
+import net.liukrast.deployer.lib.mixin.accessors.PackagerBlockEntityAccessor;
 import net.liukrast.deployer.lib.mixinExtensions.LLBExtension;
 import net.liukrast.deployer.lib.mixinExtensions.RPQExtension;
 import net.liukrast.deployer.lib.mixinExtensions.VITBExtension;
@@ -284,7 +284,7 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
                     V extracted = handler.extract(targetInv, valueHandler.copyWithCount(handler.getStackInSlot(targetInv, slot), initialCount), true);
                     if (valueHandler.isEmpty(extracted))
                         continue;
-                    if(requestQueue && !valueHandler.equalsIgnoreCount(extracted, nextRequest.item()))
+                    if(requestQueue && !valueHandler.hashStrategy().equals(extracted, nextRequest.item()))
                         continue;
 
                     boolean bulky = !handler.isBulky(valueHandler.fromValue(extracted));

@@ -67,11 +67,6 @@ public abstract class StockPanelBehaviour<K, V> extends AbstractPanelBehaviour {
     }
 
     @Override
-    public BigItemStack addToFactoryCraftingScreen(int amount) {
-        return new StockInventoryHolder<>(stockInventoryType, filter, amount);
-    }
-
-    @Override
     public boolean skipOriginalTick() {
         return false;
     }

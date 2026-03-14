@@ -14,7 +14,7 @@ import net.createmod.catnip.data.Pair;
 import net.liukrast.deployer.lib.DeployerConstants;
 import net.liukrast.deployer.lib.logistics.packager.*;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
-import net.liukrast.deployer.lib.mixin.LogisticsManagerAccessor;
+import net.liukrast.deployer.lib.mixin.accessors.LogisticsManagerAccessor;
 import net.liukrast.deployer.lib.mixinExtensions.LLBExtension;
 import net.liukrast.deployer.lib.mixinExtensions.PRExtension;
 import org.apache.commons.lang3.mutable.MutableBoolean;

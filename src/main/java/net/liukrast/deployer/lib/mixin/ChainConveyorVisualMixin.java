@@ -16,7 +16,7 @@ import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import dev.engine_room.flywheel.lib.visual.SimpleDynamicVisual;
 import dev.engine_room.flywheel.lib.visual.SimpleTickableVisual;
-import net.liukrast.deployer.lib.event.PackageVisualEvent;
+import net.liukrast.deployer.lib.helper.ClientRegisterHelpers;
 import net.liukrast.deployer.lib.helper.client.PackageVisualExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -31,8 +31,6 @@ import java.util.List;
 
 @Mixin(ChainConveyorVisual.class)
 public abstract class ChainConveyorVisualMixin extends SingleAxisRotatingVisual<ChainConveyorBlockEntity> implements SimpleDynamicVisual, SimpleTickableVisual {
-    @Unique
-    private static final List<PackageVisualEvent.ChainConveyorFactory> deployer$EXTENSIONS = PackageVisualEvent.dispatchChainConveyor();
 
     @Unique
     private final List<PackageVisualExtension.ChainConveyor> deployer$extensions = new ArrayList<>();
@@ -43,8 +41,7 @@ public abstract class ChainConveyorVisualMixin extends SingleAxisRotatingVisual<
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void init(VisualizationContext context, ChainConveyorBlockEntity blockEntity, float partialTick, CallbackInfo ci) {
-        deployer$extensions.addAll(deployer$EXTENSIONS
-                .stream()
+        deployer$extensions.addAll(ClientRegisterHelpers.getChainVisuals()
                 .map(factory -> factory.create(context, blockEntity, partialTick))
                 .toList()
         );

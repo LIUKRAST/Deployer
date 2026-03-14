@@ -10,4 +10,10 @@ public record OrderStockTypeData(int index, boolean isFinal) {
     ).apply(instance, OrderStockTypeData::new));
 
     public static final OrderStockTypeData EMPTY = new OrderStockTypeData(0, true);
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof OrderStockTypeData(int index1, boolean aFinal)) return index1 == index() && aFinal == isFinal();
+        return false;
+    }
 }

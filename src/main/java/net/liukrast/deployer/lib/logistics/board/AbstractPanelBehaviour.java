@@ -1,6 +1,5 @@
 package net.liukrast.deployer.lib.logistics.board;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.Codec;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.logistics.BigItemStack;
@@ -11,20 +10,17 @@ import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.createmod.catnip.codecs.CatnipCodecUtils;
 import net.createmod.catnip.codecs.CatnipCodecs;
 import net.createmod.catnip.gui.ScreenOpener;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelConnection;
-import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
-import net.liukrast.deployer.lib.mixin.FactoryPanelBehaviourAccessor;
-import net.liukrast.deployer.lib.mixin.FilteringBehaviourMixin;
+import net.liukrast.deployer.lib.mixin.accessors.FactoryPanelBehaviourAccessor;
+import net.liukrast.deployer.lib.mixin.accessors.FilteringBehaviourAccessor;
 import net.liukrast.deployer.lib.mixinExtensions.FPBExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
 import net.liukrast.deployer.lib.registry.DeployerRegistries;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -81,7 +77,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      */
     public AbstractPanelBehaviour(ValueBoxTransform valueBoxTransform, PanelType<?> type, FactoryPanelBlockEntity be, FactoryPanelBlock.PanelSlot slot) {
         this(type, be, slot);
-        ((FilteringBehaviourMixin)this).setValueBoxTransform(valueBoxTransform);
+        ((FilteringBehaviourAccessor)this).setValueBoxTransform(valueBoxTransform);
     }
 
     /**
@@ -173,12 +169,6 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * */
     public boolean withFilteringBehaviour() {
         return false;
-    }
-
-    public BigItemStack addToFactoryCraftingScreen(int amount) {
-        return getConnectionValue(DeployerPanelConnections.ITEM_STACK)
-                .map(stack -> new BigItemStack(stack, amount))
-                .orElse(new BigItemStack(ItemStack.EMPTY, 0));
     }
 
     /**

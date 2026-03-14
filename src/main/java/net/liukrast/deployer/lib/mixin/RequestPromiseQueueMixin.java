@@ -52,7 +52,7 @@ public class RequestPromiseQueueMixin implements RPQExtension {
 
         for (Iterator<GenericRequestPromise<V>> iterator = list.iterator(); iterator.hasNext();) {
             GenericRequestPromise<V> promise = iterator.next();
-            if(!type.valueHandler().equalsIgnoreCount(promise.promisedStack, stack)) continue;
+            if(!type.valueHandler().hashStrategy().equals(promise.promisedStack, stack)) continue;
             if (expiryTime != -1 && promise.ticksExisted >= expiryTime) {
                 iterator.remove();
                 onChanged.run();
@@ -72,7 +72,7 @@ public class RequestPromiseQueueMixin implements RPQExtension {
 
         for (Iterator<GenericRequestPromise<V>> iterator = list.iterator(); iterator.hasNext();) {
             GenericRequestPromise<V> promise = iterator.next();
-            if(!type.valueHandler().equalsIgnoreCount(promise.promisedStack, stack)) continue;
+            if(!type.valueHandler().hashStrategy().equals(promise.promisedStack, stack)) continue;
             iterator.remove();
             onChanged.run();
         }
@@ -90,7 +90,7 @@ public class RequestPromiseQueueMixin implements RPQExtension {
 
         for (Iterator<GenericRequestPromise<V>> iterator = list.iterator(); iterator.hasNext();) {
             GenericRequestPromise<V> requestPromise = iterator.next();
-            if(!type.valueHandler().equalsIgnoreCount(requestPromise.promisedStack, entry)) continue;
+            if(!type.valueHandler().hashStrategy().equals(requestPromise.promisedStack, entry)) continue;
 
             int toSubtract = Math.min(amount, type.valueHandler().getCount(requestPromise.promisedStack));
             amount -= toSubtract;

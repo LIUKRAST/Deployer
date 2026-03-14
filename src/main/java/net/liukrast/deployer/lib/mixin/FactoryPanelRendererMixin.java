@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.content.logistics.factoryBoard.*;
-import net.liukrast.deployer.lib.event.PanelClientEvent;
+import net.liukrast.deployer.lib.helper.ClientRegisterHelpers;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.connection.ColoredFactoryPanelSupportBehaviour;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelConnection;
@@ -13,19 +13,13 @@ import net.liukrast.deployer.lib.mixinExtensions.FPBExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
-
 @Mixin(FactoryPanelRenderer.class)
 public class FactoryPanelRendererMixin {
-
-    @Unique
-    private static final List<PanelClientEvent.Renderer> deployer$RENDER_EXTENSIONS = PanelClientEvent.fireRenderer();
 
     /* Allows abstract panels to have their own render system and decides whether a bulb should be rendered or not */
     @ModifyExpressionValue(
@@ -35,7 +29,7 @@ public class FactoryPanelRendererMixin {
     private int renderSafe(int original, @Local(name = "behaviour") FactoryPanelBehaviour behaviour, @Local(argsOnly = true) float partialTicks, @Local(argsOnly = true)PoseStack ms, @Local(argsOnly = true)MultiBufferSource buffer, @Local(argsOnly = true, ordinal = 0) int light, @Local(argsOnly = true, ordinal = 1) int overlay) {
         if (behaviour instanceof AbstractPanelBehaviour abstractPanel) {
             ms.pushPose();
-            deployer$RENDER_EXTENSIONS.forEach(renderer -> renderer.render(abstractPanel, partialTicks, ms, buffer, light, overlay));
+            ClientRegisterHelpers.getPanelRenderers().forEach(renderer -> renderer.render(abstractPanel, partialTicks, ms, buffer, light, overlay));
             ms.popPose();
             return abstractPanel.shouldRenderBulb(original > 0) ? 1 : 0;
         } else return original;

@@ -1,4 +1,4 @@
-package net.liukrast.deployer.lib.mixin;
+package net.liukrast.deployer.lib.mixin.accessors;
 
 import com.simibubi.create.api.packager.InventoryIdentifier;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;

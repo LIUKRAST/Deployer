@@ -3,7 +3,7 @@ package net.liukrast.deployer.lib.helper.box;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBox;
 import com.simibubi.create.foundation.gui.AllIcons;
-import net.liukrast.deployer.lib.mixin.ValueBoxAccessor;
+import net.liukrast.deployer.lib.mixin.accessors.ValueBoxAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;

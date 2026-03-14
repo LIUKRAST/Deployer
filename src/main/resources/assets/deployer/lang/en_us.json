@@ -1,3 +1,6 @@
 {
-  "stock_inventory_type.items": "Items"
+  "stock_inventory_type.items": "Items",
+  "stock_inventory_type.unfinished_order": "Unfinished order",
+  "stock_inventory_type.unfinished_order_line_1": "All unfinished orders will be sent",
+  "stock_inventory_type.unfinished_order_line_2": "simultaneously when clicking send"
 }

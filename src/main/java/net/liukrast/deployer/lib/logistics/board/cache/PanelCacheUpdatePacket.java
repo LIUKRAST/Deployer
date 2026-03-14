@@ -81,8 +81,8 @@ public class PanelCacheUpdatePacket extends BlockEntityDataPacket<FactoryPanelBl
      */
     @Override
     protected void handlePacket(FactoryPanelBlockEntity blockEntity) {
-        FactoryPanelBehaviour behaviour = blockEntity.panels.get(position.slot());
         if(!DeployerConfig.Client.PANEL_CACHING.get()) return;
+        FactoryPanelBehaviour behaviour = blockEntity.panels.get(position.slot());
         if(!(behaviour instanceof CacheContainer<?> cacheContainer)) return;
         if(Minecraft.getInstance().level == null) return;
         var access = Minecraft.getInstance().level.registryAccess();

@@ -19,6 +19,7 @@ public record GenericPackageOrderData<V>(int orderId, int linkIndex, boolean isF
         this(orderId, linkIndex, isFinalLink, fragmentIndex, isFinal, orderContext.orElse(null));
     }
 
+
     public static <V> Codec<GenericPackageOrderData<V>> createCodec(Supplier<StockInventoryType<?, V, ?>> supplierType) {
         return RecordCodecBuilder.create(instance -> instance.group(
                 Codec.INT.fieldOf("order_id").forGetter(GenericPackageOrderData::orderId),

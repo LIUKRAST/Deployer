@@ -1,4 +1,4 @@
-package net.liukrast.deployer.lib.mixin;
+package net.liukrast.deployer.lib.mixin.accessors;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.simibubi.create.foundation.gui.AllIcons;
@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(AllIcons.class)
-public interface AllIconsMixin {
+public interface AllIconsAccessor {
 
     @Accessor("iconX") int getIconX();
     @Accessor("iconY") int getIconY();

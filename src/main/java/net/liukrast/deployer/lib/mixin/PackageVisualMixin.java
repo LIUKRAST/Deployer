@@ -7,7 +7,7 @@ import dev.engine_room.flywheel.api.visual.DynamicVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import dev.engine_room.flywheel.lib.visual.AbstractEntityVisual;
-import net.liukrast.deployer.lib.event.PackageVisualEvent;
+import net.liukrast.deployer.lib.helper.ClientRegisterHelpers;
 import net.liukrast.deployer.lib.helper.client.PackageVisualExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,9 +21,6 @@ import java.util.List;
 @Mixin(PackageVisual.class)
 public abstract class PackageVisualMixin extends AbstractEntityVisual<PackageEntity> {
     @Unique
-    private static final List<PackageVisualEvent.EntityFactory> deployer$EXTENSIONS = PackageVisualEvent.dispatchEntity();
-
-    @Unique
     private final List<PackageVisualExtension.Entity> deployer$extensions = new ArrayList<>();
 
     public PackageVisualMixin(VisualizationContext ctx, PackageEntity entity, float partialTick) {
@@ -32,7 +29,7 @@ public abstract class PackageVisualMixin extends AbstractEntityVisual<PackageEnt
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
     private void init(VisualizationContext ctx, PackageEntity entity, float partialTick, CallbackInfo ci) {
-        deployer$extensions.addAll(deployer$EXTENSIONS.stream()
+        deployer$extensions.addAll(ClientRegisterHelpers.getEntityVisuals()
                 .filter(factory -> factory.validForPackage(entity))
                 .map(factory -> factory.create(ctx, entity, partialTick))
                 .toList())

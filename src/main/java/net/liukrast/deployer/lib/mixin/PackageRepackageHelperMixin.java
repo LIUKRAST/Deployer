@@ -7,6 +7,8 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.packager.repackager.PackageRepackageHelper;
+import net.liukrast.deployer.lib.DeployerConfig;
+import net.liukrast.deployer.lib.logistics.DeployerAlgorithms;
 import net.liukrast.deployer.lib.logistics.GenericPackageOrderData;
 import net.liukrast.deployer.lib.logistics.OrderStockTypeData;
 import net.liukrast.deployer.lib.logistics.packager.AbstractInventorySummary;
@@ -21,6 +23,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.compress.utils.Lists;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -36,6 +39,8 @@ import java.util.Map;
 @Mixin(PackageRepackageHelper.class)
 public abstract class PackageRepackageHelperMixin implements PRHExtension {
 
+    @Shadow
+    protected Map<Integer, List<ItemStack>> collectedPackages;
     @Unique
     private final Map<StockInventoryType<?, ?, ?>, Map<Integer, List<ItemStack>>> deployer$collectedPackages = new HashMap<>();
 
@@ -136,7 +141,7 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
                     continue;
                 if (targetedEntry != null) {
                     targetAmount = type.valueHandler().getCount(targetedEntry);
-                    if (!type.valueHandler().equalsIgnoreCount(entry, targetedEntry))
+                    if (!type.valueHandler().hashStrategy().equals(entry, targetedEntry))
                         continue;
                 }
 
@@ -197,26 +202,25 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
 
     @Override
     public <K, V, H> boolean deployer$isOrderComplete(StockInventoryType<K, V, H> type, int orderId) {
+        Map<Integer, Map<Integer, GenericPackageOrderData<V>>> dataMap = new HashMap<>();
+        for(ItemStack box : deployer$collectedPackages.computeIfAbsent(type, $ -> new HashMap<>()).get(orderId)) {
+            var data = box.get(type.packageHandler().packageOrderData());
+            assert data != null;
+            dataMap
+                    .computeIfAbsent(data.linkIndex(), k -> new HashMap<>())
+                    .put(data.fragmentIndex(), data);
+        }
+
         boolean finalLinkReached = false;
-        Links:
-        for (int linkCounter = 0; linkCounter < 1000; linkCounter++) {
-            if (finalLinkReached)
-                break;
-            Packages:
-            for (int packageCounter = 0; packageCounter < 1000; packageCounter++) {
-                for (ItemStack box : deployer$collectedPackages.computeIfAbsent(type, $ -> new HashMap<>()).get(orderId)) {
-                    GenericPackageOrderData<V> data = box.get(type.packageHandler().packageOrderData());
-                    //noinspection DataFlowIssue
-                    if (linkCounter != data.linkIndex())
-                        continue;
-                    if (packageCounter != data.fragmentIndex())
-                        continue;
-                    finalLinkReached = data.isFinalLink();
-                    if (data.isFinal())
-                        continue Links;
-                    continue Packages;
-                }
-                return false;
+        for(int linkIndex = 0; !finalLinkReached; linkIndex++) {
+            Map<Integer, GenericPackageOrderData<V>> fragments = dataMap.get(linkIndex);
+            if(fragments == null) return false;
+            boolean finalFragReached = false;
+            for(int fragIndex = 0; !finalFragReached; fragIndex++) {
+                var data = fragments.get(fragIndex);
+                if(data == null) return false;
+                if(data.isFinal()) finalFragReached = true;
+                if(data.isFinalLink()) finalLinkReached = true;
             }
         }
         return true;
@@ -250,6 +254,9 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
 
     @Inject(method = "isOrderComplete", at = @At("HEAD"), cancellable = true)
     private void isOrderComplete(int orderId, CallbackInfoReturnable<Boolean> cir) {
+        if(DeployerConfig.Server.FAST_REPACKAGE_ALGORITHM.getAsBoolean()) {
+            cir.setReturnValue(DeployerAlgorithms.isOrderComplete(collectedPackages.get(orderId)));
+        }
         if(this instanceof net.liukrast.deployer.lib.helper.extensions.PRHExtension prh) {
             cir.setReturnValue(prh.isOrderComplete(orderId));
             cir.cancel();

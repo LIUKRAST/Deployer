@@ -38,7 +38,7 @@ import net.liukrast.deployer.lib.logistics.packager.AbstractPackagerBlockEntity;
 import net.liukrast.deployer.lib.logistics.packager.GenericPackagingRequest;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.packagerLink.LogisticsGenericManager;
-import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
+import net.liukrast.deployer.lib.mixin.accessors.LogisticsManagerAccessor;
 import net.liukrast.deployer.lib.mixinExtensions.FPBExtension;
 import net.liukrast.deployer.lib.mixinExtensions.PRExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
@@ -293,7 +293,7 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
         Map<UUID, Collection<V>> asMap = (Map) asMap$raw;
         List<Multimap<AbstractPackagerBlockEntity<K,V,H>, GenericPackagingRequest<V>>> requests = (List)requests$raw;
         for(var entry : asMap.entrySet()) {
-            GenericOrderContained<V> order = GenericOrderContained.simple(new ArrayList<>(entry.getValue()));
+            var order = type.valueHandler().createContained(new ArrayList<>(entry.getValue()));
             Multimap<AbstractPackagerBlockEntity<K,V,H>, GenericPackagingRequest<V>> request =
                     LogisticsGenericManager.findPackagersForRequest(type, entry.getKey(), order, null, recipeAddress, () -> savedUUIDs.get(entry.getKey()));
             requests.add(request);

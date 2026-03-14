@@ -1,4 +1,4 @@
-package net.liukrast.deployer.lib.mixin;
+package net.liukrast.deployer.lib.mixin.accessors;
 
 import com.simibubi.create.content.fluids.FlowSource;
 import com.simibubi.create.foundation.ICapabilityProvider;

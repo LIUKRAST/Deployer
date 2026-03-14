@@ -11,6 +11,7 @@ import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
 public class DeployerRegistries {
+    private DeployerRegistries() {}
     public static final ResourceKey<Registry<PanelType<?>>> PANEL_KEY = ResourceKey.createRegistryKey(DeployerConstants.id("panels"));
     public static final Registry<PanelType<?>> PANEL = new RegistryBuilder<>(PANEL_KEY)
             .sync(true)

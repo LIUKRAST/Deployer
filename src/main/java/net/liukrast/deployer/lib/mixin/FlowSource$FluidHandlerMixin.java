@@ -8,6 +8,7 @@ import com.simibubi.create.content.fluids.FlowSource;
 import com.simibubi.create.foundation.ICapabilityProvider;
 import net.createmod.catnip.math.BlockFace;
 import net.liukrast.deployer.lib.DeployerConfig;
+import net.liukrast.deployer.lib.mixin.accessors.FlowSourceAccessor;
 import net.liukrast.deployer.lib.registry.DeployerTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;

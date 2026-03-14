@@ -1,4 +1,4 @@
-package net.liukrast.deployer.lib.mixin;
+package net.liukrast.deployer.lib.mixin.accessors;
 
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import org.spongepowered.asm.mixin.Mixin;
