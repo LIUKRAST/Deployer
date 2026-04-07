@@ -1,5 +1,7 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Boolean;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -17,7 +19,7 @@ public class FactoryPanelSupportBehaviourMixin {
     @Definition(id = "satisfied", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;satisfied:Z")
     @Expression("behaviour.satisfied")
     @ModifyExpressionValue(method = "shouldBePoweredTristate", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean shouldBePoweredTristate(boolean original, @Local FactoryPanelBehaviour behaviour) {
+    private Boolean shouldBePoweredTristate(Boolean original, @Local FactoryPanelBehaviour behaviour) {
         return DeployerPanelConnections.getConnectionValue(behaviour, DeployerPanelConnections.REDSTONE).orElse(0) > 0;
     }
 
@@ -25,7 +27,7 @@ public class FactoryPanelSupportBehaviourMixin {
     @Definition(id = "count", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;count:I")
     @Expression("behaviour.count != 0")
     @ModifyExpressionValue(method = "shouldBePoweredTristate", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean shouldBePoweredTriState$1(boolean original, @Local FactoryPanelBehaviour behaviour) {
+    private Boolean shouldBePoweredTriState$1(Boolean original, @Local FactoryPanelBehaviour behaviour) {
         return behaviour instanceof AbstractPanelBehaviour panel ? panel.hasConnection(DeployerPanelConnections.REDSTONE) : original;
     }
 }

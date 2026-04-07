@@ -1,5 +1,8 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Float;
+import java.lang.Integer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.simibubi.create.foundation.gui.AllIcons;
 import net.createmod.catnip.theme.Color;
@@ -12,9 +15,9 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(AllIcons.class)
 public interface AllIconsMixin {
 
-    @Accessor("iconX") int getIconX();
-    @Accessor("iconY") int getIconY();
+    @Accessor("iconX") Integer getIconX();
+    @Accessor("iconY") Integer getIconY();
 
     @Invoker("vertex")
-    void invokeVertex(VertexConsumer builder, Matrix4f matrix, Vec3 vec, Color rgb, float u, float v, int light);
+    void invokeVertex(VertexConsumer builder, Matrix4f matrix, Vec3 vec, Color rgb, Float u, Float v, Integer light);
 }

@@ -1,5 +1,7 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Integer;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -22,13 +24,13 @@ public class PackageRepackageHelperMixin {
         List<ItemStack> copied = original.stream().map(big -> big.stack.copy()).toList();
         List<ItemStack> result = NonNullList.withSize(copied.size(), ItemStack.EMPTY);
         for(var stack : copied) {
-            for(int i = 0; i < result.size(); i++) {
+            for(Integer i = 0; i < result.size(); i++) {
                 var slot = result.get(i);
                 if(slot.isEmpty()) {
                     result.set(i, stack);
                     break;
                 } else if(ItemStack.isSameItemSameComponents(stack, slot)) {
-                    int canPut = slot.getMaxStackSize() - slot.getCount();
+                    Integer canPut = slot.getMaxStackSize() - slot.getCount();
                     slot.setCount(slot.getCount() + Mth.clamp(stack.getCount(),0,canPut));
                     stack.setCount(Math.max(stack.getCount()-canPut, 0));
                     if(stack.getCount() == 0) break;
@@ -39,7 +41,7 @@ public class PackageRepackageHelperMixin {
     }
 
     @WrapOperation(method = "repackBasedOnRecipes", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;copyWithCount(I)Lnet/minecraft/world/item/ItemStack;", ordinal = 0))
-    private ItemStack repackBasedOnRecipes(ItemStack instance, int i, Operation<ItemStack> original) {
+    private ItemStack repackBasedOnRecipes(ItemStack instance, Integer i, Operation<ItemStack> original) {
         return instance.copy();
     }
 }

@@ -1,5 +1,9 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Boolean;
+import java.lang.Float;
+import java.lang.Integer;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
@@ -27,7 +31,7 @@ public class FactoryPanelRendererMixin {
             method = "renderSafe(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V",
             at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;getAmount()I")
     )
-    private int renderSafe(int original, @Local FactoryPanelBehaviour behaviour, @Local(argsOnly = true) float partialTicks, @Local(argsOnly = true)PoseStack ms, @Local(argsOnly = true)MultiBufferSource buffer, @Local(argsOnly = true, ordinal = 0) int light, @Local(argsOnly = true, ordinal = 1) int overlay) {
+    private Integer renderSafe(Integer original, @Local FactoryPanelBehaviour behaviour, @Local(argsOnly = true) Float partialTicks, @Local(argsOnly = true)PoseStack ms, @Local(argsOnly = true)MultiBufferSource buffer, @Local(argsOnly = true, ordinal = 0) Integer light, @Local(argsOnly = true, ordinal = 1) Integer overlay) {
         if (behaviour instanceof AbstractPanelBehaviour abstractPanel) {
             ms.pushPose();
             NeoForge.EVENT_BUS.post(new AbstractPanelRenderEvent(abstractPanel, partialTicks, ms, buffer, light, overlay));
@@ -41,14 +45,14 @@ public class FactoryPanelRendererMixin {
             method = "renderSafe(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V",
             at = @At(value = "INVOKE", target = "Ljava/util/Map;values()Ljava/util/Collection;", ordinal = 0)
     )
-    private void renderSafe(FactoryPanelBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay, CallbackInfo ci, @Local FactoryPanelBehaviour behaviour) {
+    private void renderSafe(FactoryPanelBlockEntity be, Float partialTicks, PoseStack ms, MultiBufferSource buffer, Integer light, Integer overlay, CallbackInfo ci, @Local FactoryPanelBehaviour behaviour) {
         for(FactoryPanelConnection connection : ((IFPExtension)behaviour).deployer$getExtra().values())
             FactoryPanelRenderer.renderPath(behaviour, connection, partialTicks, ms, buffer, light, overlay);
     }
 
     /* Render paths */
     @ModifyArg(method = "renderPath", at = @At(value = "INVOKE", target = "Lnet/createmod/catnip/render/SuperByteBuffer;color(I)Lnet/createmod/catnip/render/SuperByteBuffer;"))
-    private static int renderPath(int color, @Local(argsOnly = true) FactoryPanelBehaviour behaviour, @Local(argsOnly = true) FactoryPanelConnection connection, @Local FactoryPanelSupportBehaviour support, @Local(ordinal = 1) boolean redstoneLinkMode, @Local(ordinal = 4) LocalBooleanRef dots) {
+    private static Integer renderPath(Integer color, @Local(argsOnly = true) FactoryPanelBehaviour behaviour, @Local(argsOnly = true) FactoryPanelConnection connection, @Local FactoryPanelSupportBehaviour support, @Local(ordinal = 1) Boolean redstoneLinkMode, @Local(ordinal = 4) LocalBooleanRef dots) {
         if(redstoneLinkMode && behaviour instanceof AbstractPanelBehaviour ab) {
             var opt = ab.getConnectionValue(DeployerPanelConnections.REDSTONE.get());
             if(opt.isPresent()) {

@@ -1,5 +1,8 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Boolean;
+import java.lang.Integer;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -57,7 +60,7 @@ public abstract class FactoryPanelBehaviourMixin implements IFPExtension {
     @Definition(id = "behaviour", local = @Local(type = FactoryPanelBehaviour.class))
     @Definition(id = "active", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;active:Z") @Expression("behaviour.active")
     @WrapOperation(method = "at(Lnet/minecraft/world/level/BlockAndTintGetter;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelPosition;)Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private static boolean at(FactoryPanelBehaviour instance, Operation<Boolean> original) {
+    private static Boolean at(FactoryPanelBehaviour instance, Operation<Boolean> original) {
         if(instance == null) return true;
         return original.call(instance);
     }
@@ -105,12 +108,12 @@ public abstract class FactoryPanelBehaviourMixin implements IFPExtension {
 
     /* DATA */
     @Inject(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;putUUID(Ljava/lang/String;Ljava/util/UUID;)V"))
-    private void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci, @Local(ordinal = 1) CompoundTag panelTag) {
+    private void write(CompoundTag nbt, HolderLookup.Provider registries, Boolean clientPacket, CallbackInfo ci, @Local(ordinal = 1) CompoundTag panelTag) {
         panelTag.put("TargetedByExtra", CatnipCodecUtils.encode(Codec.list(FactoryPanelConnection.CODEC), new ArrayList<>(deployer$targetedByExtra.values())).orElseThrow());
     }
 
     @Inject(method = "read", at = @At(value = "INVOKE", target = "Ljava/util/Map;clear()V"))
-    private void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci, @Local(ordinal = 1) CompoundTag panelTag) {
+    private void read(CompoundTag nbt, HolderLookup.Provider registries, Boolean clientPacket, CallbackInfo ci, @Local(ordinal = 1) CompoundTag panelTag) {
         deployer$targetedByExtra.clear();
         CatnipCodecUtils.decode(Codec.list(FactoryPanelConnection.CODEC), panelTag.get("TargetedByExtra")).orElse(List.of())
                 .forEach(c -> deployer$targetedByExtra.put(c.from.pos(), c));
@@ -139,7 +142,7 @@ public abstract class FactoryPanelBehaviourMixin implements IFPExtension {
 
     /* OTHER PANELS UPDATE */
     @ModifyVariable(method = "checkForRedstoneInput", at = @At(value = "STORE", ordinal = 0))
-    private boolean checkForRedstoneInput(boolean shouldPower, @Cancellable CallbackInfo ci) {
+    private Boolean checkForRedstoneInput(Boolean shouldPower, @Cancellable CallbackInfo ci) {
         var i = FactoryPanelBehaviour.class.cast(this);
         block: for(FactoryPanelConnection connection : targetedBy.values()) {
             if(!i.getWorld().isLoaded(connection.from.pos())) {
@@ -175,11 +178,11 @@ public abstract class FactoryPanelBehaviourMixin implements IFPExtension {
         return shouldPower;
     }
 
-    @Definition(id = "shouldPower", local = @Local(type = boolean.class))
+    @Definition(id = "shouldPower", local = @Local(type = Boolean.class))
     @Definition(id = "redstonePowered", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;redstonePowered:Z")
     @Expression("shouldPower == this.redstonePowered")
     @ModifyExpressionValue(method = "checkForRedstoneInput", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean checkForRedstoneInput$1(boolean original) {
+    private Boolean checkForRedstoneInput$1(Boolean original) {
         var i = FactoryPanelBehaviour.class.cast(this);
         Integer total = null;
         StringBuilder addressChange = null;
@@ -246,7 +249,7 @@ public abstract class FactoryPanelBehaviourMixin implements IFPExtension {
 
     /* INTERACTION */
     @ModifyExpressionValue(method = "onShortInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 0))
-    private boolean onShortInteract(boolean original) {
+    private Boolean onShortInteract(Boolean original) {
         var instance = FactoryPanelBehaviour.class.cast(this);
         return instance instanceof AbstractPanelBehaviour panel ? panel.withFilteringBehaviour() && original : original;
     }
@@ -256,13 +259,13 @@ public abstract class FactoryPanelBehaviourMixin implements IFPExtension {
     @Definition(id = "LogisticallyLinkedBlockItem", type = LogisticallyLinkedBlockItem.class)
     @Expression("heldItem.getItem() instanceof LogisticallyLinkedBlockItem")
     @ModifyExpressionValue(method = "onShortInteract", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean onShortInteract$1(boolean original) {
+    private Boolean onShortInteract$1(Boolean original) {
         var instance = FactoryPanelBehaviour.class.cast(this);
         return original && !(instance instanceof AbstractPanelBehaviour);
     }
 
     @ModifyExpressionValue(method = "onShortInteract", at = @At(value = "INVOKE", target = "Ljava/util/Map;size()I"))
-    private int onShortInteract(int original) {
+    private Integer onShortInteract(Integer original) {
         return original + deployer$targetedByExtra.size();
     }
 

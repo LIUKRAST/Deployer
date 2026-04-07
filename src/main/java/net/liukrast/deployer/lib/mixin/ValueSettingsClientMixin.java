@@ -1,5 +1,7 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Integer;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehaviour;
@@ -16,7 +18,7 @@ import java.util.function.Consumer;
 public class ValueSettingsClientMixin {
 
     @WrapOperation(method = "tick", at = @At(value = "NEW", target = "(Lnet/minecraft/core/BlockPos;Lcom/simibubi/create/foundation/blockEntity/behaviour/ValueSettingsBoard;Lcom/simibubi/create/foundation/blockEntity/behaviour/ValueSettingsBehaviour$ValueSettings;Ljava/util/function/Consumer;I)Lcom/simibubi/create/foundation/blockEntity/behaviour/ValueSettingsScreen;"))
-    private ValueSettingsScreen tick(BlockPos pos, ValueSettingsBoard board, ValueSettingsBehaviour.ValueSettings valueSettings, Consumer<ValueSettingsBehaviour.ValueSettings> onHover, int netId, Operation<ValueSettingsScreen> original) {
+    private ValueSettingsScreen tick(BlockPos pos, ValueSettingsBoard board, ValueSettingsBehaviour.ValueSettings valueSettings, Consumer<ValueSettingsBehaviour.ValueSettings> onHover, Integer netId, Operation<ValueSettingsScreen> original) {
         if(board == null) return null;
         return original.call(pos, board, valueSettings, onHover, netId);
     }

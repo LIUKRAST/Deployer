@@ -1,5 +1,7 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Integer;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -7,14 +9,14 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(FactoryPanelBehaviour.class)
 public interface FactoryPanelBehaviourAccessor {
     @Accessor("timer")
-    int timer();
+    Integer timer();
 
     @Accessor("lastReportedLevelInStorage")
-    int lastReportedLevelInStorage();
+    Integer lastReportedLevelInStorage();
 
     @Accessor("lastReportedUnloadedLinks")
-    int lastReportedUnloadedLinks();
+    Integer lastReportedUnloadedLinks();
 
     @Accessor("lastReportedPromises")
-    int lastReportedPromises();
+    Integer lastReportedPromises();
 }

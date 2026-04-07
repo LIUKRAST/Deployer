@@ -1,5 +1,7 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Boolean;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -74,7 +76,7 @@ public abstract class FactoryPanelBlockMixin extends Block {
     }
 
     @ModifyExpressionValue(method = "getStateForPlacement", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;isClientSide()Z"))
-    private boolean getStateForPlacement(boolean original, @Local(argsOnly = true) BlockPlaceContext context, @Local FactoryPanelBlockEntity blockEntity, @Local(ordinal = 1) BlockState state, @Local Vec3 location) {
+    private Boolean getStateForPlacement(Boolean original, @Local(argsOnly = true) BlockPlaceContext context, @Local FactoryPanelBlockEntity blockEntity, @Local(ordinal = 1) BlockState state, @Local Vec3 location) {
         if(original) return true;
         if(!(context.getItemInHand().getItem() instanceof PanelBlockItem panelBlockItem)) return false;
         panelBlockItem.applyExtraPlacementData(context, blockEntity, getTargetedSlot(context.getClickedPos(), state, location));
@@ -88,7 +90,7 @@ public abstract class FactoryPanelBlockMixin extends Block {
     }
 
     @WrapWithCondition(method = "setPlacedBy", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBlock;withBlockEntityDo(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Ljava/util/function/Consumer;)V"))
-    private boolean withBlockEntityDo(FactoryPanelBlock instance, BlockGetter blockGetter, BlockPos pos, Consumer<FactoryPanelBlockEntity> consumer, @Local(argsOnly = true) ItemStack stack, @Local FactoryPanelBlock.PanelSlot initialSlot) {
+    private Boolean withBlockEntityDo(FactoryPanelBlock instance, BlockGetter blockGetter, BlockPos pos, Consumer<FactoryPanelBlockEntity> consumer, @Local(argsOnly = true) ItemStack stack, @Local FactoryPanelBlock.PanelSlot initialSlot) {
         if(!(stack.getItem() instanceof PanelBlockItem panelBlockItem)) return true;
         FactoryPanelBlock.class.cast(this).withBlockEntityDo(blockGetter, pos, blockEntity -> panelBlockItem.applyToSlot(blockEntity, initialSlot, LogisticallyLinkedBlockItem.networkFromStack(FactoryPanelBlockItem.fixCtrlCopiedStack(stack))));
         return false;
@@ -114,17 +116,17 @@ public abstract class FactoryPanelBlockMixin extends Block {
     }
 
     @ModifyExpressionValue(method = "useItemOn", at = @At(value = "INVOKE", target = "Lcom/tterrag/registrate/util/entry/BlockEntry;isIn(Lnet/minecraft/world/item/ItemStack;)Z"))
-    private boolean useItemOn(boolean original, @Local(argsOnly = true) ItemStack stack) {
+    private Boolean useItemOn(Boolean original, @Local(argsOnly = true) ItemStack stack) {
         return original || stack.getItem() instanceof PanelBlockItem;
     }
 
     @ModifyExpressionValue(method = "useItemOn", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBlockItem;isTuned(Lnet/minecraft/world/item/ItemStack;)Z"))
-    private boolean useItemOn$$1(boolean original, @Local(argsOnly = true) ItemStack stack) {
+    private Boolean useItemOn$$1(Boolean original, @Local(argsOnly = true) ItemStack stack) {
         return original || stack.getItem() instanceof PanelBlockItem;
     }
 
     @WrapOperation(method = "lambda$useItemOn$2", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBlockEntity;addPanel(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBlock$PanelSlot;Ljava/util/UUID;)Z"))
-    private boolean lambda$useItemOn$2(FactoryPanelBlockEntity instance, FactoryPanelBlock.PanelSlot panelSlot, UUID slot, Operation<Boolean> original, @Local(argsOnly = true) ItemStack stack, @Local(argsOnly = true) FactoryPanelBlockEntity blockEntity, @Local(argsOnly = true) FactoryPanelBlock.PanelSlot newSlot) {
+    private Boolean lambda$useItemOn$2(FactoryPanelBlockEntity instance, FactoryPanelBlock.PanelSlot panelSlot, UUID slot, Operation<Boolean> original, @Local(argsOnly = true) ItemStack stack, @Local(argsOnly = true) FactoryPanelBlockEntity blockEntity, @Local(argsOnly = true) FactoryPanelBlock.PanelSlot newSlot) {
         if(stack.getItem() instanceof PanelBlockItem blockItem) return blockItem.applyToSlot(blockEntity, newSlot, LogisticallyLinkedBlockItem.networkFromStack(FactoryPanelBlockItem.fixCtrlCopiedStack(stack)));
         return original.call(instance, panelSlot, slot);
     }
@@ -151,12 +153,12 @@ public abstract class FactoryPanelBlockMixin extends Block {
     }
 
     @ModifyExpressionValue(method = "canBeReplaced", at = @At(value = "INVOKE", target = "Lcom/tterrag/registrate/util/entry/BlockEntry;isIn(Lnet/minecraft/world/item/ItemStack;)Z"))
-    private boolean canBeReplaced(boolean original, @Local(argsOnly = true) BlockPlaceContext context) {
+    private Boolean canBeReplaced(Boolean original, @Local(argsOnly = true) BlockPlaceContext context) {
         return original || context.getItemInHand().getItem() instanceof PanelBlockItem;
     }
 
     @WrapOperation(method = "canBeReplaced", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;isActive()Z"))
-    private boolean canBeReplaced(FactoryPanelBehaviour instance, Operation<Boolean> original) {
+    private Boolean canBeReplaced(FactoryPanelBehaviour instance, Operation<Boolean> original) {
         if(instance == null) return false;
         return original.call(instance);
     }

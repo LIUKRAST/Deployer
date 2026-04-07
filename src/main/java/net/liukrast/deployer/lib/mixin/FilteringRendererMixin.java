@@ -1,5 +1,7 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Boolean;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -18,7 +20,7 @@ public class FilteringRendererMixin {
     @Definition(id = "FilteringBehaviour", type = FilteringBehaviour.class)
     @Expression("b instanceof FilteringBehaviour")
     @ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private static boolean tick(boolean original, @Local BlockEntityBehaviour b) {
+    private static Boolean tick(Boolean original, @Local BlockEntityBehaviour b) {
         return b instanceof AbstractPanelBehaviour panel ? panel.withFilteringBehaviour() : original;
     }
 }

@@ -1,5 +1,9 @@
 package net.liukrast.deployer.lib.logistics.board;
 
+
+import java.lang.Boolean;
+import java.lang.Float;
+import java.lang.Integer;
 import com.google.common.collect.Lists;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConfigurationPacket;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConnectionHandler;
@@ -27,7 +31,7 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
     public static final ResourceLocation TEXTURE = DeployerConstants.id("textures/gui/generic_gauge.png");
 
     public final T behaviour;
-    private boolean sendReset;
+    private Boolean sendReset;
 
     public BasicPanelScreen(T behaviour) {
         this(behaviour.getDisplayName(), behaviour);
@@ -38,24 +42,24 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
         this.behaviour = behaviour;
     }
 
-    public int getWindowWidth() {
+    public Integer getWindowWidth() {
         return 0;
     }
 
-    public int getWindowHeight() {
+    public Integer getWindowHeight() {
         return 0;
     }
 
     @Override
     protected void init() {
         setWindowSize(getWindowWidth() + 106, getWindowHeight() + 46);
-        int sizeX = windowWidth;
-        int sizeY = windowHeight;
+        Integer sizeX = windowWidth;
+        Integer sizeY = windowHeight;
         super.init();
         clearWidgets();
 
-        int x = guiLeft;
-        int y = guiTop;
+        Integer x = guiLeft;
+        Integer y = guiTop;
 
         assert minecraft != null;
         IconButton confirmButton = new IconButton(x+sizeX-25, y+sizeY-24, AllIcons.I_CONFIRM);
@@ -98,9 +102,9 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
     }
 
     @Override
-    protected void renderWindow(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        int x = guiLeft;
-        int y = guiTop;
+    protected void renderWindow(@NotNull GuiGraphics graphics, Integer mouseX, Integer mouseY, Float partialTicks) {
+        Integer x = guiLeft;
+        Integer y = guiTop;
         graphics.drawCenteredString(font, title, x+windowWidth/2, y + 4, 0x3D3C48);
         graphics.blit(TEXTURE,x, y, 0, 0, 53, 16);
         graphics.blit(TEXTURE,x+windowWidth-106+53, y, 139, 0, 53, 16);
@@ -109,9 +113,9 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
         graphics.blit(TEXTURE,x+windowWidth-106+53, y+windowHeight-46+15, 139, 56, 60, 32);
 
         if(windowWidth > 106) {
-            int r = windowWidth-106;
-            int r1 = r-3;
-            int step = 0;
+            Integer r = windowWidth-106;
+            Integer r1 = r-3;
+            Integer step = 0;
             if(r > 1) graphics.blit(TEXTURE,x+windowWidth-106+52, y+windowHeight-46+15,138,56,1,32);
             graphics.blit(TEXTURE, x+53,y+windowHeight-46+15,53,56,2,32);
             while(r > 0 || r1 > 0) {
@@ -124,13 +128,13 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
         }
 
         if(windowHeight > 47) {
-            int r = windowHeight-47;
-            int step = 0;
+            Integer r = windowHeight-47;
+            Integer step = 0;
             graphics.blit(TEXTURE,x,y+16,0,16,53,Math.min(r, 40));
             graphics.blit(TEXTURE,x+windowWidth-106+53,y+16,139,16,53,Math.min(r, 40));
             if(windowWidth > 106) {
-                int r1 = windowWidth-106;
-                int step1 = 0;
+                Integer r1 = windowWidth-106;
+                Integer step1 = 0;
                 while(r1>0) {
                     graphics.blit(TEXTURE, x + 53 + step1*86, y+16, 53, 16, Math.min(r1, 86), Math.min(r, 40));
                     step1++;
@@ -141,8 +145,8 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
             while(r>0) {
                 graphics.blit(TEXTURE,x,y+56+step*36,0,20,53,Math.min(r, 36));
                 graphics.blit(TEXTURE,x+windowWidth-106+53,y+56+step*36,139,20,53,Math.min(r, 36));
-                int r1 = windowWidth-106;
-                int step1 = 0;
+                Integer r1 = windowWidth-106;
+                Integer step1 = 0;
                 while(r1>0) {
                     graphics.blit(TEXTURE, x + 53 + step1*86, y+56+step*36, 53, 20, Math.min(r1, 86), Math.min(r, 36));
                     step1++;

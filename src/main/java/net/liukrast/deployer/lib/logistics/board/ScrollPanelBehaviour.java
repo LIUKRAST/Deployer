@@ -1,5 +1,8 @@
 package net.liukrast.deployer.lib.logistics.board;
 
+
+import java.lang.Boolean;
+import java.lang.Integer;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntity;
 import net.minecraft.core.HolderLookup;
@@ -13,9 +16,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class ScrollPanelBehaviour extends AbstractPanelBehaviour {
-    public int value;
+    public Integer value;
     public Component label;
-    protected int min,max = 1;
+    protected Integer min,max = 1;
     Consumer<Integer> callback;
     Consumer<Integer> clientCallback;
     public Function<Integer, String> formatter;
@@ -34,7 +37,7 @@ public abstract class ScrollPanelBehaviour extends AbstractPanelBehaviour {
         isActive = () -> true;
     }
 
-    public void between(int min, int max) {
+    public void between(Integer min, Integer max) {
         this.min = min;
         this.max = max;
     }
@@ -44,18 +47,18 @@ public abstract class ScrollPanelBehaviour extends AbstractPanelBehaviour {
     }
 
     @Override
-    public void easyWrite(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+    public void easyWrite(CompoundTag nbt, HolderLookup.Provider registries, Boolean clientPacket) {
         nbt.putInt("ScrollValue", value);
         super.easyWrite(nbt, registries, clientPacket);
     }
 
     @Override
-    public void easyRead(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+    public void easyRead(CompoundTag nbt, HolderLookup.Provider registries, Boolean clientPacket) {
         value = nbt.contains("ScrollValue") ? nbt.getInt("ScrollValue") : 0;
         super.easyRead(nbt, registries, clientPacket);
     }
 
-    public void setValue(int value) {
+    public void setValue(Integer value) {
         value = Mth.clamp(value, min, max);
         if (value == this.value)
             return;
@@ -65,7 +68,7 @@ public abstract class ScrollPanelBehaviour extends AbstractPanelBehaviour {
         blockEntity.sendData();
     }
 
-    public int getValue() {
+    public Integer getValue() {
         return value;
     }
 
@@ -74,7 +77,7 @@ public abstract class ScrollPanelBehaviour extends AbstractPanelBehaviour {
     }
 
     @Override
-    public void setValueSettings(Player player, ValueSettings settings, boolean ctrlDown) {
+    public void setValueSettings(Player player, ValueSettings settings, Boolean ctrlDown) {
         if (settings.equals(getValueSettings()))
             return;
         setValue(settings.value());

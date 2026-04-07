@@ -1,5 +1,7 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Boolean;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntity;
@@ -36,7 +38,7 @@ public abstract class FactoryPanelBlockEntityMixin extends SmartBlockEntity {
     }
 
     @Inject(method = "read", at = @At("HEAD"))
-    private void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci) {
+    private void read(CompoundTag tag, HolderLookup.Provider registries, Boolean clientPacket, CallbackInfo ci) {
         var instance = FactoryPanelBlockEntity.class.cast(this);
         if(!tag.contains("CustomPanels")) return;
         var customPanels = tag.getCompound("CustomPanels");

@@ -1,5 +1,8 @@
 package net.liukrast.deployer.lib.util.ponder;
 
+
+import java.lang.Boolean;
+import java.lang.Integer;
 import com.simibubi.create.content.logistics.factoryBoard.*;
 import com.simibubi.create.content.redstone.nixieTube.NixieTubeBlockEntity;
 import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
@@ -28,7 +31,7 @@ public class GaugeHelper {
         return scene;
     }
 
-    public static void displayText(SceneBuilder builder, BlockPos pos, int time, boolean keyframe) {
+    public static void displayText(SceneBuilder builder, BlockPos pos, Integer time, Boolean keyframe) {
         var overlay = builder.overlay()
                 .showText(time)
                 .text("")
@@ -43,13 +46,13 @@ public class GaugeHelper {
         builder.effects().indicateRedstone(pos);
     }
 
-    public static void setSignText(SceneBuilder builder, BlockPos pos, int line, Component text) {
+    public static void setSignText(SceneBuilder builder, BlockPos pos, Integer line, Component text) {
         builder.world().modifyBlockEntity(pos, SignBlockEntity.class, be -> be.setText(be.getText(true).setMessage(line, text), true));
     }
 
-    public static void setNixieTubeText(SceneBuilder builder, BlockPos start, Component text, int length, Direction direction) {
-        for(int i = 0; i < length; i++) {
-            final int index = i;
+    public static void setNixieTubeText(SceneBuilder builder, BlockPos start, Component text, Integer length, Direction direction) {
+        for(Integer i = 0; i < length; i++) {
+            final Integer index = i;
             builder.world().modifyBlockEntityNBT(builder.getScene().getSceneBuildingUtil().select().position(start.relative(direction, index)), NixieTubeBlockEntity.class, nbt -> {
                 String asRaw = Component.Serializer.toJson(text, builder.world().getHolderLookupProvider());
                 nbt.putString("RawCustomText", asRaw);
@@ -63,12 +66,12 @@ public class GaugeHelper {
         withGaugeDo(builder, gauge, pb -> pb.setFilter(item));
     }
 
-    public static void setPanelPowered(SceneBuilder builder, FactoryPanelPosition gauge, boolean power) {
+    public static void setPanelPowered(SceneBuilder builder, FactoryPanelPosition gauge, Boolean power) {
         withGaugeDo(builder, gauge, pb -> pb.redstonePowered = power);
     }
 
     @SuppressWarnings("unused")
-    public static void setPanelVisible(SceneBuilder builder, FactoryPanelPosition gauge, boolean visible) {
+    public static void setPanelVisible(SceneBuilder builder, FactoryPanelPosition gauge, Boolean visible) {
         withGaugeDo(builder, gauge, pb -> pb.active = visible);
     }
 
@@ -96,7 +99,7 @@ public class GaugeHelper {
         withGaugeDo(builder, gauge, pb -> pb.count = 0);
     }
 
-    public static void setConnectionAmount(SceneBuilder builder, FactoryPanelPosition from, FactoryPanelPosition to, int amount) {
+    public static void setConnectionAmount(SceneBuilder builder, FactoryPanelPosition from, FactoryPanelPosition to, Integer amount) {
         withGaugeDo(builder, from, pb -> pb.targetedBy.get(to).amount = amount);
     }
 
@@ -104,7 +107,7 @@ public class GaugeHelper {
         withGaugeDo(builder, gauge, FactoryPanelBehaviour::disconnectAll);
     }
 
-    public static void setArrowMode(SceneBuilder builder, FactoryPanelPosition gauge, FactoryPanelPosition from, int mode) {
+    public static void setArrowMode(SceneBuilder builder, FactoryPanelPosition gauge, FactoryPanelPosition from, Integer mode) {
         withGaugeDo(builder, gauge, pb -> {
             FactoryPanelConnection connection = pb.targetedBy.get(new FactoryPanelPosition(from.pos(), from.slot()));
             if (connection == null) {

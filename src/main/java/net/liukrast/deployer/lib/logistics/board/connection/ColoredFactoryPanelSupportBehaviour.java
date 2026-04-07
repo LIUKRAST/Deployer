@@ -1,5 +1,8 @@
 package net.liukrast.deployer.lib.logistics.board.connection;
 
+
+import java.lang.Boolean;
+import java.lang.Integer;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelSupportBehaviour;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
@@ -19,5 +22,5 @@ public abstract class ColoredFactoryPanelSupportBehaviour extends FactoryPanelSu
      * */
     public abstract Line getColor(FactoryPanelBehaviour behaviour);
 
-    public record Line(int color, boolean dots) {}
+    public record Line(Integer color, Boolean dots) {}
 }

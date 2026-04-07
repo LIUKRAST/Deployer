@@ -1,5 +1,8 @@
 package net.liukrast.deployer.lib.logistics.board;
 
+
+import java.lang.Boolean;
+import java.lang.Integer;
 import com.mojang.serialization.Codec;
 import com.simibubi.create.content.logistics.factoryBoard.*;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
@@ -50,11 +53,11 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
     /**
      * Common color used to warn the user that the connection is currently waiting for the next tick to update
      * */
-    protected static final int WAITING = 0xffd541;
+    protected static final Integer WAITING = 0xffd541;
     /**
      * Common color used to warn the user that the connection doesn't do anything
      * */
-    protected static final int DISABLED = 0x888898;
+    protected static final Integer DISABLED = 0x888898;
 
     /**
      * This constructor allows to modify the valueBoxTransform to make a custom input system
@@ -90,14 +93,14 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
     /**
      * @return Whether the panel has a precise connection, using forge's deferred holder
      * */
-    public <T> boolean hasConnection(DeferredHolder<PanelConnection<?>, PanelConnection<T>> connection) {
+    public <T> Boolean hasConnection(DeferredHolder<PanelConnection<?>, PanelConnection<T>> connection) {
         return hasConnection(connection.get());
     }
 
     /**
      * @return Whether this behavior has a precise connection
      * */
-    public boolean hasConnection(PanelConnection<?> connection) {
+    public Boolean hasConnection(PanelConnection<?> connection) {
         return connections.containsKey(connection);
     }
 
@@ -105,21 +108,21 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * @param shortenNumbers whether the display is in mode "shortened" or "full_number"
      * @return The component for display links
      * */
-    public MutableComponent getDisplayLinkComponent(boolean shortenNumbers) {
+    public MutableComponent getDisplayLinkComponent(Boolean shortenNumbers) {
         return Component.empty();
     }
 
     /**
      * Whether the panel should skip calling {@link FactoryPanelBehaviour#tick()}
      * */
-    public boolean skipOriginalTick() {
+    public Boolean skipOriginalTick() {
         return true;
     }
 
     /**
      * @return Whether the panel should render its bulb
      * */
-    public boolean shouldRenderBulb(boolean original) {
+    public Boolean shouldRenderBulb(Boolean original) {
         return false;
     }
 
@@ -127,7 +130,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * Since original class extends {@link com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour},
      * return true if you want this gauge to have the render from filtering behavior.
      * */
-    public boolean withFilteringBehaviour() {
+    public Boolean withFilteringBehaviour() {
         return false;
     }
 
@@ -142,16 +145,16 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
     public abstract PartialModel getModel(FactoryPanelBlock.PanelState panelState, FactoryPanelBlock.PanelType panelType);
 
     /**
-     * An easier extension of {@link AbstractPanelBehaviour#write(CompoundTag, HolderLookup.Provider, boolean)}.
+     * An easier extension of {@link AbstractPanelBehaviour#write(CompoundTag, HolderLookup.Provider, Boolean)}.
      * @param nbt The compound tag of the single gauge slot. Save your data into this
      * */
-    public void easyWrite(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {}
+    public void easyWrite(CompoundTag nbt, HolderLookup.Provider registries, Boolean clientPacket) {}
 
     /**
-     * An easier extension of {@link AbstractPanelBehaviour#read(CompoundTag, HolderLookup.Provider, boolean)}.
+     * An easier extension of {@link AbstractPanelBehaviour#read(CompoundTag, HolderLookup.Provider, Boolean)}.
      * @param nbt The compound tag of the single gauge slot. Read your data from this slot
      * */
-    public void easyRead(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {}
+    public void easyRead(CompoundTag nbt, HolderLookup.Provider registries, Boolean clientPacket) {}
 
     /**
      * Opens the editor screen for this panel
@@ -169,7 +172,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * since most of the custom gauges do not actually need a custom item inside to connect.
      * @return whether it should ignore or not the issue inserted.
      * */
-    public boolean ignoreIssue(@Nullable String issue) {
+    public Boolean ignoreIssue(@Nullable String issue) {
         return "factory_panel.no_item".equals(issue);
     }
 
@@ -177,14 +180,14 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
      * Generates color per connections with other gauges.
      * @param original the original color a normal gauge would return (just in case you needed)
      * */
-    public int calculatePath(FactoryPanelBehaviour other, int original) {
+    public Integer calculatePath(FactoryPanelBehaviour other, Integer original) {
         return DISABLED;
     }
 
     /**
      * Generates color per connections with extra panel elements
      * */
-    public int calculateExtraPath(BlockPos pos) {
+    public Integer calculateExtraPath(BlockPos pos) {
         return DISABLED;
     }
 
@@ -263,19 +266,19 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
     }
 
     /* UTIL METHODS IMPLEMENTATION */
-    public int getTimer() {
+    public Integer getTimer() {
         return ((FactoryPanelBehaviourAccessor)this).timer();
     }
 
-    public int getLastReportedLevelInStorage() {
+    public Integer getLastReportedLevelInStorage() {
         return ((FactoryPanelBehaviourAccessor)this).lastReportedLevelInStorage();
     }
 
-    public int getLastReportedUnloadedLinks() {
+    public Integer getLastReportedUnloadedLinks() {
         return ((FactoryPanelBehaviourAccessor)this).lastReportedUnloadedLinks();
     }
 
-    public int getLastReportedPromises() {
+    public Integer getLastReportedPromises() {
         return ((FactoryPanelBehaviourAccessor)this).lastReportedPromises();
     }
 
@@ -285,7 +288,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
     }
 
     @Override
-    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
+    public AbstractContainerMenu createMenu(Integer containerId, Inventory playerInventory, Player player) {
         return null;
     }
 
@@ -304,7 +307,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
     }
 
     @Override
-    public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+    public void read(CompoundTag nbt, HolderLookup.Provider registries, Boolean clientPacket) {
         super.read(nbt, registries, clientPacket);
         CompoundTag panelTag = nbt.getCompound(CreateLang.asId(slot.name()));
         if (panelTag.isEmpty()) {
@@ -325,7 +328,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
     }
 
     @Override
-    public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+    public void write(CompoundTag nbt, HolderLookup.Provider registries, Boolean clientPacket) {
         CompoundTag special = nbt.contains("CustomPanels") ? nbt.getCompound("CustomPanels") : new CompoundTag();
         special.putString(CreateLang.asId(slot.name()), Objects.requireNonNull(DeployerRegistries.PANEL.getKey(type)).toString());
         nbt.put("CustomPanels", special);
@@ -359,7 +362,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
     }
 
     @Override
-    public boolean canShortInteract(ItemStack toApply) {
+    public Boolean canShortInteract(ItemStack toApply) {
         return withFilteringBehaviour() && super.canShortInteract(toApply);
     }
 
@@ -381,7 +384,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour {
     }
 
     @Override
-    public boolean acceptsValueSettings() {
+    public Boolean acceptsValueSettings() {
         return true;
     }
 

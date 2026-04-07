@@ -1,5 +1,7 @@
 package net.liukrast.deployer.lib.logistics.board;
 
+
+import java.lang.Boolean;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
@@ -28,7 +30,7 @@ public class LogisticallyLinkedPanelBlockItem extends PanelBlockItem {
     }
 
     @Override
-    public boolean isFoil(@NotNull ItemStack stack) {
+    public Boolean isFoil(@NotNull ItemStack stack) {
         return isTuned(stack);
     }
 
@@ -45,7 +47,7 @@ public class LogisticallyLinkedPanelBlockItem extends PanelBlockItem {
             return super.useOn(pContext);
 
         LogisticallyLinkedBehaviour link = BlockEntityBehaviour.get(level, pos, LogisticallyLinkedBehaviour.TYPE);
-        boolean tuned = isTuned(stack);
+        Boolean tuned = isTuned(stack);
 
         if (link != null) {
             if (level.isClientSide)
@@ -67,7 +69,7 @@ public class LogisticallyLinkedPanelBlockItem extends PanelBlockItem {
     }
 
     @Override
-    protected boolean updateCustomBlockEntityTag(@NotNull BlockPos pos, @NotNull Level level, Player player, @NotNull ItemStack stack,
+    protected Boolean updateCustomBlockEntityTag(@NotNull BlockPos pos, @NotNull Level level, Player player, @NotNull ItemStack stack,
                                                  @NotNull BlockState state) {
         return super.updateCustomBlockEntityTag(pos, level, player, fixCtrlCopiedStack(stack), state);
     }

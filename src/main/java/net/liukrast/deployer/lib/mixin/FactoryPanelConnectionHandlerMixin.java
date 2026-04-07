@@ -1,5 +1,8 @@
 package net.liukrast.deployer.lib.mixin;
 
+
+import java.lang.Boolean;
+import java.lang.Double;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.AllSoundEvents;
@@ -39,7 +42,7 @@ public class FactoryPanelConnectionHandlerMixin {
             method = "checkForIssues(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;)Ljava/lang/String;",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 0)
     )
-    private static boolean checkForIssues(boolean original, @Local(argsOnly = true, ordinal = 1) FactoryPanelBehaviour to) {
+    private static Boolean checkForIssues(Boolean original, @Local(argsOnly = true, ordinal = 1) FactoryPanelBehaviour to) {
         if(to instanceof AbstractPanelBehaviour ab) return original && !ab.ignoreIssue("factory_panel.no_item");
         return original;
     }
@@ -48,7 +51,7 @@ public class FactoryPanelConnectionHandlerMixin {
             method = "checkForIssues(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;)Ljava/lang/String;",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 1)
     )
-    private static boolean checkForIssues$1(boolean original, @Local(argsOnly = true, ordinal = 0) FactoryPanelBehaviour from) {
+    private static Boolean checkForIssues$1(Boolean original, @Local(argsOnly = true, ordinal = 0) FactoryPanelBehaviour from) {
         if(from instanceof AbstractPanelBehaviour ab) return original && !ab.ignoreIssue("factory_panel.no_item");
         return original;
     }
@@ -105,7 +108,7 @@ public class FactoryPanelConnectionHandlerMixin {
                 return;
             }
             FactoryPanelPosition bestPosition = null;
-            double bestDistance = Double.POSITIVE_INFINITY;
+            Double bestDistance = Double.POSITIVE_INFINITY;
 
             for (FactoryPanelBlock.PanelSlot slot : FactoryPanelBlock.PanelSlot.values()) {
                 FactoryPanelPosition panelPosition = new FactoryPanelPosition(bhr.getBlockPos(), slot);

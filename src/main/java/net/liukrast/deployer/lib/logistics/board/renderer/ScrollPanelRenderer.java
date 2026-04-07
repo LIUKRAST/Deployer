@@ -1,5 +1,7 @@
 package net.liukrast.deployer.lib.logistics.board.renderer;
 
+
+import java.lang.Boolean;
 import com.simibubi.create.CreateClient;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -34,7 +36,7 @@ public class ScrollPanelRenderer {
         ClientLevel world = mc.level;
         BlockPos pos = result.getBlockPos();
         Direction face = result.getDirection();
-        boolean highlightFound = false;
+        Boolean highlightFound = false;
 
         assert world != null;
         if (!(world.getBlockEntity(pos) instanceof SmartBlockEntity sbe))
@@ -51,8 +53,8 @@ public class ScrollPanelRenderer {
 
             assert mc.player != null;
             ItemStack mainHandItem = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
-            boolean clipboard = behaviour.bypassesInput(mainHandItem);
-            boolean highlight = behaviour.testHit(target.getLocation()) && !clipboard && !highlightFound;
+            Boolean clipboard = behaviour.bypassesInput(mainHandItem);
+            Boolean highlight = behaviour.testHit(target.getLocation()) && !clipboard && !highlightFound;
 
             addBox(pos, face, behaviour, highlight);
 
@@ -69,7 +71,7 @@ public class ScrollPanelRenderer {
     }
 
     protected static void addBox(BlockPos pos, Direction face, ScrollPanelBehaviour behaviour,
-                                 boolean highlight) {
+                                 Boolean highlight) {
         AABB bb = new AABB(Vec3.ZERO, Vec3.ZERO).inflate(.5f)
                 .contract(0, 0, -.5f)
                 .move(0, 0, -.125f);

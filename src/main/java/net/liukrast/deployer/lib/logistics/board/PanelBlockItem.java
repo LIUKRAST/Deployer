@@ -1,5 +1,7 @@
 package net.liukrast.deployer.lib.logistics.board;
 
+
+import java.lang.Boolean;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
@@ -97,7 +99,7 @@ public class PanelBlockItem extends BlockItem {
         player.displayClientMessage(message, true);
     }
 
-    public boolean applyToSlot(FactoryPanelBlockEntity blockEntity, FactoryPanelBlock.PanelSlot slot, @Nullable UUID networkId) {
+    public Boolean applyToSlot(FactoryPanelBlockEntity blockEntity, FactoryPanelBlock.PanelSlot slot, @Nullable UUID networkId) {
         var oldBehaviour = blockEntity.panels.get(slot);
         if(oldBehaviour == null || !oldBehaviour.isActive()) {
             var newBehaviour = getNewBehaviourInstance(blockEntity, slot);
