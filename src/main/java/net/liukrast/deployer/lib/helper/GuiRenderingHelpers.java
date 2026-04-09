@@ -2,8 +2,6 @@ package net.liukrast.deployer.lib.helper;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import net.liukrast.deployer.lib.logistics.packager.screen.KeeperTabScreen;
-import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -24,14 +22,42 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import org.joml.Matrix4f;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 /**
  * Helper class that contains several methods related to GUI rendering
  * */
 public class GuiRenderingHelpers {
     private GuiRenderingHelpers() {}
+
+    public static final ResourceLocation LOGISTICS_FONT = ResourceLocation.fromNamespaceAndPath("deployer", "logistics");
+
+    public static void renderFluidSlot(GuiGraphics graphics, FluidStack stack, int x, int y, int width, int height) {
+        renderFluid(graphics, stack.copyWithAmount(1000), x, y, width, height);
+        int amount = stack.getAmount();
+        if(amount == 1) return;
+
+        String text;
+
+        if(amount >= 1_000_000) {
+            text = amount/1_000_000 + "KB";
+        } else if(amount >= 1000) {
+            // Bucket
+            text = amount/1000 + "B";
+        } else {
+            // decimals of bucket
+            int rem = amount%10000;
+            if(rem < 100)
+                text = rem + "MB";
+            else
+                text = amount/10000 + "." + (rem)/10 + "B";
+        }
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, 100);
+        Component formatted = Component.literal(text).withStyle(s -> s.withFont(LOGISTICS_FONT).withColor(0xe4ddce));
+        int w = Minecraft.getInstance().font.width(formatted);
+        graphics.drawString(Minecraft.getInstance().font, formatted, x+width-w, y+height+2-Minecraft.getInstance().font.lineHeight, -1, false);
+        graphics.pose().popPose();
+    }
 
     /**
      * Renders a fluid sprite in a box, in GUI context

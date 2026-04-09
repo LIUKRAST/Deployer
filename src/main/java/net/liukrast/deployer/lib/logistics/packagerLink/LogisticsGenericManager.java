@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.IntSupplier;
+import java.util.stream.Collectors;
 
 public class LogisticsGenericManager {
 
@@ -98,6 +99,12 @@ public class LogisticsGenericManager {
      * */
     @SuppressWarnings("unchecked")
     public static boolean broadcastAllPackageRequest(PackageOrderWithCrafts defaultOrder, UUID freqId, LogisticallyLinkedBehaviour.RequestType type, Map<StockInventoryType<?,?,?>, GenericOrderContained<?>> rq, String address) {
+        rq = rq.entrySet().stream()
+                .filter(e -> !e.getValue().isEmpty())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue
+                ));
         boolean stockOrdersEmpty = rq.values().stream().allMatch(GenericOrderContained::isEmpty);
         if(defaultOrder.isEmpty() && stockOrdersEmpty)
             return false;
@@ -117,11 +124,11 @@ public class LogisticsGenericManager {
             Iterator<Map.Entry<StockInventoryType<?, ?, ?>, GenericOrderContained<?>>> it = rq.entrySet().iterator();
             while(it.hasNext()) {
                 Map.Entry<StockInventoryType<?, ?, ?>, GenericOrderContained<?>> entry = it.next();
-                if(rq.isEmpty()) continue;
                 boolean isLast = !it.hasNext();
                 if(broadcastPackageRequest((StockInventoryType<Object, Object, Object>) entry.getKey(), freqId, type, (GenericOrderContained<Object>) entry.getValue(), null, address, () -> id, index, isLast))
                     index++;
             }
+            //noinspection DataFlowIssue
             requests.values().forEach(pr -> PRExtension.class.cast(pr).deployer$flag());
         }
 

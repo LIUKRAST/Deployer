@@ -4,29 +4,31 @@ import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequester
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
 import net.liukrast.deployer.lib.registry.DeployerRegistries;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Objects;
 
-public class StockRequesterPage<V> implements ProvidesOrder<V> {
+public class RequesterTabScreen<V> extends Screen implements ProvidesOrder<V>, TabData {
     private final ItemStack icon;
     protected final StockInventoryType<?, V, ?> type;
     protected final RedstoneRequesterMenu container;
-    private final Component title;
+    protected GenericOrderContained<V> orderData;
 
-    public StockRequesterPage(RedstoneRequesterMenu container, Component title, Item icon, StockInventoryType<?, V, ?> type) {
+    public RequesterTabScreen(RedstoneRequesterMenu container, Component title, Item icon, StockInventoryType<?, V, ?> type, GenericOrderContained<V> orderData) {
+        super(title);
         this.container = container;
-        this.title = title;
         this.icon = icon.getDefaultInstance();
         this.type = type;
+        this.orderData = orderData;
     }
 
-    public StockRequesterPage(RedstoneRequesterMenu container, Item icon, StockInventoryType<?, V, ?> type) {
+    public RequesterTabScreen(RedstoneRequesterMenu container, Item icon, StockInventoryType<?, V, ?> type, GenericOrderContained<V> orderData) {
         this(
                 container,
                 Component.translatable(
@@ -34,30 +36,30 @@ public class StockRequesterPage<V> implements ProvidesOrder<V> {
                                 + Objects.requireNonNull(DeployerRegistries.STOCK_INVENTORY.getKey(type)).getNamespace()
                                 + "." + Objects.requireNonNull(DeployerRegistries.STOCK_INVENTORY.getKey(type)).getPath()),
                 icon,
-                type
+                type,
+                orderData
         );
     }
 
     @Override
     public @Nullable GenericOrderContained<V> addToSendQueue() {
-        return null;
+        return orderData;
     }
 
     @Override
     public @NotNull StockInventoryType<?, V, ?> getType() {
-        return null;
+        return type;
     }
 
     @Override
-    public List<Component> getWarnTooltip() {
-        return null;
-    }
-
     public ItemStack getIcon() {
         return icon;
     }
 
-    public Component getTitle() {
-        return title;
+    @Override
+    public void renderBackground(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {}
+
+    public void quickMoveItemEvent(ItemStack stack) {
+
     }
 }

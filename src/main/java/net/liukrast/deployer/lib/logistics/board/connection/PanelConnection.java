@@ -1,6 +1,5 @@
 package net.liukrast.deployer.lib.logistics.board.connection;
 
-import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import net.liukrast.deployer.lib.DeployerConstants;
 import net.liukrast.deployer.lib.registry.DeployerRegistries;
 import net.minecraft.core.Direction;
@@ -12,28 +11,21 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.ToIntFunction;
 
 /**
- * Represents a connection type that a factory panel can establish with blocks in the world.
- * A panel connection defines:
- * <ul>
- *     <li>optional block-specific logic through {@link ConnectionExtra}</li>
- *     <li>a default value provider when no special rules apply</li>
- * </ul>
- * Instances must be registered in the panel connection registry {@link DeployerRegistries#PANEL_CONNECTION} to be usable.
- * @param <T> the type of connection data provided to the panel
+ * Represents a connection that can send {@link T} through panels
  */
 public class PanelConnection<T> {
+    //region Attributes
     private final Map<Block, ConnectionExtra<T>> extraConnections = new HashMap<>();
-    private final Function<FactoryPanelBehaviour, T> defaultProvider;
+    //TODO: Implement partial ticks and panel data
+    private final Function<T, ConnectionLine> colorProvider;
+    //endregion
 
-    /**
-     * Creates a new panel connection with a default value provider.
-     *
-     * @param defaultProvider the function supplying the default connection data for a panel behavior
-     */
-    public PanelConnection(Function<FactoryPanelBehaviour, T> defaultProvider) {
-        this.defaultProvider = defaultProvider;
+
+    public PanelConnection(Function<T, ConnectionLine> colorProvider) {
+        this.colorProvider = colorProvider;
     }
 
     /**
@@ -86,15 +78,8 @@ public class PanelConnection<T> {
         return extraConnections.get(block);
     }
 
-    /**
-     * Computes the default connection data for a panel behavior.
-     * Invoked when no block-specific listener is available.
-     *
-     * @param behaviour the behavior requesting default connection data
-     * @return the generated default value
-     */
-    public T getDefault(FactoryPanelBehaviour behaviour) {
-        return defaultProvider.apply(behaviour);
+    public ConnectionLine getColor(T value) {
+        return colorProvider.apply(value);
     }
 
     /**

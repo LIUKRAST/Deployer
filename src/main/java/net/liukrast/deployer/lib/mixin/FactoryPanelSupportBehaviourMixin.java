@@ -17,15 +17,16 @@ public class FactoryPanelSupportBehaviourMixin {
     @Definition(id = "satisfied", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;satisfied:Z")
     @Expression("behaviour.satisfied")
     @ModifyExpressionValue(method = "shouldBePoweredTristate", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean shouldBePoweredTristate(boolean original, @Local FactoryPanelBehaviour behaviour) {
-        return DeployerPanelConnections.getConnectionValue(behaviour, DeployerPanelConnections.REDSTONE).orElse(0) > 0;
+    private boolean shouldBePoweredTristate(boolean original, @Local(name = "behaviour") FactoryPanelBehaviour behaviour) {
+        if(behaviour instanceof AbstractPanelBehaviour apb) return apb.getConnectionValue(DeployerPanelConnections.REDSTONE.get()).orElse(0) > 0;
+        return original;
     }
 
     @Definition(id = "behaviour", local = @Local(type = FactoryPanelBehaviour.class))
     @Definition(id = "count", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;count:I")
     @Expression("behaviour.count != 0")
     @ModifyExpressionValue(method = "shouldBePoweredTristate", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean shouldBePoweredTriState$1(boolean original, @Local FactoryPanelBehaviour behaviour) {
-        return behaviour instanceof AbstractPanelBehaviour panel ? panel.hasConnection(DeployerPanelConnections.REDSTONE) : original;
+    private boolean shouldBePoweredTriState$1(boolean original, @Local(name = "behaviour") FactoryPanelBehaviour behaviour) {
+        return behaviour instanceof AbstractPanelBehaviour panel ? panel.getOutputConnections().contains(DeployerPanelConnections.REDSTONE.get()) : original;
     }
 }

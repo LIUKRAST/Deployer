@@ -22,6 +22,7 @@ public class ClientEventsMixin {
 
     @Inject(method = "onTick", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/foundation/blockEntity/behaviour/filtering/FilteringRenderer;tick()V", shift = At.Shift.AFTER))
     private static void onTick(boolean isPreEvent, CallbackInfo ci) {
+
         Minecraft mc = Minecraft.getInstance();
         HitResult target = mc.hitResult;
         if (!(target instanceof BlockHitResult result))

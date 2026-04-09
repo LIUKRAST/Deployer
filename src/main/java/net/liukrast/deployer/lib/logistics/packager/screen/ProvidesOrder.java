@@ -13,5 +13,4 @@ public interface ProvidesOrder<V> {
     GenericOrderContained<V> addToSendQueue();
     @NotNull
     StockInventoryType<?,V,?> getType();
-    List<Component> getWarnTooltip();
 }

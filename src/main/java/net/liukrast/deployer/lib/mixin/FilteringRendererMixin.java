@@ -11,6 +11,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringRenderer;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
+import net.liukrast.deployer.lib.logistics.board.StockPanelBehaviour;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,6 +25,6 @@ public class FilteringRendererMixin {
     @Expression("b instanceof FilteringBehaviour")
     @ModifyExpressionValue(method = "tick", at = @At("MIXINEXTRAS:EXPRESSION"))
     private static boolean tick(boolean original, @Local(name = "b") BlockEntityBehaviour b) {
-        return b instanceof AbstractPanelBehaviour panel ? panel.withFilteringBehaviour() : original;
+        return b instanceof StockPanelBehaviour<?, ?> || original; // TODO: Proper API!!
     }
 }

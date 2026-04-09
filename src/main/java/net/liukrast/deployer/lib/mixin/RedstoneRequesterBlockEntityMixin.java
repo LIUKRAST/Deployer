@@ -4,6 +4,8 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.simibubi.create.content.logistics.packager.IdentifiedInventory;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterBlockEntity;
@@ -35,17 +37,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Mixin(RedstoneRequesterBlockEntity.class)
 public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlockEntity implements RRBEExtension {
-    @Shadow
-    public boolean allowPartialRequests;
-    @Unique
-    private final Map<StockInventoryType<?,?,?>, GenericOrderContained<?>> deployer$encodedRequests = new HashMap<>();
+    @Shadow public boolean allowPartialRequests;
 
-    @Deprecated
-    @Unique
-    private boolean deployer$triggerRequest$local$anySucceeded;
+    @Unique private final Map<StockInventoryType<?,?,?>, GenericOrderContained<?>> deployer$encodedRequests = DeployerRegistries.STOCK_INVENTORY.stream()
+            .collect(Collectors.toMap(
+                    e -> e,
+                    e -> GenericOrderContained.empty()
+            ));
 
     public RedstoneRequesterBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -63,12 +65,12 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
     }
 
     @Inject(method = "triggerRequest", at = @At("HEAD"), cancellable = true)
-    private void triggerRequest(CallbackInfo ci) {
+    private void triggerRequest(CallbackInfo ci, @Share("any_succeeded") LocalBooleanRef anySucceededLoc) {
         boolean anySucceeded = false;
         for(StockInventoryType<?,?,?> type : DeployerRegistries.STOCK_INVENTORY) {
             anySucceeded |= deployer$triggerRequest(type, ci);
         }
-        this.deployer$triggerRequest$local$anySucceeded = anySucceeded;
+        anySucceededLoc.set(anySucceeded);
     }
 
     @Unique
@@ -78,7 +80,7 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
         if(encodedRequest.isEmpty())
             return false;
 
-        boolean anySucceded = false;
+        boolean anySucceeded = false;
         AbstractInventorySummary<K, V> summaryOfOrder = type.networkHandler().createSummary();
         encodedRequest.stacks().forEach(summaryOfOrder::add);
 
@@ -86,7 +88,7 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
 
         for(V entry : summaryOfOrder.getStacks()) {
             if(summary.getCountOf(entry) >= type.valueHandler().getCount(entry)) {
-                anySucceded = true;
+                anySucceeded = true;
                 continue;
             }
             if(!allowPartialRequests && level instanceof ServerLevel serverLevel) {
@@ -97,22 +99,22 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
             }
         }
 
-        return anySucceded;
-    }
-
-    @ModifyArg(method = "triggerRequest", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/redstoneRequester/RedstoneRequesterEffectPacket;<init>(Lnet/minecraft/core/BlockPos;Z)V"), index = 1)
-    private boolean triggerRequest(boolean original) {
-        return original || deployer$triggerRequest$local$anySucceeded;
+        return anySucceeded;
     }
 
     @ModifyExpressionValue(method = "triggerRequest", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;isEmpty()Z"))
     private boolean triggerRequest$1(boolean original) {
-        return original || deployer$triggerRequest$local$anySucceeded;
+        return original && deployer$encodedRequests.values().stream().allMatch(GenericOrderContained::isEmpty);
+    }
+
+    @ModifyArg(method = "triggerRequest", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/redstoneRequester/RedstoneRequesterEffectPacket;<init>(Lnet/minecraft/core/BlockPos;Z)V"), index = 1)
+    private boolean triggerRequest(boolean original, @Share("any_succeeded") LocalBooleanRef anySucceededLoc) {
+        return original || anySucceededLoc.get();
     }
 
     @WrapOperation(method = "triggerRequest", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/redstoneRequester/RedstoneRequesterBlockEntity;broadcastPackageRequest(Lcom/simibubi/create/content/logistics/packagerLink/LogisticallyLinkedBehaviour$RequestType;Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;Lcom/simibubi/create/content/logistics/packager/IdentifiedInventory;Ljava/lang/String;)Z"))
-    private boolean triggerRequest(RedstoneRequesterBlockEntity instance, LogisticallyLinkedBehaviour.RequestType requestType, PackageOrderWithCrafts packageOrderWithCrafts, IdentifiedInventory identifiedInventory, String s, Operation<Boolean> original) {
-        if(deployer$triggerRequest$local$anySucceeded) return original.call(instance, requestType, packageOrderWithCrafts, identifiedInventory, s);
+    private boolean triggerRequest(RedstoneRequesterBlockEntity instance, LogisticallyLinkedBehaviour.RequestType requestType, PackageOrderWithCrafts packageOrderWithCrafts, IdentifiedInventory identifiedInventory, String s, Operation<Boolean> original, @Share("any_succeeded") LocalBooleanRef anySucceededLoc) {
+        if(!anySucceededLoc.get()) return original.call(instance, requestType, packageOrderWithCrafts, identifiedInventory, s);
         return ((SCBEExtension)this).deployer$broadcastAllPackageRequest(packageOrderWithCrafts, requestType, deployer$encodedRequests, s);
     }
 
@@ -141,5 +143,10 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
         var id = DeployerRegistries.STOCK_INVENTORY.getKey(type);
         if(id == null) return;
         tag.put(id.toString(), CatnipCodecUtils.encode(type.valueHandler().orderContainedCodec(), registries, order).orElseThrow());
+    }
+
+    @Override
+    public Map<StockInventoryType<?, ?, ?>, GenericOrderContained<?>> deployer$getAllEncodedRequests() {
+        return deployer$encodedRequests;
     }
 }

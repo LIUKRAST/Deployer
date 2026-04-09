@@ -1,0 +1,18 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "deployer:block/panel_connection_highlights",
+		"particle": "deployer:block/panel_connection_highlights"
+	},
+	"elements": [
+		{
+			"from": [-2, 0.08, -1],
+			"to": [2, 0.13, 9],
+			"faces": {
+				"up": {"uv": [10, 6, 14, 16], "rotation": 180, "texture": "#0"},
+				"down": {"uv": [10, 6, 14, 16], "rotation": 180, "texture": "#0"}
+			}
+		}
+	]
+}

@@ -1,6 +1,5 @@
 package net.liukrast.deployer.lib.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.logistics.factoryBoard.*;
@@ -35,36 +34,34 @@ public class FactoryPanelConnectionHandlerMixin {
     @Shadow static FactoryPanelPosition connectingFrom;
     @Shadow static AABB connectingFromBox;
 
-    @ModifyExpressionValue(
-            method = "checkForIssues(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;)Ljava/lang/String;",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 0)
-    )
-    private static boolean checkForIssues(boolean original, @Local(argsOnly = true, ordinal = 1) FactoryPanelBehaviour to) {
-        if(to instanceof AbstractPanelBehaviour ab) return original && !ab.ignoreIssue("factory_panel.no_item");
-        return original;
-    }
-
-    @ModifyExpressionValue(
-            method = "checkForIssues(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;)Ljava/lang/String;",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z", ordinal = 1)
-    )
-    private static boolean checkForIssues$1(boolean original, @Local(argsOnly = true, ordinal = 0) FactoryPanelBehaviour from) {
-        if(from instanceof AbstractPanelBehaviour ab) return original && !ab.ignoreIssue("factory_panel.no_item");
-        return original;
-    }
-
     @Inject(
             method = "checkForIssues(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;)Ljava/lang/String;",
             at = @At("RETURN"),
             cancellable = true)
     private static void checkForIssues(FactoryPanelBehaviour from, FactoryPanelBehaviour to, CallbackInfoReturnable<String> cir) {
-        if(!(from instanceof AbstractPanelBehaviour ab) || !ab.ignoreIssue(cir.getReturnValue())) return;
-        if(!(to instanceof AbstractPanelBehaviour ab1) || !ab1.ignoreIssue(cir.getReturnValue())) return;
-        cir.setReturnValue(null);
+        String error = cir.getReturnValue();
+
+        // Errors that shouldn't be ignored
+        if("factory_panel.connection_aborted".equals(error)) return;
+        if("factory_panel.already_connected".equals(error)) return;
+        if("factory_panel.cannot_add_more_inputs".equals(error)) return;
+        if("factory_panel.same_orientation".equals(error)) return;
+        if("factory_panel.same_surface".equals(error)) return;
+        if("factory_panel.too_far_apart".equals(error)) return;
+
+        // If the pointing panel is a factory gauge, we can't ignore issues
+        if("factory_panel.no_item".equals(error)) {
+            if(
+                    (from instanceof AbstractPanelBehaviour || !from.getFilter().isEmpty()) &&
+                            (to instanceof AbstractPanelBehaviour || !to.getFilter().isEmpty())
+            ) cir.setReturnValue(null);
+        }
+        if(!(to instanceof AbstractPanelBehaviour toApb)) return;
+        cir.setReturnValue(toApb.canConnect(from));
     }
 
     @ModifyArg(method = "checkForIssues(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelSupportBehaviour;)Ljava/lang/String;", at = @At(value = "INVOKE", target = "Ljava/util/Optional;orElse(Ljava/lang/Object;)Ljava/lang/Object;"))
-    private static <T> T checkForIssues(T other, @Local(ordinal = 1) BlockState state2) {
+    private static <T> T checkForIssues(T other, @Local(name = "state2") BlockState state2) {
         //noinspection unchecked
         return (T) PanelConnection.makeContext(state2);
     }
@@ -73,7 +70,7 @@ public class FactoryPanelConnectionHandlerMixin {
             method = "panelClicked",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;displayClientMessage(Lnet/minecraft/network/chat/Component;Z)V", ordinal = 2)
     )
-    private static Component panelClicked(Component original, @Local(ordinal = 0, argsOnly = true) FactoryPanelBehaviour from, @Local(ordinal = 1) FactoryPanelBehaviour to) {
+    private static Component panelClicked(Component original, @Local(ordinal = 0, argsOnly = true) FactoryPanelBehaviour from, @Local(name = "at") FactoryPanelBehaviour to) {
         if(from instanceof AbstractPanelBehaviour || to instanceof AbstractPanelBehaviour) return Component.translatable("extra_gauges.panel.panels_connected", from.getDisplayName(), to.getDisplayName()).withStyle(ChatFormatting.GREEN);
         return original;
     }
@@ -83,7 +80,7 @@ public class FactoryPanelConnectionHandlerMixin {
             at = @At(value = "INVOKE", target = "Lcom/simibubi/create/foundation/blockEntity/behaviour/BlockEntityBehaviour;get(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lcom/simibubi/create/foundation/blockEntity/behaviour/BehaviourType;)Lcom/simibubi/create/foundation/blockEntity/behaviour/BlockEntityBehaviour;"),
             cancellable = true
     )
-    private static void onRightClick(CallbackInfoReturnable<Boolean> cir, @Local Minecraft mc, @Local BlockHitResult bhr) {
+    private static void onRightClick(CallbackInfoReturnable<Boolean> cir, @Local(name = "mc") Minecraft mc, @Local(name = "bhr") BlockHitResult bhr) {
         assert mc.level != null;
         var fromState = mc.level.getBlockState(connectingFrom.pos());
         if(PanelConnection.makeContext(mc.level.getBlockState(bhr.getBlockPos())) == PanelConnection.makeContext(fromState) && DeployerRegistries.PANEL_CONNECTION

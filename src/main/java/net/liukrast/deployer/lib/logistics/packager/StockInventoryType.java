@@ -26,6 +26,7 @@ import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -106,7 +107,15 @@ public abstract class StockInventoryType<K,V,H> {
         }
 
         public GenericOrderContained<V> createContained(List<V> itemsToOrder) {
-            return GenericOrderContained.simple(itemsToOrder, hashStrategy());
+            boolean allEmpty = true;
+            List<V> real = new ArrayList<>();
+            for(V v : itemsToOrder) {
+                if(isEmpty(v)) continue;
+                allEmpty = false;
+                real.add(v);
+            }
+            if(allEmpty) return GenericOrderContained.empty();
+            return GenericOrderContained.simple(real, hashStrategy());
         }
         public abstract Hash.Strategy<? super V> hashStrategy();
         public abstract K fromValue(V key);

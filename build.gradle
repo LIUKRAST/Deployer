@@ -55,6 +55,7 @@ neoForge {
             client()
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            programArgument "--username=dih"
         }
 
         server {
@@ -117,6 +118,7 @@ dependencies {
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
 
     implementation(jarJar("io.github.llamalad7:mixinextras-neoforge:0.5.0"))
+    implementation(jarJar("net.liukrast:compat_manager-${minecraft_version}:${compat_manager_version}"))
 
     // compile against the JEI API but do not include it at runtime
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")

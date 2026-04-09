@@ -13,11 +13,15 @@ import net.liukrast.deployer.lib.helper.client.PackageVisualExtension;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.GaugeSlot;
 import net.liukrast.deployer.lib.logistics.board.PanelType;
+import net.liukrast.deployer.lib.logistics.board.connection.PanelConnection;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.packager.screen.KeeperTabScreen;
-import net.liukrast.deployer.lib.logistics.packager.screen.StockRequesterPage;
+import net.liukrast.deployer.lib.logistics.packager.screen.RequesterTabScreen;
+import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
+import oshi.util.tuples.Pair;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -53,14 +57,14 @@ public class ClientRegisterHelpers {
     public static void registerPackageVisual4Entity(EntityFactory factory) {
         ENTITY_VISUALS.add(factory);
     }
-    public static <A extends AbstractPanelBehaviour> void registerGaugeSlot(PanelType<A> type, GaugeSlot<?, A> slot) {
+    public static <A extends AbstractPanelBehaviour> void registerGaugeSlot(PanelType<A> type, GaugeSlot<A> slot) {
         GAUGE_MAP.put(type, slot);
     }
     public static void registerStockKeeperTab(BiFunction<StockTickerBlockEntity, StockKeeperRequestMenu, KeeperTabScreen> screenFactory) {
         KEEPER_TABS.add(screenFactory);
     }
-    public static <V> void registerRedstoneRequesterTab(RequesterFactory<V> factory) {
-        REQUESTER_TABS.add(factory);
+    public static <V> void registerRedstoneRequesterTab(StockInventoryType<?, V, ?> type, RequesterFactory<V> factory) {
+        REQUESTER_TABS.add(new RequesterBuilder<>(type, factory));
     }
 
     public static void registerPanelTicker(Consumer<AbstractPanelBehaviour> ticker) {
@@ -72,7 +76,7 @@ public class ClientRegisterHelpers {
     }
 
     /* INTERNAL CONTAINERS */
-    private static final Map<PanelType<?>, GaugeSlot<?,?>> GAUGE_MAP = new HashMap<>();
+    private static final Map<PanelType<?>, GaugeSlot<?>> GAUGE_MAP = new HashMap<>();
     private static final List<SuperByteBufferFactory> CHAIN_RENDERERS = new ArrayList<>();
     private static final List<EntityRenderer> ENTITY_RENDERERS = new ArrayList<>();
     private static final List<ChainConveyorFactory> CHAIN_VISUALS = new ArrayList<>();
@@ -80,7 +84,7 @@ public class ClientRegisterHelpers {
     private static final List<BiFunction<StockTickerBlockEntity, StockKeeperRequestMenu, KeeperTabScreen>> KEEPER_TABS = new ArrayList<>();
     private static final List<Consumer<AbstractPanelBehaviour>> PANEL_TICKERS = new ArrayList<>();
     private static final List<PanelRenderer> PANEL_RENDERERS = new ArrayList<>();
-    private static final List<RequesterFactory<?>> REQUESTER_TABS = new ArrayList<>();
+    private static final List<RequesterBuilder<?>> REQUESTER_TABS = new ArrayList<>();
 
     private ClientRegisterHelpers() {}
 
@@ -88,8 +92,9 @@ public class ClientRegisterHelpers {
     /* INTERNAL GETTERS */
     @ApiStatus.Internal
     @SuppressWarnings("unchecked")
-    public static <A extends AbstractPanelBehaviour> GaugeSlot<?, A> getSlot(PanelType<A> type) {
-        return (GaugeSlot<?, A>) GAUGE_MAP.get(type);
+    public static <A extends AbstractPanelBehaviour> GaugeSlot<A> getSlot(@Nullable AbstractPanelBehaviour apb) {
+        if(apb == null) return null;
+        return (GaugeSlot<A>) GAUGE_MAP.get(apb.getPanelType());
     }
 
     @ApiStatus.Internal
@@ -128,7 +133,7 @@ public class ClientRegisterHelpers {
     }
 
     @ApiStatus.Internal
-    public static Stream<RequesterFactory<?>> getRequesterTabs() {
+    public static Stream<RequesterBuilder<?>> getRequesterTabs() {
         return REQUESTER_TABS.stream();
     }
 
@@ -165,8 +170,10 @@ public class ClientRegisterHelpers {
         void render(AbstractPanelBehaviour apb, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay);
     }
 
+    public record RequesterBuilder<V>(StockInventoryType<?,V,?> type, RequesterFactory<V> factory) {}
+
     @FunctionalInterface
     public interface RequesterFactory<V> {
-        StockRequesterPage<V> create(RedstoneRequesterMenu menu);
+        RequesterTabScreen<V> create(RedstoneRequesterMenu menu, StockInventoryType<?, V, ?> type, GenericOrderContained<V> orderData);
     }
 }

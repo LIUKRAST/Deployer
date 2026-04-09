@@ -1,7 +1,6 @@
 package net.liukrast.deployer.lib.logistics.packager.screen;
 
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
-import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
 import com.simibubi.create.content.logistics.stockTicker.StockTickerBlockEntity;
 import net.liukrast.deployer.lib.mixin.accessors.StockTickerBlockEntityAccessor;
 import net.minecraft.client.gui.GuiGraphics;
@@ -11,7 +10,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-public class KeeperTabScreen extends Screen {
+import java.util.List;
+
+public class KeeperTabScreen extends Screen implements TabData {
     private final ItemStack icon;
     protected final StockTickerBlockEntity blockEntity;
     protected final StockTickerBlockEntityAccessor beAccess;
@@ -57,20 +58,11 @@ public class KeeperTabScreen extends Screen {
         this.guiTop = top;
     }
 
+    public List<Component> getWarnTooltip() {
+        return null;
+    }
+
     @Override
     public void renderBackground(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {}
-
-    /*public abstract int clickAmount(boolean ctrlDown, boolean shiftDown, boolean altDown);
-
-    public abstract boolean matchesModSearch(V stack, String searchValue);
-    public abstract boolean matchesTagSearch(V stack, String searchValue);
-    public abstract boolean matchesSearch(V stack, String searchValue);
-    public abstract void renderCategory(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY, List<V> categoryStacks, List<V> itemsToOrder, AbstractInventorySummary<K, V> forcedEntries, StockInventoryType.CategoryRenderData data);
-    public abstract void renderOrderedItems(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY, List<V> itemsToOrder, AbstractInventorySummary<K, V> forcedEntries, StockInventoryType.OrderRenderData data);
-    public abstract void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks, V entry, Font font, boolean isOrder);
-
-    public boolean shouldRenderSearchBar() {
-        return true;
-    }*/
 
 }

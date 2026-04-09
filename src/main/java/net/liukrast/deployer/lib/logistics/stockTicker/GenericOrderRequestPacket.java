@@ -10,6 +10,7 @@ import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.networking.BlockEntityConfigurationPacket;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.mixinExtensions.STBEExtension;
+import net.liukrast.deployer.lib.registry.DeployerDataComponents;
 import net.liukrast.deployer.lib.registry.DeployerPackets;
 import net.liukrast.deployer.lib.registry.DeployerRegistries;
 import net.minecraft.core.BlockPos;
@@ -93,7 +94,9 @@ public class GenericOrderRequestPacket extends BlockEntityConfigurationPacket<St
             if(orderNotEmpty)
                 AllSoundEvents.CONFIRM.playOnServer(be.getLevel(), pos);
             player.closeContainer();
-            RedstoneRequesterBlock.programRequester(player, be, defaultOrder, address); //TODO: Make this work with custom orders too
+            RedstoneRequesterBlock.programRequester(player, be, defaultOrder, address);
+            var stack = player.getMainHandItem();
+            stack.set(DeployerDataComponents.EXTRA_REQUEST_DATA, types);
             return;
         }
 

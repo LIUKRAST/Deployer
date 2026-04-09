@@ -26,7 +26,7 @@ public abstract class CapeLayerMixin extends RenderLayer<AbstractClientPlayer, P
                     target = "Lnet/minecraft/client/resources/PlayerSkin;capeTexture()Lnet/minecraft/resources/ResourceLocation;"
             )
     )
-    private ResourceLocation render(ResourceLocation original, @Local(argsOnly = true) AbstractClientPlayer player, @Local(argsOnly = true, ordinal = 3) float ageInTicks) {
+    private ResourceLocation render(ResourceLocation original, @Local(argsOnly = true) AbstractClientPlayer player) {
         var cape = ((ACPExtension)player).deployer$getCape();
         if(cape == -1) return original;
         var capeTexture = DeployerClient.getCape(cape);

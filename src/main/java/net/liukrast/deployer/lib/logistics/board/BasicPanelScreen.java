@@ -31,6 +31,8 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
     @ApiStatus.Internal
     public static final ResourceLocation TEXTURE = DeployerConstants.id("textures/gui/generic_gauge.png");
 
+    protected final boolean canConnect,canMove,canDelete;
+
     /**
      * The panel behavior associated with this screen.
      */
@@ -46,7 +48,11 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
      * @param behaviour the panel behavior to display
      */
     public BasicPanelScreen(T behaviour) {
-        this(behaviour.getDisplayName(), behaviour);
+        this(behaviour, true, true, true);
+    }
+
+    public BasicPanelScreen(T behaviour, boolean canConnect, boolean canMove, boolean canDelete) {
+        this(behaviour.getDisplayName(), behaviour, canConnect, canMove, canDelete);
     }
 
     /**
@@ -56,8 +62,15 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
      * @param behaviour the panel behavior to display
      */
     public BasicPanelScreen(Component component, T behaviour) {
+        this(component, behaviour, true, true, true);
+    }
+
+    public BasicPanelScreen(Component component, T behaviour, boolean canConnect, boolean canMove, boolean canDelete) {
         super(component);
         this.behaviour = behaviour;
+        this.canConnect = canConnect;
+        this.canMove = canMove;
+        this.canDelete = canDelete;
     }
 
     /**
@@ -232,8 +245,6 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
      *
      * @param toRemove optional panel position to remove
      */
-    //TODO: It would be great if, along with modifying the original mod's behaviour,
-    // we could allow to disconnect single connections instead of all
     private void sendIt(@SuppressWarnings("SameParameterValue") @Nullable FactoryPanelPosition toRemove) {
         FactoryPanelPosition pos = behaviour.getPanelPosition();
         FactoryPanelConfigurationPacket packet = new FactoryPanelConfigurationPacket(

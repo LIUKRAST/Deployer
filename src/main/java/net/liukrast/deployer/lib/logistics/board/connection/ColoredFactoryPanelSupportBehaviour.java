@@ -17,6 +17,7 @@ import java.util.function.Supplier;
  * <p>This is used by factory panels to render lines or indicators that reflect
  * the behavior's state, category, or type of data conveyed.
  */
+@Deprecated(forRemoval = true, since = "2.1.0")
 public abstract class ColoredFactoryPanelSupportBehaviour extends FactoryPanelSupportBehaviour {
     /**
      * Creates a new colored support behavior for a factory panel.
