@@ -1,5 +1,5 @@
 {
-  "parent": "create:item/package/custom_10x8",
+  "parent": "deployer:item/package/custom_10x8",
   "textures": {
     "2": "deployer:item/package/rare_swzo"
   }
