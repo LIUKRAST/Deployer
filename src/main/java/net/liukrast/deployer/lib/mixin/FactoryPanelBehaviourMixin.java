@@ -532,16 +532,17 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
         deployer$targetedByExtra.clear();
     }
 
-    @Unique
-    @Nullable
-    private <T> List<T> deployer$getAllValues(PanelConnection<T> connection) {
-        List<T> out = new ArrayList<>();
+    @SuppressWarnings("AddedMixinMembersNamePattern")
+    @Override
+    public @Nullable <T> List<AbstractPanelBehaviour.ConnectionValue<T>> getAllValuesWithSource(PanelConnection<T> connection) {
+        List<AbstractPanelBehaviour.ConnectionValue<T>> out = new ArrayList<>();
         boolean shouldAbort = Stream.of(targetedBy.values(), targetedByLinks.values(), this.deployer$getExtra().values())
                 .flatMap(Collection::stream)
                 .anyMatch(gauge -> {
                     PanelValue<T> result = AbstractPanelBehaviour.getValue(gauge, connection, FactoryPanelBehaviour.class.cast(this));
                     if (result instanceof PanelValue.Abort) return true;
-                    if (result instanceof PanelValue.Present<T>(T value)) out.add(value);
+                    if (result instanceof PanelValue.Present<T>(T value))
+                        out.add(new AbstractPanelBehaviour.ConnectionValue<>(gauge, value));
                     return false;
                 });
 
@@ -551,7 +552,7 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
     /* OTHER PANELS UPDATE */
     @ModifyVariable(method = "checkForRedstoneInput", at = @At(value = "STORE", ordinal = 0), name = "shouldPower")
     private boolean checkForRedstoneInput(boolean shouldPower) {
-        var li = deployer$getAllValues(DeployerPanelConnections.REDSTONE.get());
+        var li = getAllValues(DeployerPanelConnections.REDSTONE.get());
         if(li == null) return false;
         return li.stream().anyMatch(k -> k);
     }
@@ -561,8 +562,8 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
     @Expression("shouldPower == this.redstonePowered")
     @ModifyExpressionValue(method = "checkForRedstoneInput", at = @At("MIXINEXTRAS:EXPRESSION"))
     private boolean checkForRedstoneInput$1(boolean original) {
-        var nums = deployer$getAllValues(DeployerPanelConnections.NUMBERS.get());
-        var strs = deployer$getAllValues(DeployerPanelConnections.STRING.get());
+        var nums = getAllValues(DeployerPanelConnections.NUMBERS.get());
+        var strs = getAllValues(DeployerPanelConnections.STRING.get());
         if (nums == null || strs == null) return false;
 
         Integer total = nums.isEmpty() ? null : (int)(float)nums.stream().reduce(0f, Float::sum);

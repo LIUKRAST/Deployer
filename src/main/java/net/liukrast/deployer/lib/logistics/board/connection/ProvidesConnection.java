@@ -2,13 +2,12 @@ package net.liukrast.deployer.lib.logistics.board.connection;
 
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConnection;
+import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.mixinExtensions.FPCExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 public interface ProvidesConnection {
@@ -94,9 +93,46 @@ public interface ProvidesConnection {
         return defaultValue.get();
     }
 
+    /**
+     * Aggregates all values from all connected sources for a specific connection type.
+     * <p>
+     * This version uses a unified stream to process standard panels, links, and extra
+     * block connections, maintaining the "Abort" logic for unloaded chunks.
+     * </p>
+     *
+     * @param connection the type of data connection to poll
+     * @param <T>        the type of the values
+     * @return a {@link List} of all found values, or {@code null} if any source
+     * returned an "Abort" state.
+     */
+    @Nullable
+    default <T> List<T> getAllValues(PanelConnection<T> connection) {
+        List<AbstractPanelBehaviour.ConnectionValue<T>> withSource = getAllValuesWithSource(connection);
+        if (withSource == null) return null;
+        return withSource.stream()
+                .map(AbstractPanelBehaviour.ConnectionValue::value)
+                .toList();
+    }
+
+    /**
+     * Aggregates all values from all connected sources for a specific connection type.
+     * <p>
+     * This version uses a unified stream to process standard panels, links, and extra
+     * block connections, maintaining the "Abort" logic for unloaded chunks.
+     * </p>
+     *
+     * @param connection the type of data connection to poll
+     * @param <T>        the type of the values
+     * @return a {@link List} of all values and their {@link FactoryPanelConnection}, or {@code null} if any source
+     * returned an "Abort" state.
+     */
+    @Nullable
+    <T> List<AbstractPanelBehaviour.ConnectionValue<T>> getAllValuesWithSource(PanelConnection<T> connection);
+
     default int overrideConnectionColor(int original, FactoryPanelConnection connection, float partialTicks) {
         return original;
     }
+
 
 
 }

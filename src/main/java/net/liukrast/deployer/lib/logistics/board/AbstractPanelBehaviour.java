@@ -226,45 +226,26 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
      *
      * @param connection the type of data connection to poll
      * @param <T>        the type of the values
-     * @return a {@link List} of all found values, or {@code null} if any source
-     * returned an "Abort" state.
-     */
-    @Nullable
-    public <T> List<T> getAllValues(PanelConnection<T> connection) {
-        List<ConnectionValue<T>> withSource = getAllValuesWithSource(connection);
-        if (withSource == null) return null;
-        return withSource.stream()
-                .map(ConnectionValue::value)
-                .toList();
-    }
-
-    /**
-     * Aggregates all values from all connected sources for a specific connection type.
-     * <p>
-     * This version uses a unified stream to process standard panels, links, and extra
-     * block connections, maintaining the "Abort" logic for unloaded chunks.
-     * </p>
-     *
-     * @param connection the type of data connection to poll
-     * @param <T>        the type of the values
      * @return a {@link List} of all values and their {@link FactoryPanelConnection}, or {@code null} if any source
      * returned an "Abort" state.
      */
-    @Nullable
-    public <T> List<ConnectionValue<T>> getAllValuesWithSource(PanelConnection<T> connection) {
-        List<ConnectionValue<T>> out = new ArrayList<>();
+    @Override
+    public @Nullable <T> List<ConnectionValue<T>> getAllValuesWithSource(PanelConnection<T> connection) {
+        List<AbstractPanelBehaviour.ConnectionValue<T>> out = new ArrayList<>();
         boolean shouldAbort = Stream.of(targetedBy.values(), targetedByLinks.values(), getTargetedByExtra().values())
                 .flatMap(Collection::stream)
                 .anyMatch(gauge -> {
                     PanelValue<T> result = getValue(gauge, connection, this);
                     if (result instanceof PanelValue.Abort) return true;
                     if (result instanceof PanelValue.Present<T>(T value))
-                        out.add(new ConnectionValue<>(gauge, value));
+                        out.add(new AbstractPanelBehaviour.ConnectionValue<>(gauge, value));
                     return false;
                 });
 
         return shouldAbort ? null : out;
     }
+
+
     //endregion
     //region Util functions
     /**

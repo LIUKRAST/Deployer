@@ -1,8 +1,12 @@
 package net.liukrast.deployer.lib.logistics.board.connection;
 
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelPosition;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelSupportBehaviour;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
+import net.liukrast.deployer.lib.mixin.FactoryPanelSupportAccessor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -37,5 +41,30 @@ public abstract class AbstractPanelSupportBehaviour extends FactoryPanelSupportB
         // We can safely cast here.
         //noinspection unchecked
         return Optional.ofNullable((T) connectionsOut.get(connection).get());
+    }
+
+    @Override
+    public @Nullable <T> List<AbstractPanelBehaviour.ConnectionValue<T>> getAllValuesWithSource(PanelConnection<T> connection) {
+        List<AbstractPanelBehaviour.ConnectionValue<T>> out = new ArrayList<>();
+        for (Iterator<FactoryPanelPosition> iterator = getLinkedPanels().iterator(); iterator.hasNext(); ) {
+            FactoryPanelPosition panelPos = iterator.next();
+            if (!getWorld().isLoaded(panelPos.pos()))
+                return null;
+            FactoryPanelBehaviour behaviour = FactoryPanelBehaviour.at(getWorld(), panelPos);
+            if (behaviour == null) {
+                iterator.remove();
+                ((FactoryPanelSupportAccessor)this).deployer$setChanged(true);
+                continue;
+            }
+            if (!behaviour.isActive())
+                continue;
+            var conn = behaviour.targetedByLinks.get(getPos());
+            if(conn == null) continue;
+            var pc = ProvidesConnection.getCurrentConnection(conn, () -> ProvidesConnection.getPossibleConnections(behaviour, this).stream().findFirst().orElse(null));
+            if(pc == null || pc != connection) continue;
+            var opt = ((ProvidesConnection)behaviour).getConnectionValue(connection);
+            opt.ifPresent(t -> out.add(new AbstractPanelBehaviour.ConnectionValue<>(conn, t)));
+        }
+        return out;
     }
 }
