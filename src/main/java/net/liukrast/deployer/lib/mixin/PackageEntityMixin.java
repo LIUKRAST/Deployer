@@ -29,18 +29,4 @@ public class PackageEntityMixin implements DeployerGoggleInformation {
     private StreamCodec<RegistryFriendlyByteBuf, ItemStack> writeSpawnData(StreamCodec<RegistryFriendlyByteBuf, ItemStack> original) {
         return ItemStack.OPTIONAL_STREAM_CODEC;
     }
-
-    @Shadow
-    public ItemStack box;
-
-    @OnlyIn(Dist.CLIENT)
-    @Override
-    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        if(!DeployerConfig.Client.PACKAGE_GOGGLE_INFO.getAsBoolean()) return DeployerGoggleInformation.super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        var li = box.getTooltipLines(Item.TooltipContext.of(Minecraft.getInstance().level), Minecraft.getInstance().player, TooltipFlag.NORMAL);
-        for(var c : li) {
-            new LangBuilder(DeployerConstants.MOD_ID).add(c).forGoggles(tooltip, 0);
-        }
-        return true;
-    }
 }
