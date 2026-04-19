@@ -1,2 +1,2 @@
-- Fixed server-side crash
-- Fixed old gauges not connecting correctly
+- Introduced missing Abstract panel support behaviour code
+- Package entity goggle overlay has been moved to repackaged for consistency

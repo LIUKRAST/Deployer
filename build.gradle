@@ -125,6 +125,10 @@ dependencies {
     //Optional dependency
     compileOnly("maven.modrinth:jade:${jade_version}")
 
+
+    // Compat
+    implementation "curse.maven:create-additional-logistics-1359885:7460280"
+
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
