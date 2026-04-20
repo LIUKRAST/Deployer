@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
+import com.simibubi.create.content.logistics.packager.PackagerItemHandler;
 import com.simibubi.create.content.logistics.packager.PackagingRequest;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import net.liukrast.deployer.lib.logistics.OrderStockTypeData;
@@ -37,6 +38,12 @@ public abstract class PackagerBlockEntityMixin extends SmartBlockEntity {
 
     public PackagerBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @WrapOperation(method = "<init>", at = @At(value = "NEW", target = "(Lcom/simibubi/create/content/logistics/packager/PackagerBlockEntity;)Lcom/simibubi/create/content/logistics/packager/PackagerItemHandler;"))
+    private PackagerItemHandler init(PackagerBlockEntity blockEntity, Operation<PackagerItemHandler> original) {
+        if(blockEntity instanceof AbstractPackagerBlockEntity<?,?,?> apb) return apb.createItemHandler();
+        return original.call(blockEntity);
     }
 
     @WrapOperation(method = "addBehaviours", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z", ordinal = 0))

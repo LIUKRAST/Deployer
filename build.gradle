@@ -128,6 +128,7 @@ dependencies {
 
     // Compat
     implementation "curse.maven:create-additional-logistics-1359885:7460280"
+    implementation "curse.maven:createaddition-439890:7518252"
 
 }
 

@@ -64,6 +64,10 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         return ((PackagerBlockEntityAccessor)this).invokeSupportsBlockEntity(target);
     }
 
+    public PackagerItemHandler createItemHandler() {
+        return new PackagerItemHandler(this);
+    }
+
     /**
      * @return The capability manipulation behavior for your stock type
      * */
@@ -486,7 +490,7 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         if (animationTicks > 0)
             return false;
 
-        Objects.requireNonNull(this.level);
+        assert level != null;
 
         var ph = type.packageHandler();
 

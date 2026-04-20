@@ -1,89 +1,53 @@
-package net.liukrast.deployer.lib.mixin;
+package net.liukrast.deployer.lib.logistics.packager;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
-import com.simibubi.create.content.logistics.packager.repackager.PackageRepackageHelper;
-import net.liukrast.deployer.lib.DeployerConfig;
-import net.liukrast.deployer.lib.logistics.DeployerAlgorithms;
 import net.liukrast.deployer.lib.logistics.GenericPackageOrderData;
 import net.liukrast.deployer.lib.logistics.OrderStockTypeData;
-import net.liukrast.deployer.lib.logistics.packager.AbstractInventorySummary;
-import net.liukrast.deployer.lib.logistics.packager.GenericPackageItem;
-import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
-import net.liukrast.deployer.lib.mixinExtensions.PRHExtension;
 import net.liukrast.deployer.lib.registry.DeployerDataComponents;
-import net.minecraft.core.NonNullList;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mixin(PackageRepackageHelper.class)
-public abstract class PackageRepackageHelperMixin implements PRHExtension {
+public class GenericRepackageHelper {
+    protected Map<StockInventoryType<?,?,?>, Map<Integer, List<ItemStack>>> collectedPackages = new HashMap<>();
 
-    @Shadow
-    protected Map<Integer, List<ItemStack>> collectedPackages;
-    @Unique
-    private final Map<StockInventoryType<?, ?, ?>, Map<Integer, List<ItemStack>>> deployer$collectedPackages = new HashMap<>();
-
-    @Inject(method = "clear", at = @At("TAIL"))
-    private void clear(CallbackInfo ci) {
-        deployer$collectedPackages.values().forEach(Map::clear);
+    public void clear() {
+        collectedPackages.clear();
     }
 
-    @Inject(method = "isFragmented", at = @At("RETURN"), cancellable = true)
-    private void isFragmented(ItemStack box, CallbackInfoReturnable<Boolean> cir) {
-        if (!(box.getItem() instanceof GenericPackageItem generic)) return;
-        cir.setReturnValue(box.has(generic.getType().packageHandler().packageOrderData()));
+    public boolean isFragmented(ItemStack box) {
+        if(!(box.getItem() instanceof GenericPackageItem generic)) throw new IllegalArgumentException("GenericRepackageHelper must be used for generic stacks");
+        return box.has(generic.getType().packageHandler().packageOrderData());
     }
 
-    @ModifyVariable(method = "addPackageFragment", at = @At("STORE"), name = "collectedOrder")
-    private List<ItemStack> addPackageFragment(List<ItemStack> value, @Local(argsOnly = true, name = "arg1") ItemStack box, @Local(name = "collectedOrderId") int collectedOrderId) {
-        if (!(box.getItem() instanceof GenericPackageItem item)) return value;
-        return deployer$collectedPackages
-                .computeIfAbsent(item.getType(), $ -> new HashMap<>())
+    public int addPackageFragment(ItemStack box) {
+        if(!(box.getItem() instanceof GenericPackageItem generic)) throw new IllegalArgumentException("GenericRepackageHelper must be used for generic stacks");
+        int collectedOrderId = PackageItem.getOrderId(box);
+        if(collectedOrderId == -1)
+            return -1;
+
+        List<ItemStack> collectedOrder = collectedPackages.computeIfAbsent(generic.getType(), $-> new HashMap<>())
                 .computeIfAbsent(collectedOrderId, $ -> new ArrayList<>());
+        collectedOrder.add(box);
+
+        if(!isOrderComplete(generic.getType(), collectedOrderId))
+            return -1;
+        return collectedOrderId;
     }
 
-    @WrapOperation(method = "addPackageFragment", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/packager/repackager/PackageRepackageHelper;isOrderComplete(I)Z"))
-    private boolean addPackageFragment(PackageRepackageHelper instance, int orderId, Operation<Boolean> original, @Local(argsOnly = true, name = "arg1") ItemStack box) {
-        if (!(box.getItem() instanceof GenericPackageItem item)) return original.call(instance, orderId);
-        return deployer$isOrderComplete(item.getType(), orderId);
-    }
-
-    @Inject(method = "repack", at = @At("RETURN"))
-    private void repack(int orderId, RandomSource r, CallbackInfoReturnable<List<BigItemStack>> cir) {
-        var list = cir.getReturnValue();
-        for (StockInventoryType<?, ?, ?> type : deployer$collectedPackages.keySet()) {
-            list.addAll(deployer$repack(type, orderId, r));
-        }
-    }
-
-    @Override
-    public <K, V, H> List<BigItemStack> deployer$repack(StockInventoryType<K, V, H> type, int orderId, RandomSource r) {
+    public <K,V,H> List<BigItemStack> repack(StockInventoryType<K,V,H> type, int orderId, RandomSource r) {
         List<BigItemStack> exportingPackages = new ArrayList<>();
         String address = "";
         OrderStockTypeData typeData = null;
         GenericOrderContained<V> orderContext = null;
         AbstractInventorySummary<K, V> summary = type.networkHandler().createSummary();
-        var li = deployer$collectedPackages.computeIfAbsent(type, $ -> new HashMap<>()).get(orderId);
+        var li = collectedPackages.computeIfAbsent(type, $ -> new HashMap<>()).get(orderId);
         if (li != null) {
             for (ItemStack box : li) {
                 address = PackageItem.getAddress(box);
@@ -145,7 +109,6 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
                 }
 
                 while (targetAmount > 0) {
-                    //TODO: Check if maxCountPerSlot is the thing
                     int removedAmount = Math.min(Math.min(targetAmount, type.storageHandler().maxCountPerSlot()), type.valueHandler().getCount(entry));
                     if (removedAmount == 0)
                         continue ItemSearch;
@@ -199,10 +162,9 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
         return exportingPackages;
     }
 
-    @Override
-    public <K, V, H> boolean deployer$isOrderComplete(StockInventoryType<K, V, H> type, int orderId) {
+    private <K,V,H> boolean isOrderComplete(StockInventoryType<K,V,H> type, int orderId) {
         Map<Integer, Map<Integer, GenericPackageOrderData<V>>> dataMap = new HashMap<>();
-        for(ItemStack box : deployer$collectedPackages.computeIfAbsent(type, $ -> new HashMap<>()).get(orderId)) {
+        for(ItemStack box : collectedPackages.computeIfAbsent(type, $ -> new HashMap<>()).get(orderId)) {
             var data = box.get(type.packageHandler().packageOrderData());
             assert data != null;
             dataMap
@@ -223,42 +185,5 @@ public abstract class PackageRepackageHelperMixin implements PRHExtension {
             }
         }
         return true;
-    }
-
-    @ModifyExpressionValue(method = "repackBasedOnRecipes", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrder;stacks()Ljava/util/List;", ordinal = 1))
-    private List<BigItemStack> repackBasedOnRecipes(List<BigItemStack> original) {
-        List<ItemStack> copied = original.stream().map(big -> big.stack.copy()).toList();
-        List<ItemStack> result = NonNullList.withSize(copied.size(), ItemStack.EMPTY);
-        for (var stack : copied) {
-            for (int i = 0; i < result.size(); i++) {
-                var slot = result.get(i);
-                if (slot.isEmpty()) {
-                    result.set(i, stack);
-                    break;
-                } else if (ItemStack.isSameItemSameComponents(stack, slot)) {
-                    int canPut = slot.getMaxStackSize() - slot.getCount();
-                    slot.setCount(slot.getCount() + Mth.clamp(stack.getCount(), 0, canPut));
-                    stack.setCount(Math.max(stack.getCount() - canPut, 0));
-                    if (stack.getCount() == 0) break;
-                }
-            }
-        }
-        return result.stream().map(BigItemStack::new).toList();
-    }
-
-    @WrapOperation(method = "repackBasedOnRecipes", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;copyWithCount(I)Lnet/minecraft/world/item/ItemStack;", ordinal = 0))
-    private ItemStack repackBasedOnRecipes(ItemStack instance, int i, Operation<ItemStack> original) {
-        return instance.copy();
-    }
-
-    @Inject(method = "isOrderComplete", at = @At("HEAD"), cancellable = true)
-    private void isOrderComplete(int orderId, CallbackInfoReturnable<Boolean> cir) {
-        if(DeployerConfig.Server.FAST_REPACKAGE_ALGORITHM.getAsBoolean()) {
-            cir.setReturnValue(DeployerAlgorithms.isOrderComplete(collectedPackages.get(orderId)));
-        }
-        if(this instanceof net.liukrast.deployer.lib.helper.extensions.PRHExtension prh) {
-            cir.setReturnValue(prh.isOrderComplete(orderId));
-            cir.cancel();
-        }
     }
 }

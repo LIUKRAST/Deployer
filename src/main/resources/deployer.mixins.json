@@ -33,7 +33,6 @@
 	"PackageItemMixin",
 	"PackagerBlockEntityMixin",
 	"PackagerBlockMixin",
-	"PackageRepackageHelperMixin",
 	"PackagerItemHandlerMixin",
 	"PackagerLinkBlockEntityMixin",
 	"PackagerRendererMixin",

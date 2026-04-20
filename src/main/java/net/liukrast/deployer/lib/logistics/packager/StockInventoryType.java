@@ -276,8 +276,6 @@ public abstract class StockInventoryType<K,V,H> {
 
                 if (!valueHandler.hashStrategy().equals(toInsert, itemInSlot))
                     continue;
-
-                //TODO: Implement slot limit
                 int added = valueHandler.getCount(toInsert) - valueHandler.getCount(storageHandler.insertItem(targetInv, slot, toInsert, simulate));
 
                 items.set(boxSlot, valueHandler.copyWithCount(toInsert, valueHandler.getCount(toInsert) - added));
