@@ -1,2 +1,1 @@
-- Now using compat manager 1.0.7
-- Fixed re-packager issues and improved logic
+- 
