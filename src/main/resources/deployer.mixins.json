@@ -3,7 +3,7 @@
   "mixinextras": {
 	"minVersion": "0.5.0"
   },
-  "plugin": "net.liukrast.compat.CompatMixinPlugin.Default",
+  "plugin": "net.liukrast.compat.DefaultMixinPlugin",
   "package": "net.liukrast.deployer.lib.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
