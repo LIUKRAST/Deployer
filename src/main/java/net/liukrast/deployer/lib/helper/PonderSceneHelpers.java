@@ -7,8 +7,15 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelPosition;
 import com.simibubi.create.content.redstone.nixieTube.NixieTubeBlockEntity;
 import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
 import com.simibubi.create.foundation.utility.CreateLang;
+import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import net.createmod.ponder.api.element.ElementLink;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
+import net.createmod.ponder.foundation.PonderSceneBuilder;
+import net.createmod.ponder.foundation.element.ElementLinkImpl;
+import net.liukrast.deployer.lib.helper.ponder.CreatePartialInstruction;
+import net.liukrast.deployer.lib.helper.ponder.PartialElement;
+import net.liukrast.deployer.lib.helper.ponder.PartialElementImpl;
 import net.liukrast.deployer.lib.mixinExtensions.FPBExtension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,6 +23,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Consumer;
 
@@ -33,12 +41,16 @@ public class PonderSceneHelpers {
      * @param id The scene id
      * */
     public static CreateSceneBuilder simpleInit(SceneBuilder builder, SceneBuildingUtil util, String id) {
+        return simpleInit(builder, util, id, 7);
+    }
+
+    public static CreateSceneBuilder simpleInit(SceneBuilder builder, SceneBuildingUtil util, String id, int width) {
         CreateSceneBuilder scene = new CreateSceneBuilder(builder);
         scene.title(id, "");
-        scene.configureBasePlate(0, 0, 7);
+        scene.configureBasePlate(0, 0, width);
         scene.scaleSceneView(0.825f);
         scene.setSceneOffsetY(-2f);
-        scene.world().showIndependentSection(util.select().fromTo(7, 0, 0, 0, 0, 7), Direction.UP);
+        scene.world().showIndependentSection(util.select().fromTo(width-1, 0, 0, 0, 0, width-1), Direction.UP);
         scene.idle(10);
         return scene;
     }
@@ -248,5 +260,17 @@ public class PonderSceneHelpers {
             builder.world()
                     .modifyBlockEntity(gauge.pos(), FactoryPanelBlockEntity.class, be -> consumer.accept(be.panels.get(gauge.slot())));
         }
+    }
+
+    public static ElementLink<PartialElement> createPartialModel(PonderSceneBuilder builder, PartialModel model, Vec3 position) {
+        return createPartialModel(builder, model, position, 10, Direction.DOWN);
+    }
+
+    public static ElementLink<PartialElement> createPartialModel(PonderSceneBuilder builder, PartialModel model, Vec3 position, int fadeInTicks, Direction fadeDirection) {
+        ElementLink<PartialElement> link = new ElementLinkImpl<>(PartialElement.class);
+        PartialElement element = new PartialElementImpl(model, position);
+        builder.addInstruction(new CreatePartialInstruction(10, Direction.DOWN, element));
+        builder.addInstruction(scene1 -> scene1.linkElement(element, link));
+        return link;
     }
 }
