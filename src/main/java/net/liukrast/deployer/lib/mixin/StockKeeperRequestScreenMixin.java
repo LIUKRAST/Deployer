@@ -59,11 +59,14 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     @Shadow @Final private boolean isAdmin;
     @Shadow public LerpedFloat itemScroll;
     @Shadow int lockX;
-    @Shadow int lockY;
     @Shadow public AddressEditBox addressBox;
     @Shadow boolean encodeRequester;
     @Shadow
     public List<BigItemStack> itemsToOrder;
+    @Shadow
+    int besideSearchButtonY;
+    @Shadow
+    int jeiSyncX;
     /* UNIQUES */
     @Unique private static final ResourceLocation deployer$TEXTURE = DeployerConstants.id("textures/gui/stock_keeper_tabs.png");
     @Unique private List<KeeperTabScreen> deployer$tabs;
@@ -246,8 +249,12 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     @Unique
     private boolean deployer$skipArea(double mouseX, double mouseY) {
         if(deployer$tabsWidget == null || deployer$tabsWidget.getSelected() == null) return true;
-        if(isAdmin && itemScroll.getChaseTarget() == 0 && mouseX > lockX && mouseX <= lockX + 15 && mouseX > lockY && mouseY <= lockY + 15)
-            return true;
+        if(itemScroll.getChaseTarget() == 0 && mouseY > besideSearchButtonY && mouseY <= besideSearchButtonY + 15) {
+            if(mouseX > jeiSyncX && mouseX <= jeiSyncX + 15)
+                return true;
+            if(isAdmin && mouseX > lockX && mouseX <= lockX + 15)
+                return true;
+        }
         int x = getGuiLeft();
         int y = getGuiTop();
         return mouseX < x + 18 || mouseY < y + 16 || mouseX > x + 18 + deployer$tabsWidget.getSelected().width || mouseY > y + 16 + deployer$tabsWidget.getSelected().height;

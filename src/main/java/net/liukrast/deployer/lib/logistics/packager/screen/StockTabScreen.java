@@ -11,6 +11,7 @@ import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
+import mezz.jei.api.runtime.IIngredientFilter;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.theme.Color;
@@ -61,6 +62,9 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
     protected int lockY;
     protected int windowWidth;
     protected int windowHeight;
+
+    int jeiSyncX;
+    String previousJEISearchText = "";
 
     public EditBox searchBox;
 
@@ -131,6 +135,7 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
         searchBox.setBordered(false);
         searchBox.setTextColor(0x4A2D31);
         addWidget(searchBox);
+        syncJEI(true);
     }
 
     private void refreshSearchResults(boolean scrollBackUp) {
@@ -493,7 +498,7 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
             refreshSearchNextTick = true;
             moveToTopNextTick = true;
             searchBox.setFocused(true);
-            syncJEI();
+            syncJEI(false);
             return true;
         }
 
@@ -734,7 +739,7 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
         if (!Objects.equals(s, searchBox.getValue())) {
             refreshSearchNextTick = true;
             moveToTopNextTick = true;
-            syncJEI();
+            syncJEI(false);
         }
         return true;
     }
@@ -762,7 +767,7 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
         if (!Objects.equals(s, searchBox.getValue())) {
             refreshSearchNextTick = true;
             moveToTopNextTick = true;
-            syncJEI();
+            syncJEI(false);
         }
         return true;
     }
@@ -801,9 +806,21 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
         itemsToOrder = new ArrayList<>();
     }
 
-    private void syncJEI() {
-        if (Mods.JEI.isLoaded() && AllConfigs.client().syncJeiSearch.get())
-            CreateJEI.runtime.getIngredientFilter().setFilterText(searchBox.getValue());
+    private void syncJEI(boolean fromJei) {
+        if (!Mods.JEI.isLoaded())
+            return;
+
+        StockKeeperRequestScreen.SearchSyncMode mode = AllConfigs.client().syncRecipeViewerSearch.get();
+        if (mode == StockKeeperRequestScreen.SearchSyncMode.NONE)
+            return;
+
+        IIngredientFilter filter = CreateJEI.runtime.getIngredientFilter();
+        if (mode.isBothOr(StockKeeperRequestScreen.SearchSyncMode.SYNC_FROM_JEI) && fromJei) {
+            previousJEISearchText = filter.getFilterText();
+            searchBox.setValue(previousJEISearchText);
+        } else if (mode.isBothOr(StockKeeperRequestScreen.SearchSyncMode.SYNC_FROM_STOCK_KEEPER) && !fromJei) {
+            filter.setFilterText(searchBox.getValue());
+        }
     }
 
     protected void playUiSound(SoundEvent sound, float volume, float pitch) {

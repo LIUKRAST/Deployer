@@ -23,6 +23,7 @@ public record CustomPackageStyle(ResourceLocation idAndPackage, String type, int
     }
 
     public PackageStyles.PackageStyle toOriginal() {
-        return new PackageStyles.PackageStyle(type, width, height, riggingOffset, rare);
+        String id = rare ? "rare_" + type : type;
+        return new PackageStyles.PackageStyle(id, width, height, riggingOffset, rare);
     }
 };
