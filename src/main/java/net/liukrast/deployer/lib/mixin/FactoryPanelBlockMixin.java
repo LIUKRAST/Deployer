@@ -56,9 +56,6 @@ import java.util.function.Consumer;
 @Mixin(FactoryPanelBlock.class)
 public abstract class FactoryPanelBlockMixin extends Block implements IBE<FactoryPanelBlockEntity> {
 
-    /* SHADOWS, UNIQUE AND CONSTRCTOR */
-
-    @Unique private static ItemStack extra_gauges$tryDestroySubPanelFirst$local$itemStack;
 
     public FactoryPanelBlockMixin(Properties properties) {
         super(properties);
@@ -88,7 +85,8 @@ public abstract class FactoryPanelBlockMixin extends Block implements IBE<Factor
             List<ItemStack> out = new ArrayList<>();
             for(var panel : fpbe.panels.values()) {
                 if(!panel.active) continue;
-                out.add(panel instanceof AbstractPanelBehaviour ab ? ab.getItem().getDefaultInstance() : AllBlocks.FACTORY_GAUGE.asStack());
+                if(panel instanceof AbstractPanelBehaviour ab) out.addAll(ab.getItemDrops());
+                else out.add(AllBlocks.FACTORY_GAUGE.asStack());
             }
             return out.isEmpty() ? ((FPBEExtension)fpbe).deployer$getExtraDrops() : out;
         }
@@ -110,8 +108,17 @@ public abstract class FactoryPanelBlockMixin extends Block implements IBE<Factor
     /* ON SNEAK WRENCHED */
     @ModifyArg(method = "lambda$onSneakWrenched$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;placeItemBackInInventory(Lnet/minecraft/world/item/ItemStack;)V"))
     private static ItemStack asStack(ItemStack original, @Local(name = "behaviour") FactoryPanelBehaviour behaviour) {
-        if(!(behaviour instanceof AbstractPanelBehaviour abstractPanelBehaviour)) return original;
-        return abstractPanelBehaviour.getItem().getDefaultInstance();
+        if(!(behaviour instanceof AbstractPanelBehaviour ab)) return original;
+        var extra = ab.getItemDrops();
+        var drop = ab.getItem().getDefaultInstance();
+        int size = extra.size();
+        extra = extra.stream().filter(i -> !ItemStack.isSameItemSameComponents(i, drop)).toList();
+        for(ItemStack stack : extra)
+            popResource(ab.getWorld(), ab.getPos(), stack);
+        if(size != extra.size()) {
+            return drop;
+        }
+        return ItemStack.EMPTY;
     }
 
     @SuppressWarnings("SameReturnValue")
@@ -190,18 +197,24 @@ public abstract class FactoryPanelBlockMixin extends Block implements IBE<Factor
             BlockPos pos,
             FactoryPanelBlockEntity fpbe,
             CallbackInfoReturnable<InteractionResult> cir,
-            @Share("item_stack") LocalRef<ItemStack> localStack
+            @Share("item_stack") LocalRef<List<ItemStack>> localStack
     ) {
         var behaviour = fpbe.panels.get(destroyedSlot);
-        if(behaviour instanceof AbstractPanelBehaviour panelBehaviour) localStack.set(panelBehaviour.getItem().getDefaultInstance());
+        if(behaviour instanceof AbstractPanelBehaviour panelBehaviour) localStack.set(panelBehaviour.getItemDrops());
     }
 
     @ModifyArg(method = "lambda$tryDestroySubPanelFirst$3", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBlock;popResource(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/item/ItemStack;)V"))
     private static ItemStack lambda$tryDestroySubPanelFirst$3(
             ItemStack stack,
-            @Share("item_stack") LocalRef<ItemStack> localStack
+            @Share("item_stack") LocalRef<List<ItemStack>> localStack,
+            @Local(argsOnly = true) FactoryPanelBlockEntity be
     ) {
-        return localStack.get() == null ? stack : localStack.get();
+        if(localStack.get() == null) return stack;
+        var drop = localStack.get();
+        if(drop.isEmpty()) return ItemStack.EMPTY;
+        assert be.getLevel() != null;
+        for(int i = 1; i < drop.size(); i++) popResource(be.getLevel(), be.getBlockPos(), drop.get(i));
+        return drop.getFirst();
     }
     /* IS SIGNAL SOURCE */
     /* GET SIGNAL */

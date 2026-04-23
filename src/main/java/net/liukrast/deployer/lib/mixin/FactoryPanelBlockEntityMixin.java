@@ -76,7 +76,8 @@ public abstract class FactoryPanelBlockEntityMixin extends SmartBlockEntity impl
         deployer$extraDrops.clear();
         for(var panel : panels.values()) {
             if(!panel.active) continue;
-            deployer$extraDrops.add(panel instanceof AbstractPanelBehaviour ab ? ab.getItem().getDefaultInstance() : AllBlocks.FACTORY_GAUGE.asStack());
+            if(panel instanceof AbstractPanelBehaviour ab) deployer$extraDrops.addAll(ab.getItemDrops());
+            else deployer$extraDrops.add(AllBlocks.FACTORY_GAUGE.asStack());
         }
     }
 }

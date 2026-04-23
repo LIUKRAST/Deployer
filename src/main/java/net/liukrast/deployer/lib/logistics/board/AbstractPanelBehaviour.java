@@ -14,7 +14,6 @@ import net.createmod.catnip.platform.CatnipServices;
 import net.liukrast.deployer.lib.DeployerConfig;
 import net.liukrast.deployer.lib.logistics.board.connection.*;
 import net.liukrast.deployer.lib.logistics.board.screen.BasicPanelScreen;
-import net.liukrast.deployer.lib.mixin.accessors.FactoryPanelBehaviourAccessor;
 import net.liukrast.deployer.lib.mixin.accessors.FilteringBehaviourAccessor;
 import net.liukrast.deployer.lib.mixinExtensions.FPBExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
@@ -255,6 +254,10 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
      * @return the item representative of this panel behavior
      */
     public abstract Item getItem();
+
+    public List<ItemStack> getItemDrops() {
+        return List.of(getItem().getDefaultInstance());
+    }
 
     /**
      * Determines the visual model for this panel during rendering.
@@ -497,7 +500,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
     public void destroy() {
         super.destroy();
         if(blockEntity instanceof FactoryPanelBlockEntity be) {
-            var newBehaviour = new FactoryPanelBehaviour(be, this.slot); //TODO: Might break with other mods
+            var newBehaviour = new FactoryPanelBehaviour(be, this.slot);
             newBehaviour.active = false;
             blockEntity.attachBehaviourLate(newBehaviour);
             be.panels.put(slot, newBehaviour);
