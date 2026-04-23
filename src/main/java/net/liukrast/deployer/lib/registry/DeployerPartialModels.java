@@ -5,7 +5,7 @@ import com.simibubi.create.content.logistics.box.PackageStyles;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.lang.Lang;
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 
@@ -20,8 +20,8 @@ public class DeployerPartialModels {
 
     static {
         for(PackageStyles.PackageStyle style : DeployerPackages.STYLES) {
-            ResourceLocation key = DeployerConstants.id(style.getItemId().getPath());
-            PartialModel model = PartialModel.of(DeployerConstants.id("item/" + key.getPath()));
+            ResourceLocation key = Deployer.CONSTANTS.id(style.getItemId().getPath());
+            PartialModel model = PartialModel.of(Deployer.CONSTANTS.id("item/" + key.getPath()));
             AllPartialModels.PACKAGES.put(key, model);
             if (!style.rare())
                 AllPartialModels.PACKAGES_TO_HIDE_AS.add(model);
@@ -36,7 +36,7 @@ public class DeployerPartialModels {
     }
 
     private static PartialModel block(String path) {
-        return PartialModel.of(DeployerConstants.id("block/" + path));
+        return PartialModel.of(Deployer.CONSTANTS.id("block/" + path));
     }
 
     public static void init() {}

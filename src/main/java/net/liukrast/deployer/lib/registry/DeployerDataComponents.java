@@ -4,7 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.logistics.OrderStockTypeData;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
@@ -24,7 +24,7 @@ import java.util.Map;
 public class DeployerDataComponents {
     private DeployerDataComponents() {}
 
-    private static final DeferredRegister<DataComponentType<?>> DATA_COMPONENTS = DeferredRegister.create(BuiltInRegistries.DATA_COMPONENT_TYPE, DeployerConstants.MOD_ID);
+    private static final DeferredRegister<DataComponentType<?>> DATA_COMPONENTS = DeferredRegister.create(BuiltInRegistries.DATA_COMPONENT_TYPE, Deployer.CONSTANTS.getModId());
 
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<OrderStockTypeData>> ORDER_STOCK_TYPE_DATA = DATA_COMPONENTS.register("order_stock_type_data", () -> DataComponentType.<OrderStockTypeData>builder()
             .persistent(OrderStockTypeData.CODEC)

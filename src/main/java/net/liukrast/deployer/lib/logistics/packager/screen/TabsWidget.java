@@ -1,7 +1,7 @@
 package net.liukrast.deployer.lib.logistics.packager.screen;
 
 import net.createmod.catnip.gui.widget.AbstractSimiWidget;
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class TabsWidget<T extends TabData> extends AbstractSimiWidget {
-    private static final ResourceLocation TEXTURE = DeployerConstants.id("textures/gui/stock_keeper_tabs.png");
+    private static final ResourceLocation TEXTURE = Deployer.CONSTANTS.id("textures/gui/stock_keeper_tabs.png");
 
 
     private final int maxTabs;

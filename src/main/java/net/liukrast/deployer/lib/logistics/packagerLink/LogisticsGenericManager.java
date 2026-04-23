@@ -11,7 +11,7 @@ import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.utility.TickBasedCache;
 import net.createmod.catnip.data.Pair;
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.logistics.packager.*;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
 import net.liukrast.deployer.lib.mixin.accessors.LogisticsManagerAccessor;
@@ -61,7 +61,7 @@ public class LogisticsGenericManager {
                 return summaryOfLinks;
             });
         } catch (ExecutionException e) {
-            DeployerConstants.LOGGER.error("Failed to get summary of network", e);
+            Deployer.CONSTANTS.getLogger().error("Failed to get summary of network", e);
         }
         return type.networkHandler().empty();
     }

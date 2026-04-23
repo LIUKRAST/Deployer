@@ -10,7 +10,7 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import net.createmod.catnip.gui.AbstractSimiScreen;
 import net.createmod.catnip.gui.element.GuiGameElement;
 import net.createmod.catnip.platform.CatnipServices;
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -30,7 +30,7 @@ import java.util.HashMap;
  */
 public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends AbstractSimiScreen {
     @ApiStatus.Internal
-    public static final ResourceLocation TEXTURE = DeployerConstants.id("textures/gui/generic_gauge.png");
+    public static final ResourceLocation TEXTURE = Deployer.CONSTANTS.id("textures/gui/generic_gauge.png");
 
     protected final boolean canConnect,canMove;
 

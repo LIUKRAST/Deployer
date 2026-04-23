@@ -1,6 +1,6 @@
 package net.liukrast.deployer.lib.registry;
 
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.logistics.board.connection.ConnectionLine;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelConnection;
 import net.liukrast.deployer.lib.logistics.board.connection.StockConnection;
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.ApiStatus;
  * */
 public class DeployerPanelConnections {
     private DeployerPanelConnections() {}
-    private static final DeferredRegister<PanelConnection<?>> CONNECTIONS = DeferredRegister.create(DeployerRegistries.PANEL_CONNECTION, DeployerConstants.MOD_ID);
+    private static final DeferredRegister<PanelConnection<?>> CONNECTIONS = DeferredRegister.create(DeployerRegistries.PANEL_CONNECTION, Deployer.CONSTANTS.getModId());
 
     public static final DeferredHolder<PanelConnection<?>, PanelConnection<StockConnection<?>>> STOCK_CONNECTION = CONNECTIONS.register("stock_connection", () -> new PanelConnection<>(ConnectionLine.createStatic(0x888898, false, true)));
     public static final DeferredHolder<PanelConnection<?>, PanelConnection<Boolean>> REDSTONE = CONNECTIONS.register("redstone", () -> new PanelConnection<>(bl -> ConnectionLine.pack(bl ? 0xEF0000 : 0x580101)));

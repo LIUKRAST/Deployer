@@ -1,5 +1,6 @@
 package net.liukrast.deployer.lib;
 
+import net.liukrast.deployer.lib.helper.Constants;
 import net.liukrast.deployer.lib.registry.*;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -11,8 +12,12 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 
-@Mod(DeployerConstants.MOD_ID)
+@Mod("deployer")
 public class Deployer {
+
+    public static boolean PSIC_INSTALLED;
+
+    public static final Constants CONSTANTS = Constants.of("deployer");
 
     public Deployer(IEventBus bus, ModContainer container) {
         bus.register(this);
@@ -24,7 +29,7 @@ public class Deployer {
         DeployerPackets.register();
         container.registerConfig(ModConfig.Type.SERVER, DeployerConfig.Server.SPEC);
 
-        if(ModList.get().isLoaded("psic_compat")) DeployerConstants.PSIC_INSTALLED = true;
+        if(ModList.get().isLoaded("psic_compat")) PSIC_INSTALLED = true;
     }
 
     /* MOD BUS EVENTS */

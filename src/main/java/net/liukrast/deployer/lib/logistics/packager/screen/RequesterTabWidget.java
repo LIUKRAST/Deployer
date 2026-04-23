@@ -1,6 +1,6 @@
 package net.liukrast.deployer.lib.logistics.packager.screen;
 
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +10,7 @@ public class RequesterTabWidget extends TabWidget<RequesterTabScreen<?>> {
     public static final int TAB_WIDTH = 20;
     public static final int TAB_HEIGHT = 22;
 
-    private static final ResourceLocation TEXTURE = DeployerConstants.id("textures/gui/stock_keeper_tabs.png");
+    private static final ResourceLocation TEXTURE = Deployer.CONSTANTS.id("textures/gui/stock_keeper_tabs.png");
     public RequesterTabWidget(int x, int y, int w, int h, RequesterTabScreen<?> tab) {
         super(x, y, w, h, tab);
     }

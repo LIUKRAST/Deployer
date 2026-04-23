@@ -5,7 +5,7 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.utility.CreateLang;
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.mixinExtensions.FPBEExtension;
 import net.liukrast.deployer.lib.registry.DeployerRegistries;
@@ -57,11 +57,11 @@ public abstract class FactoryPanelBlockEntityMixin extends SmartBlockEntity impl
                 ResourceLocation id = ResourceLocation.parse(customPanels.getString(key));
                 var type = DeployerRegistries.PANEL.get(id);
                 if(type == null) {
-                    DeployerConstants.LOGGER.error("Unable to find panel registry key {} for panel slot {} at pos {}", id, slot, getBlockPos());
+                    Deployer.CONSTANTS.getLogger().error("Unable to find panel registry key {} for panel slot {} at pos {}", id, slot, getBlockPos());
                     continue;
                 }
                 var current = panels.get(slot);
-                if(current != null && type.asClass().equals(current.getClass())) continue; //No need to re-initialize behaviour
+                if(current != null && type.asClass().equals(current.getClass())) continue; //No need to re-initialize behavior
                 var behaviour = type.create(instance, slot);
                 if(behaviour == null) continue;
                 panels.put(slot, behaviour);

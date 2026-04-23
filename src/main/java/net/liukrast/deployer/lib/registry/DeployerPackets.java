@@ -2,7 +2,7 @@ package net.liukrast.deployer.lib.registry;
 
 import net.createmod.catnip.net.base.BasePacketPayload;
 import net.createmod.catnip.net.base.CatnipPacketRegistry;
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelSpecialSetupPacket;
 import net.liukrast.deployer.lib.logistics.requester.RequesterExtraDataC2SPacket;
 import net.liukrast.deployer.lib.logistics.requester.RequesterExtraDataS2CPacket;
@@ -33,7 +33,7 @@ public enum DeployerPackets implements BasePacketPayload.PacketTypeProvider {
         String name = this.name().toLowerCase(Locale.ROOT);
         StreamCodec<RegistryFriendlyByteBuf, T> unchecked = (StreamCodec<RegistryFriendlyByteBuf, T>) codec;
         this.type = new CatnipPacketRegistry.PacketType<>(
-                new CustomPacketPayload.Type<>(DeployerConstants.id(name)),
+                new CustomPacketPayload.Type<>(Deployer.CONSTANTS.id(name)),
                 clazz, unchecked
         );
     }
@@ -45,7 +45,7 @@ public enum DeployerPackets implements BasePacketPayload.PacketTypeProvider {
     }
 
     public static void register() {
-        CatnipPacketRegistry packetRegistry = new CatnipPacketRegistry(DeployerConstants.MOD_ID, DeployerConstants.PROTOCOL_VERSION);
+        CatnipPacketRegistry packetRegistry = new CatnipPacketRegistry(Deployer.CONSTANTS.getModId(), Deployer.CONSTANTS.getProtocol());
         for (DeployerPackets packet : values()) {
             packetRegistry.registerPacket(packet.type);
         }

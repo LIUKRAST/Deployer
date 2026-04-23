@@ -20,7 +20,7 @@ import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.platform.services.NetworkHelper;
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.helper.ClientRegisterHelpers;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.packager.screen.*;
@@ -68,7 +68,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     @Shadow
     int jeiSyncX;
     /* UNIQUES */
-    @Unique private static final ResourceLocation deployer$TEXTURE = DeployerConstants.id("textures/gui/stock_keeper_tabs.png");
+    @Unique private static final ResourceLocation deployer$TEXTURE = Deployer.CONSTANTS.id("textures/gui/stock_keeper_tabs.png");
     @Unique private List<KeeperTabScreen> deployer$tabs;
     @Unique private TabsWidget<KeeperTabScreen> deployer$tabsWidget;
 

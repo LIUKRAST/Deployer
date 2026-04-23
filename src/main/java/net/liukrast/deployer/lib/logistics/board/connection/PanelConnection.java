@@ -1,6 +1,6 @@
 package net.liukrast.deployer.lib.logistics.board.connection;
 
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.registry.DeployerRegistries;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
@@ -40,7 +40,7 @@ public class PanelConnection<T> {
      */
     @SuppressWarnings("JavadocReference")
     public void addListener(ConnectionExtra<T> supplier, Block... validBlocks) {
-        if(validBlocks.length == 0) DeployerConstants.LOGGER.error("Registered panel connection listener without any blocks. {}", this);
+        if(validBlocks.length == 0) Deployer.CONSTANTS.getLogger().error("Registered panel connection listener without any blocks. {}", this);
         for(var block : validBlocks) {
             extraConnections.put(block, supplier);
         }

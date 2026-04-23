@@ -31,7 +31,7 @@ import net.neoforged.neoforge.common.NeoForge;
 
 import java.net.URI;
 
-@Mod(value = DeployerConstants.MOD_ID, dist = Dist.CLIENT)
+@Mod(value = "deployer", dist = Dist.CLIENT)
 public class DeployerClient {
 
     public static FactoryPanelConnection SELECTED_CONNECTION = null;

@@ -6,7 +6,7 @@ import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequester
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterScreen;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import net.createmod.catnip.platform.CatnipServices;
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.helper.ClientRegisterHelpers;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.packager.screen.RequesterTabScreen;
@@ -35,7 +35,7 @@ import java.util.*;
 @Mixin(RedstoneRequesterScreen.class)
 public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainerScreen<RedstoneRequesterMenu> implements RRSExtension {
 
-    @Unique private static final ResourceLocation deployer$TEXTURE = DeployerConstants.id("textures/gui/stock_keeper_tabs.png");
+    @Unique private static final ResourceLocation deployer$TEXTURE = Deployer.CONSTANTS.id("textures/gui/stock_keeper_tabs.png");
     @Unique private List<RequesterTabScreen<?>> deployer$tabs;
     @Unique private TabsWidget<RequesterTabScreen<?>> deployer$tabsWidget;
     @Unique private Map<StockInventoryType<?,?,?>, GenericOrderContained<?>> deployer$extraOrders;

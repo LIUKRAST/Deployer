@@ -1,6 +1,6 @@
 package net.liukrast.deployer.lib.helper;
 
-import net.liukrast.deployer.lib.DeployerConstants;
+import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.logistics.GenericPackageOrderData;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
@@ -31,7 +31,7 @@ public class MinecraftHelpers {
 
             public static BlockModelBuilder createGauge(BlockModelProvider instance, Item item, Function<String, String> texture) {
                 var id = Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(item));
-                return instance.getBuilder(id.toString()).parent(new ModelFile.UncheckedModelFile(DeployerConstants.id("block/template_gauge")))
+                return instance.getBuilder(id.toString()).parent(new ModelFile.UncheckedModelFile(Deployer.CONSTANTS.id("block/template_gauge")))
                         .texture("texture", ResourceLocation.fromNamespaceAndPath(id.getNamespace(), texture.apply(id.getPath())))
                         .texture("particle", ResourceLocation.fromNamespaceAndPath(id.getNamespace(), texture.apply(id.getPath())));
             }
