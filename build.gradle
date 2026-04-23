@@ -129,6 +129,11 @@ dependencies {
     // Compat
     implementation "curse.maven:create-additional-logistics-1359885:7460280"
     implementation "curse.maven:createaddition-439890:7518252"
+    implementation "curse.maven:create-buzzy-bees-1491979:7867713"
+    implementation "curse.maven:kotlin-for-forge-351264:7471280"
+    implementation "curse.maven:curios-309927:6529130"
+    implementation "curse.maven:geckolib-388172:7707149"
+    implementation "curse.maven:wakes-reforged-1223529:7562282"
 
 }
 

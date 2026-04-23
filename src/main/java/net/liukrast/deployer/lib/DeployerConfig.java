@@ -1,24 +1,13 @@
 package net.liukrast.deployer.lib;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class DeployerConfig {
     private DeployerConfig() {}
 
-    @OnlyIn(Dist.CLIENT)
     public static class Client {
         private Client() {}
         private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
-
-        public static final ModConfigSpec.BooleanValue PANEL_CACHING = BUILDER
-                .comment("Caching all input values to display when non instant updates are still processing")
-                .define("panelCaching", true);
-
-        public static final ModConfigSpec.BooleanValue PACKAGE_GOGGLE_INFO = BUILDER
-                .comment("Adds a simple goggle overlay on package entities")
-                .define("packageGoggleInformation", true);
 
         static final ModConfigSpec SPEC = BUILDER.build();
     }
@@ -39,9 +28,9 @@ public class DeployerConfig {
                 .comment("Determines how many times a factory panel can be updated in the same tick")
                 .defineInRange("factoryPanelMaxCyclesPerTick", 16, 0, Integer.MAX_VALUE);
 
-        public static final ModConfigSpec.BooleanValue FAST_REPACKAGE_ALGORITHM = BUILDER
+        /*public static final ModConfigSpec.BooleanValue FAST_REPACKAGE_ALGORITHM = BUILDER
                 .comment("Uses a different algorithm to perform re-packaging behaviour, reducing it from O(n⁴) to O(n). If other mods collide or modify the behaviour, disable it")
-                .define("fastRepackageAlgorithm", false);
+                .define("fastRepackageAlgorithm", false);*/
 
         static final ModConfigSpec SPEC = BUILDER.build();
     }

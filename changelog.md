@@ -1,4 +1,4 @@
-- Unwrapping method for special packager has been replaced with a safe version so that depending mods don't risk to break abstract packagers
-- Now requires create 6.0.10
-- Marked incompatibility with FL
-- Added new ponder helpers and utilities
+- Added function to add drops to a gauge
+- Removed unused config
+- Added Constants API module
+- Added Ponder API module

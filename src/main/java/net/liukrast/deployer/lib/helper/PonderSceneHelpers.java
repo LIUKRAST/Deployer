@@ -4,19 +4,23 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntity;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConnection;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelPosition;
+import com.simibubi.create.content.redstone.analogLever.AnalogLeverBlockEntity;
 import com.simibubi.create.content.redstone.nixieTube.NixieTubeBlockEntity;
 import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import net.createmod.catnip.gui.element.ScreenElement;
 import net.createmod.ponder.api.element.ElementLink;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
+import net.createmod.ponder.api.scene.Selection;
 import net.createmod.ponder.foundation.PonderSceneBuilder;
 import net.createmod.ponder.foundation.element.ElementLinkImpl;
 import net.liukrast.deployer.lib.helper.ponder.CreatePartialInstruction;
 import net.liukrast.deployer.lib.helper.ponder.PartialElement;
 import net.liukrast.deployer.lib.helper.ponder.PartialElementImpl;
 import net.liukrast.deployer.lib.mixinExtensions.FPBExtension;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -260,7 +264,21 @@ public class PonderSceneHelpers {
             builder.world()
                     .modifyBlockEntity(gauge.pos(), FactoryPanelBlockEntity.class, be -> consumer.accept(be.panels.get(gauge.slot())));
         }
+
+        public static void setGaugeCount(SceneBuilder scene, FactoryPanelPosition gauge, int count) {
+            withGaugeDo(scene, gauge, fb -> fb.count = count);
+        }
     }
+
+    public static void setAnalogLever(SceneBuilder scene, Selection sel, int power) {
+        scene.world().modifyBlockEntityNBT(sel, AnalogLeverBlockEntity.class,
+                nbt -> nbt.putInt("State", power));
+    }
+
+    public static ScreenElement createComponent(Component text) {
+        return (graphics, x, y) -> graphics.drawCenteredString(Minecraft.getInstance().font, text, x+8, y+4, -1);
+    }
+
 
     public static ElementLink<PartialElement> createPartialModel(PonderSceneBuilder builder, PartialModel model, Vec3 position) {
         return createPartialModel(builder, model, position, 10, Direction.DOWN);
