@@ -106,7 +106,10 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
      */
     @Override
     protected void init() {
-        setWindowSize(getWindowWidth() + 106, getWindowHeight() + 46);
+        boolean singleButton = canConnect ^ canMove;
+        int baseWidth = singleButton ? 84 : 106;
+
+        setWindowSize(getWindowWidth() + baseWidth, getWindowHeight() + 46);
         int sizeX = windowWidth;
         int sizeY = windowHeight;
         super.init();
@@ -143,7 +146,8 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
         }
 
         if(canMove) {
-            IconButton relocateButton = new IconButton(x + 29, y + sizeY - 24, AllIcons.I_MOVE_GAUGE);
+            int moveX = canConnect ? (x + 29) : (x + 7);
+            IconButton relocateButton = new IconButton(moveX, y + sizeY - 24, AllIcons.I_MOVE_GAUGE);
             relocateButton.withCallback(() -> {
                 FactoryPanelConnectionHandler.startRelocating(behaviour);
                 minecraft.setScreen(null);
@@ -176,50 +180,68 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
         int x = guiLeft;
         int y = guiTop;
         ResourceLocation bg = getBackgroundTexture();
-        graphics.drawCenteredString(font, title, x+windowWidth/2, y + 4, 0x3D3C48);
-        graphics.blit(bg,x, y, 0, 0, 53, 16);
-        graphics.blit(bg,x+windowWidth-106+53, y, 139, 0, 53, 16);
+        graphics.drawCenteredString(font, title, x + windowWidth / 2, y + 4, 0x3D3C48);
 
-        graphics.blit(bg,x, y+windowHeight-46+15, 0, 56, 53, 32);
-        graphics.blit(bg,x+windowWidth-106+53, y+windowHeight-46+15, 139, 56, 60, 32);
+        graphics.blit(bg, x, y, 0, 0, 53, 16);
+        graphics.blit(bg, x + windowWidth - 53, y, 139, 0, 53, 16);
+
+        boolean singleButton = canConnect ^ canMove;
+        int footerLeftV = singleButton ? 90 : 56;
+        int footerLeftWidth = singleButton ? 31 : 53;
+
+        graphics.blit(bg, x, y + windowHeight - 31, 0, footerLeftV, footerLeftWidth, 32);
+        graphics.blit(bg, x + windowWidth - 53, y + windowHeight - 31, 139, 56, 61, 32);
 
         if(windowWidth > 106) {
-            int r = windowWidth-106;
-            int r1 = r-3;
+            int r = windowWidth - 106;
             int step = 0;
-            if(r > 1) graphics.blit(bg,x+windowWidth-106+52, y+windowHeight-46+15,138,56,1,32);
-            graphics.blit(bg, x+53,y+windowHeight-46+15,53,56,2,32);
-            while(r > 0 || r1 > 0) {
-                if(r>0)graphics.blit(bg, x + 53 + step*86, y, 53, 0, Math.min(r, 86), 16);
-                if(r1>0)graphics.blit(bg,x+55+step*83,y+windowHeight-46+15,55,56,Math.min(r1,83),32);
+            while (r > 0) {
+                graphics.blit(bg, x + 53 + step * 86, y, 53, 0, Math.min(r, 86), 16);
                 step++;
-                r-=86;
-                r1-=83;
+                r -= 86;
+            }
+        }
+
+        int bottomGap = windowWidth - 53 - footerLeftWidth;
+        if(bottomGap > 0) {
+            int r1 = bottomGap - 3;
+            int step = 0;
+
+            graphics.blit(bg, x + footerLeftWidth, y + windowHeight - 31, 53, 56, Math.min(bottomGap, 2), 32);
+            if(bottomGap > 2) {
+                graphics.blit(bg, x + windowWidth - 54, y + windowHeight - 31, 138, 56, 1, 32);
+            }
+            while (r1 > 0) {
+                graphics.blit(bg, x + footerLeftWidth + 2 + step * 83, y + windowHeight - 31, 55, 56, Math.min(r1, 83), 32);
+                step++;
+                r1 -= 83;
             }
         }
 
         if(windowHeight > 47) {
             int r = windowHeight-47;
             int step = 0;
-            graphics.blit(bg,x,y+16,0,16,53,Math.min(r, 40));
-            graphics.blit(bg,x+windowWidth-106+53,y+16,139,16,53,Math.min(r, 40));
-            if(windowWidth > 106) {
-                int r1 = windowWidth-106;
+            graphics.blit(bg, x, y + 16, 0, 16, 53, Math.min(r, 40));
+            graphics.blit(bg, x + windowWidth - 53, y + 16, 139, 16, 53, Math.min(r, 40));
+
+            if (windowWidth > 106) {
+                int r1 = windowWidth - 106;
                 int step1 = 0;
-                while(r1>0) {
-                    graphics.blit(bg, x + 53 + step1*86, y+16, 53, 16, Math.min(r1, 86), Math.min(r, 40));
+                while (r1 > 0) {
+                    graphics.blit(bg, x + 53 + step1 * 86, y + 16, 53, 16, Math.min(r1, 86), Math.min(r, 40));
                     step1++;
-                    r1-=86;
+                    r1 -= 86;
                 }
             }
-            r-=40;
-            while(r>0) {
-                graphics.blit(bg,x,y+56+step*36,0,20,53,Math.min(r, 36));
-                graphics.blit(bg,x+windowWidth-106+53,y+56+step*36,139,20,53,Math.min(r, 36));
-                int r1 = windowWidth-106;
+            r -= 40;
+            while (r > 0) {
+                graphics.blit(bg, x, y + 56 + step * 36, 0, 20, 53, Math.min(r, 36));
+                graphics.blit(bg, x + windowWidth - 53, y + 56 + step * 36, 139, 20, 53, Math.min(r, 36));
+
+                int r1 = windowWidth - 106;
                 int step1 = 0;
-                while(r1>0) {
-                    graphics.blit(bg, x + 53 + step1*86, y+56+step*36, 53, 20, Math.min(r1, 86), Math.min(r, 36));
+                while (r1 > 0) {
+                    graphics.blit(bg, x + 53 + step1 * 86, y + 56 + step * 36, 53, 20, Math.min(r1, 86), Math.min(r, 36));
                     step1++;
                     r1-=86;
                 }
