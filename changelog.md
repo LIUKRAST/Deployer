@@ -1,4 +1,2 @@
-- Added function to add drops to a gauge
-- Removed unused config
-- Added Constants API module
-- Added Ponder API module
+Fixed
+- Restocker mode doesn't work

@@ -2,6 +2,7 @@ package net.liukrast.deployer.lib.logistics.packager;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.Create;
+import com.simibubi.create.api.packager.InventoryIdentifier;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.box.PackageItem;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
@@ -21,6 +22,8 @@ import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.BlockFace;
 import net.liukrast.deployer.lib.logistics.GenericPackageOrderData;
 import net.liukrast.deployer.lib.logistics.OrderStockTypeData;
+import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
+import net.liukrast.deployer.lib.logistics.packagerLink.LogisticsGenericManager;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
 import net.liukrast.deployer.lib.mixin.accessors.PackagerBlockEntityAccessor;
 import net.liukrast.deployer.lib.mixinExtensions.LLBExtension;
@@ -181,10 +184,12 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
                     continue;
                 if (!(level.getBlockEntity(worldPosition.relative(d)) instanceof FactoryPanelBlockEntity fpbe))
                     continue;
-                if (!fpbe.restocker)
-                    continue;
                 for (FactoryPanelBehaviour behaviour : fpbe.panels.values()) {
                     if (!behaviour.isActive())
+                        continue;
+                    if(!(behaviour instanceof AbstractPanelBehaviour apb))
+                        continue;
+                    if(!apb.hasInteraction("restocker"))
                         continue;
                     promiseQueues.add(behaviour.restockerPromises);
                 }
@@ -528,5 +533,35 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         }
 
         return unpacked;
+    }
+
+    public int getStockOf(UUID network, V item) {
+        assert getLevel() != null;
+        return LogisticsGenericManager.getStockOf(
+                getStockType(),
+                network,
+                item,
+                new IdentifiedContainer<>(
+                        InventoryIdentifier.get(
+                                getLevel(),
+                                targetInventory.getTarget()
+                        ),
+                        targetInventory.getInventory()
+                )
+        );
+    }
+
+    public boolean pleaseBroadcast(UUID network, LogisticallyLinkedBehaviour.RequestType requestType, GenericOrderContained<V> order, String recipeAddress) {
+        return LogisticsGenericManager.broadcastPackageRequest(
+                getStockType(), network, requestType, order,
+                new IdentifiedContainer<>(
+                        InventoryIdentifier.get(
+                                getLevel(),
+                                targetInventory.getTarget()
+                        ),
+                        targetInventory.getInventory()
+                ),
+                recipeAddress,0,true
+        );
     }
 }

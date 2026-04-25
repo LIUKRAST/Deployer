@@ -24,7 +24,7 @@ public abstract class StockSlot<V, A extends StockPanelBehaviour<?, V>> extends 
 
     @Override
     public void renderInputSlot(GuiGraphics graphics, int count, int mouseX, int mouseY, int offsetX, int offsetY) {
-        if (connection != DeployerPanelConnections.STOCK_CONNECTION.get())
+        if (!panel.hasInteraction("restocker") && connection != DeployerPanelConnections.STOCK_CONNECTION.get())
             renderDefaultSlot(graphics, panel, connection, mouseX, mouseY, offsetX, offsetY);
         else
             renderInputSlot(graphics, panel.getStockInventoryType().valueHandler().copyWithCount(panel.getStack(), count), mouseX, mouseY, offsetX, offsetY);

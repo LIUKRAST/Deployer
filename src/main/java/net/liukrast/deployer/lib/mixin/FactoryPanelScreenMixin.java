@@ -46,7 +46,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen impleme
 
     @Override
     public boolean deployer$isRestocker(AbstractPanelBehaviour apb) {
-        return apb.isInInteraction();
+        return apb.hasInteraction("restocker");
     }
 
     @WrapOperation(

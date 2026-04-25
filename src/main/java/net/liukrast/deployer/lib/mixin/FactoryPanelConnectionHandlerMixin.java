@@ -35,16 +35,6 @@ public class FactoryPanelConnectionHandlerMixin {
     @Shadow static FactoryPanelPosition connectingFrom;
     @Shadow static AABB connectingFromBox;
 
-    @Inject(
-            method = "checkForIssues(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;)Ljava/lang/String;",
-            at = @At("RETURN"),
-            cancellable = true)
-    private static void checkForIssues(FactoryPanelBehaviour from, FactoryPanelBehaviour to, CallbackInfoReturnable<String> cir) {
-        String error = cir.getReturnValue();
-
-
-    }
-
     @ModifyReturnValue(
             method = "checkForIssues(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;)Ljava/lang/String;",
             at = @At("RETURN")
@@ -62,13 +52,20 @@ public class FactoryPanelConnectionHandlerMixin {
         if("factory_panel.same_surface".equals(error)) return error;
         if("factory_panel.too_far_apart".equals(error)) return error;
 
-        // If the pointing panel is a factory gauge, we can't ignore issues
+        // Skip restocker mode normal gauges
+        if(!(to instanceof AbstractPanelBehaviour) && "factory_panel.input_in_restock_mode".equals(error))
+            return error;
+        
         if("factory_panel.no_item".equals(error)) {
-            if(
-                    (from instanceof AbstractPanelBehaviour || !from.getFilter().isEmpty()) &&
-                            (to instanceof AbstractPanelBehaviour || !to.getFilter().isEmpty())
-            ) return null;
+            if(!(from instanceof AbstractPanelBehaviour) && from.getFilter().isEmpty())
+                return error;
+            if(!(to instanceof AbstractPanelBehaviour) && to.getFilter().isEmpty())
+                return error;
         }
+
+        if(!(from instanceof AbstractPanelBehaviour) && !(to instanceof AbstractPanelBehaviour))
+            return error;
+
         if(from instanceof AbstractPanelBehaviour apb) {
             var error1 = apb.canPoint(to);
             if(error1 != null) return error1;

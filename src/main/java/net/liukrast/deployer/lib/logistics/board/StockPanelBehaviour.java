@@ -1,8 +1,12 @@
 package net.liukrast.deployer.lib.logistics.board;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.api.packager.InventoryIdentifier;
+import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.*;
+import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packagerLink.*;
+import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBox;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
@@ -11,10 +15,13 @@ import net.createmod.catnip.gui.ScreenOpener;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelConnectionBuilder;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelInteractionBuilder;
 import net.liukrast.deployer.lib.logistics.board.connection.StockConnection;
+import net.liukrast.deployer.lib.logistics.packager.AbstractPackagerBlock;
 import net.liukrast.deployer.lib.logistics.packager.AbstractPackagerBlockEntity;
+import net.liukrast.deployer.lib.logistics.packager.IdentifiedContainer;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.packagerLink.GenericRequestPromise;
 import net.liukrast.deployer.lib.logistics.packagerLink.LogisticsGenericManager;
+import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
 import net.liukrast.deployer.lib.mixinExtensions.RPQExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
 import net.minecraft.client.player.LocalPlayer;
@@ -77,6 +84,43 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour {
     @Override
     public BulbState getBulbState() {
         return getAmount() > 0 ? (redstonePowered || isMissingAddress() ? BulbState.RED : BulbState.GREEN) : BulbState.DISABLED;
+    }
+
+    @Override
+    public void tryRestock() {
+        V item = getStack();
+        if (isFilterEmpty())
+            return;
+
+        if(!(getInteractionBlockEntity("restocker") instanceof AbstractPackagerBlockEntity<?,?,?> apb))
+            return;
+        if(apb.getStockType() != getStockInventoryType())
+            return;
+        @SuppressWarnings("unchecked")
+        AbstractPackagerBlockEntity<K,V,?> packager = (AbstractPackagerBlockEntity<K, V, ?>) apb;
+        if (!packager.targetInventory.hasInventory())
+            return;
+
+        int availableOnNetwork = packager.getStockOf(network, item);
+        if (availableOnNetwork == 0) {
+            sendEffect(getPanelPosition(), false);
+            return;
+        }
+
+        int inStorage = getLevelInStorage();
+        int promised = getPromised();
+        int demand = getAmount() * getDemandMultiplier();
+        int amountToOrder = org.joml.Math.clamp(demand - promised - inStorage, 0, getDemandMultiplier() * 9 /* TODO: Give this a look */);
+
+        var orderedItem = getStockInventoryType().valueHandler().copyWithCount(item, Math.min(amountToOrder, availableOnNetwork));
+        GenericOrderContained<V> order = getStockInventoryType().valueHandler().createContained(List.of(orderedItem));
+
+        sendEffect(getPanelPosition(), true);
+
+        if(!packager.pleaseBroadcast(network, LogisticallyLinkedBehaviour.RequestType.RESTOCK, order, recipeAddress))
+            return;
+
+        ((RPQExtension)restockerPromises).deployer$add(getStockInventoryType(), new GenericRequestPromise<>(orderedItem));
     }
 
     @Override

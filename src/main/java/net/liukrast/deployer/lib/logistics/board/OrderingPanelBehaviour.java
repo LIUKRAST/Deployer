@@ -90,6 +90,11 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
     }
 
     @Override
+    public boolean isMissingAddress() {
+        return (!targetedBy.isEmpty() || hasInteraction("restocker") && count != 0 && recipeAddress.isBlank());
+    }
+
+    @Override
     public int overrideConnectionColor(int original, FactoryPanelConnection connection, float partialTicks) {
         var pc = ProvidesConnection.getCurrentConnection(connection, () -> null);
         if(pc != DeployerPanelConnections.STOCK_CONNECTION.get()) return original;
@@ -262,9 +267,9 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
                 ));
         //endregion
         FactoryPanelBlockEntity panelBE = panelBE();
-        if (realTargetedEmpty.get() /*Injected*/ && !panelBE.restocker)
+        if (realTargetedEmpty.get() /*Injected*/ && !hasInteraction("restocker"))
             return;
-        if (panelBE.restocker)
+        if (hasInteraction("restocker"))
             restockerPromises.tick();
         if (satisfied || promisedSatisfied || waitingForNetwork || redstonePowered)
             return;
@@ -279,7 +284,7 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         if (recipeAddress.isBlank())
             return;
 
-        if (panelBE.restocker) {
+        if (hasInteraction("restocker")) {
             tryRestock();
             return;
         }
@@ -491,41 +496,10 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
     }
 
 
-    private void tryRestock() {
-        ItemStack item = getFilter();
-        if (item.isEmpty())
-            return;
-
-        FactoryPanelBlockEntity panelBE = panelBE();
-        PackagerBlockEntity packager = panelBE.getRestockedPackager();
-        if (packager == null || !packager.targetInventory.hasInventory())
-            return;
-
-        int availableOnNetwork = LogisticsManager.getStockOf(network, item, packager.targetInventory.getIdentifiedInventory());
-        if (availableOnNetwork == 0) {
-            sendEffect(getPanelPosition(), false);
-            return;
-        }
-
-        int inStorage = getLevelInStorage();
-        int promised = getPromised();
-        int maxStackSize = item.getMaxStackSize();
-        int demand = getAmount() * (upTo ? 1 : maxStackSize);
-        int amountToOrder = Math.clamp(demand - promised - inStorage, 0, maxStackSize * 9);
-
-        BigItemStack orderedItem = new BigItemStack(item, Math.min(amountToOrder, availableOnNetwork));
-        PackageOrderWithCrafts order = PackageOrderWithCrafts.simple(List.of(orderedItem));
-
-        sendEffect(getPanelPosition(), true);
-
-        if (!LogisticsManager.broadcastPackageRequest(network, LogisticallyLinkedBehaviour.RequestType.RESTOCK, order,
-                packager.targetInventory.getIdentifiedInventory(), recipeAddress))
-            return;
-
-        restockerPromises.add(new RequestPromise(orderedItem));
+    public void tryRestock() {
     }
 
-    private void sendEffect(FactoryPanelPosition fromPos, boolean success) {
+    protected void sendEffect(FactoryPanelPosition fromPos, boolean success) {
         if (getWorld() instanceof ServerLevel serverLevel)
             CatnipServices.NETWORK.sendToClientsAround(serverLevel, getPos(), 64, new FactoryPanelEffectPacket(fromPos, getPanelPosition(), success));
     }
@@ -631,14 +605,14 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
                     .style(ChatFormatting.RED)
                     .component();
 
-        if (getFilter().isEmpty())
+        if (isFilterEmpty())
             key = "factory_panel.new_factory_task";
         else if (waitingForNetwork)
             key = "factory_panel.some_links_unloaded";
         else if (getAmount() == 0 || targetedBy.isEmpty())
             return getHoverName().plainCopy();
         else {
-            key = getFilter().getHoverName()
+            key = getHoverName()
                     .getString();
             if (redstonePowered)
                 key += " " + CreateLang.translate("factory_panel.redstone_paused")
