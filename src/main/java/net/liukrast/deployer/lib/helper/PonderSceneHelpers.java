@@ -30,6 +30,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Consumer;
@@ -105,23 +106,7 @@ public class PonderSceneHelpers {
      * @param color the color of the text box
      */
     public static void displayText(SceneBuilder builder, FactoryPanelPosition gauge, Direction facing, int time, boolean keyframe, PonderPalette color) {
-        float xRot = 0;
-        float yRot = AngleHelper.horizontalAngle(facing);
-
-        if (facing == Direction.UP) {
-            xRot = -90;
-            yRot = 0;
-        } else if (facing == Direction.DOWN) {
-            xRot = 90;
-            yRot = 180;
-        }
-
-        Vec3 vec = new Vec3(0.25 + gauge.slot().xOffset * 0.5, 0, 0.25 + gauge.slot().yOffset * 0.5);
-        vec = VecHelper.rotateCentered(vec, 180, Direction.Axis.Y);
-        vec = VecHelper.rotateCentered(vec, xRot + 90, Direction.Axis.X);
-        vec = VecHelper.rotateCentered(vec, yRot, Direction.Axis.Y);
-        Vec3 target = Vec3.atLowerCornerOf(gauge.pos()).add(vec);
-
+        Vec3 target = Gauge.getGaugeWorldCenter(gauge, facing);
         var overlay = builder.overlay()
                 .showText(time)
                 .text("")
@@ -323,6 +308,91 @@ public class PonderSceneHelpers {
 
         public static void setGaugeCount(SceneBuilder scene, FactoryPanelPosition gauge, int count) {
             withGaugeDo(scene, gauge, fb -> fb.count = count);
+        }
+
+        /**
+         * Helper to apply the rotational matrix of a factory panel to a local Vec3.
+         */
+        private static Vec3 rotatePanelVec(Vec3 vec, Direction facing) {
+            float xRot = 0;
+            float yRot = AngleHelper.horizontalAngle(facing);
+
+            if (facing == Direction.UP) {
+                xRot = -90;
+                yRot = 0;
+            } else if (facing == Direction.DOWN) {
+                xRot = 90;
+                yRot = 180;
+            }
+
+            vec = VecHelper.rotateCentered(vec, 180, Direction.Axis.Y);
+            vec = VecHelper.rotateCentered(vec, xRot + 90, Direction.Axis.X);
+            vec = VecHelper.rotateCentered(vec, yRot, Direction.Axis.Y);
+            return vec;
+        }
+
+        /**
+         * Gets the specific Vec3 center coordinate for a gauge quadrant in the world.
+         */
+        public static Vec3 getGaugeWorldCenter(FactoryPanelPosition gauge, Direction facing) {
+            Vec3 localCenter = new Vec3(0.25 + gauge.slot().xOffset * 0.5, 0, 0.25 + gauge.slot().yOffset * 0.5);
+            Vec3 rotatedOffset = rotatePanelVec(localCenter, facing);
+            return Vec3.atLowerCornerOf(gauge.pos()).add(rotatedOffset);
+        }
+
+        /**
+         * Calculates the Axis-Aligned Bounding Box (AABB) of a specific gauge quadrant.
+         */
+        public static AABB getGaugeAABB(FactoryPanelPosition gauge, Direction facing) {
+            double minX = gauge.slot().xOffset * 0.5;
+            double maxX = minX + 0.5;
+            double minY = 0;
+            double maxY = 0.125;
+            double minZ = gauge.slot().yOffset * 0.5;
+            double maxZ = minZ + 0.5;
+
+            Vec3[] corners = new Vec3[] {
+                    new Vec3(minX, minY, minZ), new Vec3(maxX, minY, minZ),
+                    new Vec3(minX, maxY, minZ), new Vec3(maxX, maxY, minZ),
+                    new Vec3(minX, minY, maxZ), new Vec3(maxX, minY, maxZ),
+                    new Vec3(minX, maxY, maxZ), new Vec3(maxX, maxY, maxZ)
+            };
+
+            double finalMinX = Double.MAX_VALUE, finalMinY = Double.MAX_VALUE, finalMinZ = Double.MAX_VALUE;
+            double finalMaxX = -Double.MAX_VALUE, finalMaxY = -Double.MAX_VALUE, finalMaxZ = -Double.MAX_VALUE;
+
+            for (Vec3 corner : corners) {
+                Vec3 rotated = rotatePanelVec(corner, facing);
+                finalMinX = Math.min(finalMinX, rotated.x);
+                finalMinY = Math.min(finalMinY, rotated.y);
+                finalMinZ = Math.min(finalMinZ, rotated.z);
+                finalMaxX = Math.max(finalMaxX, rotated.x);
+                finalMaxY = Math.max(finalMaxY, rotated.y);
+                finalMaxZ = Math.max(finalMaxZ, rotated.z);
+            }
+
+            BlockPos pos = gauge.pos();
+            return new AABB(
+                    pos.getX() + finalMinX, pos.getY() + finalMinY, pos.getZ() + finalMinZ,
+                    pos.getX() + finalMaxX, pos.getY() + finalMaxY, pos.getZ() + finalMaxZ
+            );
+        }
+
+        /**
+         * Takes an existing gauge AABB and shrinks its face by 1 pixel on all sides (from 8x8 to 6x6).
+         * It ignores the thickness axis so the hitbox doesn't flatten to 0 depth.
+         * Mainly used for ponders so it looks sexier
+         */
+        public static AABB shrinkGaugeAABB(AABB box, Direction facing) {
+            double pixel = 1.0 / 16.0;
+            double shrinkX = facing.getAxis() == Direction.Axis.X ? 0 : pixel;
+            double shrinkY = facing.getAxis() == Direction.Axis.Y ? 0 : pixel;
+            double shrinkZ = facing.getAxis() == Direction.Axis.Z ? 0 : pixel;
+
+            return new AABB(
+                    box.minX + shrinkX, box.minY + shrinkY, box.minZ + shrinkZ,
+                    box.maxX - shrinkX, box.maxY - shrinkY, box.maxZ - shrinkZ
+            );
         }
     }
 
