@@ -10,6 +10,8 @@ import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.createmod.catnip.gui.element.ScreenElement;
+import net.createmod.catnip.math.AngleHelper;
+import net.createmod.catnip.math.VecHelper;
 import net.createmod.ponder.api.element.ElementLink;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
@@ -74,6 +76,41 @@ public class PonderSceneHelpers {
                 .pointAt(pos.getCenter().add(-0.25f, 0.25f,0));
         if(keyframe) overlay.attachKeyFrame();
         builder.idle(time+20);
+    }
+
+    /**
+     * Automatically shows a text in the quadrant of a FactoryPanelPosition, factoring in orientation, idles the scene and attach a keyframe if requested
+     * @param builder the scene builder
+     * @param gauge the factory panel position containing the pos and slot
+     * @param facing the direction the panel is facing (e.g., the direction the wall it is attached to points)
+     * @param time the time to show the text box
+     * @param keyframe whether we want to add a keyframe to the scene or not
+     */
+    public static void displayText(SceneBuilder builder, FactoryPanelPosition gauge, Direction facing, int time, boolean keyframe) {
+        float xRot = 0;
+        float yRot = AngleHelper.horizontalAngle(facing);
+
+        if (facing == Direction.UP) {
+            xRot = -90;
+            yRot = 0;
+        } else if (facing == Direction.DOWN) {
+            xRot = 90;
+            yRot = 180;
+        }
+
+        Vec3 vec = new Vec3(0.25 + gauge.slot().xOffset * 0.5, 0, 0.25 + gauge.slot().yOffset * 0.5);
+        vec = VecHelper.rotateCentered(vec, 180, Direction.Axis.Y);
+        vec = VecHelper.rotateCentered(vec, xRot + 90, Direction.Axis.X);
+        vec = VecHelper.rotateCentered(vec, yRot, Direction.Axis.Y);
+        Vec3 target = Vec3.atLowerCornerOf(gauge.pos()).add(vec);
+
+        var overlay = builder.overlay()
+                .showText(time)
+                .text("")
+                .placeNearTarget()
+                .pointAt(target);
+        if (keyframe) overlay.attachKeyFrame();
+        builder.idle(time + 20);
     }
 
     /**
