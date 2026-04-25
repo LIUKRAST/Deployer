@@ -12,6 +12,7 @@ import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.createmod.catnip.gui.element.ScreenElement;
 import net.createmod.catnip.math.AngleHelper;
 import net.createmod.catnip.math.VecHelper;
+import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.element.ElementLink;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
@@ -62,20 +63,36 @@ public class PonderSceneHelpers {
     }
 
     /**
+     * Overload for backward compatibility, defaults to white.
+     */
+    public static void displayText(SceneBuilder builder, BlockPos pos, int time, boolean keyframe) {
+        displayText(builder, pos, time, keyframe, PonderPalette.WHITE);
+    }
+
+    /**
      * Automatically shows a text, idles the scene and attach a keyframe if requested
      * @param builder the scene builder
      * @param pos the position to show the text box
      * @param time the time to show the text box
      * @param keyframe whether we want to add a keyframe to the scene or not
+     * @param color the color of the text box
      * */
-    public static void displayText(SceneBuilder builder, BlockPos pos, int time, boolean keyframe) {
+    public static void displayText(SceneBuilder builder, BlockPos pos, int time, boolean keyframe, PonderPalette color) {
         var overlay = builder.overlay()
                 .showText(time)
                 .text("")
+                .colored(color)
                 .placeNearTarget()
                 .pointAt(pos.getCenter().add(-0.25f, 0.25f,0));
         if(keyframe) overlay.attachKeyFrame();
         builder.idle(time+20);
+    }
+
+    /**
+     * Overload for backward compatibility, defaults to white.
+     */
+    public static void displayText(SceneBuilder builder, FactoryPanelPosition gauge, Direction facing, int time, boolean keyframe) {
+        displayText(builder, gauge, facing, time, keyframe, PonderPalette.WHITE);
     }
 
     /**
@@ -85,8 +102,9 @@ public class PonderSceneHelpers {
      * @param facing the direction the panel is facing (e.g., the direction the wall it is attached to points)
      * @param time the time to show the text box
      * @param keyframe whether we want to add a keyframe to the scene or not
+     * @param color the color of the text box
      */
-    public static void displayText(SceneBuilder builder, FactoryPanelPosition gauge, Direction facing, int time, boolean keyframe) {
+    public static void displayText(SceneBuilder builder, FactoryPanelPosition gauge, Direction facing, int time, boolean keyframe, PonderPalette color) {
         float xRot = 0;
         float yRot = AngleHelper.horizontalAngle(facing);
 
@@ -107,6 +125,7 @@ public class PonderSceneHelpers {
         var overlay = builder.overlay()
                 .showText(time)
                 .text("")
+                .colored(color)
                 .placeNearTarget()
                 .pointAt(target);
         if (keyframe) overlay.attachKeyFrame();
