@@ -1,9 +1,7 @@
 package net.liukrast.deployer.lib.mixin.accessors;
 
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
-import org.checkerframework.common.reflection.qual.Invoke;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(FactoryPanelBehaviour.class)

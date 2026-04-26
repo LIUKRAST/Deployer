@@ -1,7 +1,6 @@
 package net.liukrast.deployer.lib.logistics.requester;
 
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterBlockEntity;
-import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterScreen;
 import com.simibubi.create.foundation.networking.BlockEntityDataPacket;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;

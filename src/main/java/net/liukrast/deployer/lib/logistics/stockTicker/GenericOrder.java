@@ -3,7 +3,6 @@ package net.liukrast.deployer.lib.logistics.stockTicker;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.Hash;
-import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
@@ -11,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiPredicate;
-import java.util.function.ToIntFunction;
 
 public record GenericOrder<V>(List<V> stacks, Hash.Strategy<? super V> strategy) {
 
