@@ -106,10 +106,7 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
      */
     @Override
     protected void init() {
-        boolean singleButton = canConnect ^ canMove;
-        int baseWidth = singleButton ? 84 : 106;
-
-        setWindowSize(getWindowWidth() + baseWidth, getWindowHeight() + 46);
+        setWindowSize(getWindowWidth() + 106, getWindowHeight() + 46);
         int sizeX = windowWidth;
         int sizeY = windowHeight;
         super.init();
@@ -185,14 +182,14 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
         graphics.blit(bg, x, y, 0, 0, 53, 16);
         graphics.blit(bg, x + windowWidth - 53, y, 139, 0, 53, 16);
 
-        boolean singleButton = canConnect ^ canMove;
-        int footerLeftV = singleButton ? 90 : 56;
-        int footerLeftWidth = singleButton ? 31 : 53;
+        int numLeftButtons = (canConnect ? 1 : 0) + (canMove ? 1 : 0);
+        int footerLeftV = numLeftButtons == 2 ? 56 : (numLeftButtons == 1 ? 90 : 124);
+        int footerLeftWidth = numLeftButtons == 2 ? 53 : 31;
 
         graphics.blit(bg, x, y + windowHeight - 31, 0, footerLeftV, footerLeftWidth, 32);
         graphics.blit(bg, x + windowWidth - 53, y + windowHeight - 31, 139, 56, 61, 32);
 
-        if(windowWidth > 106) {
+        if (windowWidth > 106) {
             int r = windowWidth - 106;
             int step = 0;
             while (r > 0) {
@@ -202,24 +199,26 @@ public class BasicPanelScreen<T extends AbstractPanelBehaviour> extends Abstract
             }
         }
 
-        int bottomGap = windowWidth - 53 - footerLeftWidth;
-        if(bottomGap > 0) {
+        int fillerOffset = numLeftButtons == 0 ? 1 : footerLeftWidth;
+        int bottomGap = windowWidth - 53 - fillerOffset;
+
+        if (bottomGap > 0) {
             int r1 = bottomGap - 3;
             int step = 0;
-
-            graphics.blit(bg, x + footerLeftWidth, y + windowHeight - 31, 53, 56, Math.min(bottomGap, 2), 32);
-            if(bottomGap > 2) {
+            graphics.blit(bg, x + fillerOffset, y + windowHeight - 31, 53, 56, Math.min(bottomGap, 2), 32);
+            if (bottomGap > 2) {
                 graphics.blit(bg, x + windowWidth - 54, y + windowHeight - 31, 138, 56, 1, 32);
             }
+
             while (r1 > 0) {
-                graphics.blit(bg, x + footerLeftWidth + 2 + step * 83, y + windowHeight - 31, 55, 56, Math.min(r1, 83), 32);
+                graphics.blit(bg, x + fillerOffset + 2 + step * 83, y + windowHeight - 31, 55, 56, Math.min(r1, 83), 32);
                 step++;
                 r1 -= 83;
             }
         }
 
-        if(windowHeight > 47) {
-            int r = windowHeight-47;
+        if (windowHeight > 47) {
+            int r = windowHeight - 47;
             int step = 0;
             graphics.blit(bg, x, y + 16, 0, 16, 53, Math.min(r, 40));
             graphics.blit(bg, x + windowWidth - 53, y + 16, 139, 16, 53, Math.min(r, 40));
