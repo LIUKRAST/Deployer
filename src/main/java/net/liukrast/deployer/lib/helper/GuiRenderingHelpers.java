@@ -35,7 +35,9 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.joml.Matrix4f;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Helper class that contains several methods related to GUI rendering
@@ -321,5 +323,23 @@ public class GuiRenderingHelpers {
         ((MouseHandlerAccessor) mouseHandler).create$setXPos(cursorX);
         ((MouseHandlerAccessor) mouseHandler).create$setYPos(cursorY);
         poseStack.popPose();
+    }
+
+    /**
+     * Helper to calculate the next step, either linearly or by snapping to multiples.
+     */
+    public static int getAdjustedAmount(int current, int step, double delta, boolean shouldSnap) {
+        if (!shouldSnap || step <= 10) {
+            return current + (int) (step * Math.signum(delta));
+        }
+
+        int direction = (int) Math.signum(delta);
+        int remainder = current % step;
+
+        if (direction > 0) {
+            return current + (step - remainder);
+        } else {
+            return remainder == 0 ? Math.max(0, current - step) : Math.max(0, current - remainder);
+        }
     }
 }

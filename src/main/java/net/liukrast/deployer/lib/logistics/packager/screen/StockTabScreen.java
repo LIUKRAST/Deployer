@@ -15,6 +15,7 @@ import mezz.jei.api.runtime.IIngredientFilter;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
 import net.createmod.catnip.theme.Color;
+import net.liukrast.deployer.lib.helper.GuiRenderingHelpers;
 import net.liukrast.deployer.lib.logistics.packager.AbstractInventorySummary;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
@@ -111,6 +112,14 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
     public abstract int clickAmount(boolean ctrlDown, boolean shiftDown, boolean altDown);
     public int scrollAmount(boolean ctrlDown, boolean shiftDown, boolean altDown) {
         return clickAmount(ctrlDown, shiftDown, altDown);
+    }
+
+    /**
+     * Override this to return true if the screen should snap to
+     * multiples of the step (100, 1000) when scrolling.
+     */
+    protected boolean shouldSnap() {
+        return false;
     }
 
     public boolean matchesSearch(V stack, String value) {
@@ -622,16 +631,13 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
 
         boolean orderClicked = hoveredSlot.getFirst() == -1;
         V entry = orderClicked ? itemsToOrder.get(hoveredSlot.getSecond())
-        : displayedItems.get(hoveredSlot.getFirst())
-        .get(hoveredSlot.getSecond());
+                : displayedItems.get(hoveredSlot.getFirst()).get(hoveredSlot.getSecond());
 
-        boolean remove = scrollY < 0;
         int transfer = scrollAmount(hasControlDown(), hasShiftDown(), hasAltDown());
-
         V existingOrder = orderClicked ? entry : getOrderForItem(entry);
 
         if (existingOrder == null) {
-            if (itemsToOrder.size() >= cols || remove)
+            if (itemsToOrder.size() >= cols || scrollY < 0)
                 return true;
 
             existingOrder = type.valueHandler().copyWithCount(entry, 0);
@@ -642,33 +648,26 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
         }
 
         int current = type.valueHandler().getCount(existingOrder);
+        int newCount = GuiRenderingHelpers.getAdjustedAmount(current, transfer, scrollY, shouldSnap());
 
-        if (remove) {
-            int newCount = current - transfer;
-
-            if (newCount <= 0) {
-                itemsToOrder.remove(existingOrder);
-
-                playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
-                playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
-            } else {
-                type.valueHandler().setCount(existingOrder, newCount);
-
-                if (newCount != current)
-                    playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
-            }
-
-            return true;
+        if (scrollY > 0) {
+            int stock = context.getLastClientsideSnapshotAsSummary(type).getCountOf(entry);
+            newCount = Math.min(newCount, stock);
         }
 
-        int stock = context.getLastClientsideSnapshotAsSummary(type).getCountOf(entry);
-        int add = Math.min(transfer, stock - current);
-        int newCount = current + Math.max(add, 0);
+        if (newCount <= 0) {
+            itemsToOrder.remove(existingOrder);
 
-        type.valueHandler().setCount(existingOrder, newCount);
-
-        if (newCount != current && current != 0)
-            playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
+            playUiSound(SoundEvents.WOOL_STEP, 0.75f, 1.8f);
+            playUiSound(SoundEvents.BAMBOO_WOOD_STEP, 0.75f, 1.8f);
+        } else {
+            type.valueHandler().setCount(existingOrder, newCount);
+            if (newCount != current) {
+                if (current != 0 || scrollY < 0) {
+                    playUiSound(AllSoundEvents.SCROLL_VALUE.getMainEvent(), 0.25f, 1.2f);
+                }
+            }
+        }
 
         return true;
     }

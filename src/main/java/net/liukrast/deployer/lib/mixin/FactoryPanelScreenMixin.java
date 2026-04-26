@@ -10,19 +10,27 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConnection;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
 import net.createmod.catnip.gui.AbstractSimiScreen;
+import net.liukrast.deployer.lib.helper.GuiRenderingHelpers;
+import net.liukrast.deployer.lib.logistics.IPromiseVisuals;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
-import net.liukrast.deployer.lib.logistics.board.screen.FakeStack;
+import net.liukrast.deployer.lib.logistics.board.StockPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.connection.ProvidesConnection;
+import net.liukrast.deployer.lib.logistics.board.screen.FakeStack;
 import net.liukrast.deployer.lib.mixinExtensions.FPSExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -155,12 +163,63 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen impleme
             @Local(argsOnly = true, ordinal = 2) double scrollX,
             @Local(argsOnly = true, ordinal = 3) double scrollY
     ) {
-        if(!(itemStack instanceof FakeStack<?> fs)) return original.call(value, min, max);
+        if (!(itemStack instanceof FakeStack<?> fs)) {
+            return original.call(value, min, max);
+        }
+
+        if (this.behaviour instanceof StockPanelBehaviour stockBehaviour) {
+            int step = stockBehaviour.getScrollStep(hasControlDown(), hasShiftDown(), hasAltDown());
+            int newCount = GuiRenderingHelpers.getAdjustedAmount(itemStack.count, step, scrollY, stockBehaviour.shouldSnap());
+
+            int clampedResult = Math.max(1, newCount);
+
+            itemStack.count = clampedResult;
+            this.behaviour.blockEntity.notifyUpdate();
+
+            return clampedResult;
+        }
+
         return fs.mouseScrolled(mouseX, mouseY, scrollX, scrollY, hasShiftDown(), hasControlDown(), hasAltDown());
     }
 
     @Inject(method = "searchForCraftingRecipe", at = @At("HEAD"), cancellable = true)
     private void searchForCraftingRecipe(CallbackInfo ci) {
         if(inputConfig.stream().anyMatch(big -> big instanceof FakeStack<?> fs && fs.locksCrafting())) ci.cancel();
+    }
+
+    /**
+     * This allows Fluid panels to show the Gauge icon instead of a generic Filter.
+     */
+    @ModifyExpressionValue(
+            method = "renderWindow",
+            slice = @Slice(
+                    from = @At(value = "CONSTANT", args = "stringValue=gui.factory_panel.promised_items"),
+                    to = @At(value = "CONSTANT", args = "stringValue=gui.factory_panel.left_click_reset")
+            ),
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/createmod/catnip/lang/LangBuilder;component()Lnet/minecraft/network/chat/MutableComponent;",
+                    ordinal = 1
+            )
+    )
+    private MutableComponent deployer$customPromiseLineComponent(MutableComponent original,
+                                                                 @Local(name = "promised") int promised
+    ) {
+        if (this.behaviour instanceof IPromiseVisuals visuals) {
+            Component customLine = visuals.getPromisedComponent(promised);
+            if (customLine != null) return customLine.copy();
+        }
+        return original;
+    }
+
+    /**
+     * Changed the Promised Orders Icon.
+     */
+    @WrapOperation(
+            method = "renderWindow",
+            at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/box/PackageStyles;getDefaultBox()Lnet/minecraft/world/item/ItemStack;")
+    )
+    private ItemStack deployer$usePromisedBoxVisual(Operation<ItemStack> original) {
+        return ((IPromiseVisuals) behaviour).getPromisedBox();
     }
 }

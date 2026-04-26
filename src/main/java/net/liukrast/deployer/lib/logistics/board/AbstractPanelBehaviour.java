@@ -44,7 +44,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.*;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**

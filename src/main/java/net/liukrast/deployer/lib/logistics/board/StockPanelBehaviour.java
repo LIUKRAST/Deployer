@@ -1,12 +1,12 @@
 package net.liukrast.deployer.lib.logistics.board;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.simibubi.create.api.packager.InventoryIdentifier;
-import com.simibubi.create.content.logistics.BigItemStack;
-import com.simibubi.create.content.logistics.factoryBoard.*;
-import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
-import com.simibubi.create.content.logistics.packagerLink.*;
-import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlockEntity;
+import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
+import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
+import com.simibubi.create.content.logistics.packagerLink.RequestPromiseQueue;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBox;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
@@ -15,9 +15,7 @@ import net.createmod.catnip.gui.ScreenOpener;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelConnectionBuilder;
 import net.liukrast.deployer.lib.logistics.board.connection.PanelInteractionBuilder;
 import net.liukrast.deployer.lib.logistics.board.connection.StockConnection;
-import net.liukrast.deployer.lib.logistics.packager.AbstractPackagerBlock;
 import net.liukrast.deployer.lib.logistics.packager.AbstractPackagerBlockEntity;
-import net.liukrast.deployer.lib.logistics.packager.IdentifiedContainer;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.packagerLink.GenericRequestPromise;
 import net.liukrast.deployer.lib.logistics.packagerLink.LogisticsGenericManager;
@@ -43,7 +41,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour {
     private final StockInventoryType<K, V, ?> stockInventoryType;
@@ -159,6 +158,13 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour {
         ((RPQExtension)queue).deployer$add(stockInventoryType, new GenericRequestPromise<>(stockInventoryType.valueHandler().copyWithCount(filter, recipeOutput)));
     }
 
+    public int getScrollStep(boolean ctrl, boolean shift, boolean alt) {
+        return ctrl ? 100 : shift ? 1000 : alt ? 1 : 10;
+    }
+
+    public boolean shouldSnap() {
+        return false;
+    }
 
     @Override
     public int getMultiplier() {

@@ -10,7 +10,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 
-import java.awt.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -147,6 +146,26 @@ public abstract class ScrollPanelBehaviour extends AbstractPanelBehaviour {
      */
     public void setLabel(Component label) {
         this.label = label;
+    }
+
+    /**
+     * Determines whether the icon or text value should be rendered inside the panel's ValueBox.
+     * Can be overridden by subclasses to conditionally or permanently disable rendering.
+     *
+     * @return {@code true} if the icon or text should be rendered, {@code false} otherwise
+     */
+    public boolean renderIcon() {
+        return true;
+    }
+
+    /**
+     * Determines whether the hover outline and tooltip overlay should be rendered when a player looks at the panel.
+     * Can be overridden by subclasses to conditionally or permanently disable the overlay.
+     *
+     * @return {@code true} if the hover overlay should be rendered, {@code false} otherwise
+     */
+    public boolean renderHoverOverlay() {
+        return true;
     }
 
     /**

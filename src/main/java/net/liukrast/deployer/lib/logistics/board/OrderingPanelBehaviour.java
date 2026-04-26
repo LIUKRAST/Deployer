@@ -91,7 +91,7 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
 
     @Override
     public boolean isMissingAddress() {
-        return (!targetedBy.isEmpty() || hasInteraction("restocker") && count != 0 && recipeAddress.isBlank());
+        return (!targetedBy.isEmpty() || hasInteraction("restocker")) && count != 0 && recipeAddress.isBlank();
     }
 
     @Override
