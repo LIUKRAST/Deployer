@@ -10,8 +10,10 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBehaviour;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConnection;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelScreen;
 import net.createmod.catnip.gui.AbstractSimiScreen;
+import net.liukrast.deployer.lib.helper.GuiRenderingHelpers;
 import net.liukrast.deployer.lib.logistics.IPromiseVisuals;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
+import net.liukrast.deployer.lib.logistics.board.StockPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.connection.ProvidesConnection;
 import net.liukrast.deployer.lib.logistics.board.screen.FakeStack;
 import net.liukrast.deployer.lib.mixinExtensions.FPSExtension;
@@ -19,6 +21,7 @@ import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,6 +30,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -159,7 +163,22 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen impleme
             @Local(argsOnly = true, ordinal = 2) double scrollX,
             @Local(argsOnly = true, ordinal = 3) double scrollY
     ) {
-        if(!(itemStack instanceof FakeStack<?> fs)) return original.call(value, min, max);
+        if (!(itemStack instanceof FakeStack<?> fs)) {
+            return original.call(value, min, max);
+        }
+
+        if (this.behaviour instanceof StockPanelBehaviour stockBehaviour) {
+            int step = stockBehaviour.getScrollStep(hasControlDown(), hasShiftDown(), hasAltDown());
+            int newCount = GuiRenderingHelpers.getAdjustedAmount(itemStack.count, step, scrollY, stockBehaviour.shouldSnap());
+
+            int clampedResult = Math.max(1, newCount);
+
+            itemStack.count = clampedResult;
+            this.behaviour.blockEntity.notifyUpdate();
+
+            return clampedResult;
+        }
+
         return fs.mouseScrolled(mouseX, mouseY, scrollX, scrollY, hasShiftDown(), hasControlDown(), hasAltDown());
     }
 
