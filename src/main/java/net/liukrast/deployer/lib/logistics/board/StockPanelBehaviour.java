@@ -158,6 +158,13 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour {
         ((RPQExtension)queue).deployer$add(stockInventoryType, new GenericRequestPromise<>(stockInventoryType.valueHandler().copyWithCount(filter, recipeOutput)));
     }
 
+    public int getScrollStep(boolean ctrl, boolean shift, boolean alt) {
+        return ctrl ? 100 : shift ? 1000 : alt ? 1 : 10;
+    }
+
+    public boolean shouldSnap() {
+        return false;
+    }
 
     @Override
     public int getMultiplier() {
