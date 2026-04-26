@@ -22,6 +22,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 import net.createmod.catnip.codecs.CatnipCodecUtils;
+import net.liukrast.deployer.lib.logistics.IPromiseVisuals;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.GenericConnections;
 import net.liukrast.deployer.lib.logistics.board.connection.*;
@@ -59,7 +60,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Mixin(FactoryPanelBehaviour.class)
-public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour implements FPBExtension, ProvidesConnection {
+public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour implements FPBExtension, ProvidesConnection, IPromiseVisuals {
     //region Unique values
     @Unique private final Map<BlockPos, FactoryPanelConnection> deployer$targetedByExtra = new HashMap<>();
     @Unique private final Set<PanelConnection<?>> deployer$connectionsIn = new LinkedHashSet<>();
