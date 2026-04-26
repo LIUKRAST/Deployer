@@ -1,0 +1,17 @@
+{
+  "stock_inventory_type.items": "Item",
+  "stock_inventory_type.unfinished_order": "Ordine non finito",
+  "stock_inventory_type.unfinished_order_line_1": "Tutti gli ordini non finiti verranno",
+  "stock_inventory_type.unfinished_order_line_2": "inviati simultaneamente",
+  "deployer.gui.factory_panel.not_affecting_recipe_tip_0": "Questo misuratore non modifica",
+  "deployer.gui.factory_panel.not_affecting_recipe_tip_1": "la ricetta",
+  "deployer.factory_panel.transferring_switch": "Trasferendo %s",
+  "deployer.factory_panel.transferring": "Trasferendo %s",
+  "deployer.factory_panel.no_connection_available": "Nessuna connessione disponibile per questi misuratori",
+  "panel_connection.deployer.stock_connection": "Ordini",
+  "panel_connection.deployer.redstone": "Redstone",
+  "panel_connection.deployer.numbers": "Numeri",
+  "panel_connection.deployer.string": "Testi",
+  "panel_connection.deployer.display": "Data di Visualizzazione",
+  "deployer.panel.panels_connected": "Pannelli connessi"
+}
