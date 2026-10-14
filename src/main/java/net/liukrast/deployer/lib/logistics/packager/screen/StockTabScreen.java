@@ -109,9 +109,11 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
     /* IMPLEMENTATIONS */
     public abstract void renderTooltip(@NotNull GuiGraphics graphics, V entry, int mouseX, int mouseY);
     public abstract void renderEntry(@NotNull GuiGraphics graphics, int scale, V entry, boolean isStackHovered, boolean isRenderingOrders);
-    public abstract int clickAmount(boolean ctrlDown, boolean shiftDown, boolean altDown);
+    public int clickAmount(boolean ctrlDown, boolean shiftDown, boolean altDown) {
+        return type.valueHandler().getStepSize(ctrlDown, shiftDown, altDown);
+    }
     public int scrollAmount(boolean ctrlDown, boolean shiftDown, boolean altDown) {
-        return clickAmount(ctrlDown, shiftDown, altDown);
+        return type.valueHandler().getStepSize(ctrlDown, shiftDown, altDown);
     }
 
     /**

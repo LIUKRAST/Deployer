@@ -178,7 +178,7 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour i
     }
 
     public int getScrollStep(boolean ctrl, boolean shift, boolean alt) {
-        return ctrl ? 100 : shift ? 1000 : alt ? 1 : 10;
+        return stockInventoryType.valueHandler().getStepSize(ctrl, shift, alt);
     }
 
     public boolean shouldSnap() {

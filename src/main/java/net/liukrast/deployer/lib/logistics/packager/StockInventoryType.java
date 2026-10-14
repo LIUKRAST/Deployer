@@ -115,6 +115,11 @@ public abstract class StockInventoryType<K,V,H> {
             if(allEmpty) return GenericOrderContained.empty();
             return GenericOrderContained.simple(real, hashStrategy());
         }
+
+        public int getStepSize(boolean ctrl, boolean shift, boolean alt) {
+            return ctrl ? 100 : (shift ? 1000 : (alt ? 1 : 10));
+        }
+
         public abstract Hash.Strategy<? super V> hashStrategy();
         public abstract K fromValue(V key);
         public abstract boolean test(FilterItemStack filter, Level level, V value);
