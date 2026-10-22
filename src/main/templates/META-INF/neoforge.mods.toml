@@ -2,6 +2,7 @@ modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
 issueTrackerURL="https://github.com/LIUKRAST/Deployer/issues"
+
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
@@ -11,6 +12,7 @@ logoFile="${mod_id}.png"
 credits='''${mod_credits}\n${mod_translations}'''
 authors="${mod_authors}"
 description='''${mod_description}'''
+
 [[mixins]]
 config="${mod_id}.mixins.json"
 
@@ -38,12 +40,7 @@ config="${mod_id}.mixins.json"
     versionRange="*"
     ordering="AFTER"
     side="BOTH"
-[[dependencies."${mod_id}"]]
-    modId="repackaged"
-    type="optional"
-    versionRange="[0.0.4,)"
-    ordering="AFTER"
-    side="BOTH"
+
 [[dependencies."${mod_id}"]]
     modId="create_factory_logistics"
     type="incompatible"

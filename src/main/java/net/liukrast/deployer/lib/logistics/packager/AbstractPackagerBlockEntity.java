@@ -67,6 +67,13 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         return ((PackagerBlockEntityAccessor)this).invokeSupportsBlockEntity(target);
     }
 
+    /**
+     * @return the {@link  BlockPos} of this packager's stock link
+     */
+    public BlockPos getLinkPos() {
+        return ((PackagerBlockEntityAccessor) this).invokeGetLinkPos();
+    }
+
     public PackagerItemHandler createItemHandler() {
         return new PackagerItemHandler(this);
     }
@@ -366,7 +373,7 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         if (!requestQueue && !signBasedAddress.isBlank())
             PackageItem.addAddress(createdBox, signBasedAddress);
 
-        BlockPos linkPos = ((PackagerBlockEntityAccessor)this).invokeGetLinkPos();
+        BlockPos linkPos = getLinkPos();
         assert level != null;
         if (extractedPackageItem.isEmpty() && linkPos != null
                 && level.getBlockEntity(linkPos) instanceof PackagerLinkBlockEntity pLBE)
@@ -381,9 +388,18 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         animationInward = false;
         animationTicks = CYCLE;
 
-        ((PackagerBlockEntityAccessor)this).getAdvancement().awardPlayer(AllAdvancements.PACKAGER);
+        awardPlayer();
         triggerStockCheck();
         notifyUpdate();
+    }
+
+    /**
+     * Awards the Player with the {@link AllAdvancements#PACKAGER} advancement
+     * <p>
+     * Usually called when a packager successfully sends a package
+     */
+    public void awardPlayer() {
+        ((PackagerBlockEntityAccessor)this).getAdvancement().awardPlayer(AllAdvancements.PACKAGER);
     }
 
     /**
@@ -393,7 +409,7 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
     @ApiStatus.Internal
     @Override
     public boolean isTargetingSameInventory(@Nullable IdentifiedInventory inventory) {
-        throw new IllegalCallerException("Should not be invoked in FluidPackagerBlockEntity");
+        throw new IllegalCallerException("This function should not be invoked on abstract packagers");
     }
 
     /**
@@ -552,6 +568,7 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
     }
 
     public boolean pleaseBroadcast(UUID network, LogisticallyLinkedBehaviour.RequestType requestType, GenericOrderContained<V> order, String recipeAddress) {
+        assert getLevel() != null;
         return LogisticsGenericManager.broadcastPackageRequest(
                 getStockType(), network, requestType, order,
                 new IdentifiedContainer<>(

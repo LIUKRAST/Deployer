@@ -410,7 +410,6 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
     }
 
     public void notifiedFromInput() {
-
     }
 
     /**
@@ -595,9 +594,9 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
         special.putString(CreateLang.asId(slot.name()), Objects.requireNonNull(DeployerRegistries.PANEL.getKey(type)).toString());
         nbt.put("CustomPanels", special);
         super.write(nbt, registries, clientPacket);
-        //We avoid adding some data that is pointless in a generic gauge.
+        // We avoid adding some data that is pointless in a generic gauge.
         // You can re-add it in your custom write method though
-        //NOTE: If you feel like some data should not be avoided, please open a GitHub issue to report this.
+        // NOTE: If you feel like some data should not be avoided, please open a GitHub issue to report this.
         if (!active)
             return;
 

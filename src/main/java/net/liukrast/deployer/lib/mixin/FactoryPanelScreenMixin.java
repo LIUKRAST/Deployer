@@ -165,7 +165,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen impleme
             return original.call(value, min, max);
         }
 
-        if (this.behaviour instanceof StockPanelBehaviour stockBehaviour) {
+        if (this.behaviour instanceof StockPanelBehaviour<?, ?> stockBehaviour) {
             int step = stockBehaviour.getScrollStep(hasControlDown(), hasShiftDown(), hasAltDown());
             int newCount = GuiRenderingHelpers.getAdjustedAmount(itemStack.count, step, scrollY, stockBehaviour.shouldSnap());
 
@@ -185,9 +185,6 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen impleme
         if(inputConfig.stream().anyMatch(big -> big instanceof FakeStack<?> fs && fs.locksCrafting())) ci.cancel();
     }
 
-    /**
-     * This allows Fluid panels to show the Gauge icon instead of a generic Filter.
-     */
     @ModifyExpressionValue(
             method = "renderWindow",
             slice = @Slice(
@@ -200,9 +197,7 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen impleme
                     ordinal = 1
             )
     )
-    private MutableComponent deployer$customPromiseLineComponent(MutableComponent original,
-                                                                 @Local(name = "promised") int promised
-    ) {
+    private MutableComponent replacePromiseComponent(MutableComponent original, @Local(name = "promised") int promised) {
         if (this.behaviour instanceof IPromiseVisuals visuals) {
             Component customLine = visuals.getPromisedComponent(promised);
             if (customLine != null) return customLine.copy();
@@ -210,14 +205,11 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen impleme
         return original;
     }
 
-    /**
-     * Changed the Promised Orders Icon.
-     */
     @WrapOperation(
             method = "renderWindow",
             at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/box/PackageStyles;getDefaultBox()Lnet/minecraft/world/item/ItemStack;")
     )
-    private ItemStack deployer$usePromisedBoxVisual(Operation<ItemStack> original) {
+    private ItemStack replacePackageStack(Operation<ItemStack> original) {
         return ((IPromiseVisuals) behaviour).getPromisedBox();
     }
 }

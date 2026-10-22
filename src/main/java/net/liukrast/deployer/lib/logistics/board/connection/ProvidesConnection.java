@@ -5,6 +5,7 @@ import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConnection
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.mixinExtensions.FPCExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashSet;
@@ -34,19 +35,25 @@ public interface ProvidesConnection {
      * panel and accepted by the input panel.
      * </p>
      */
+    @ApiStatus.OverrideOnly
     void addConnections(PanelConnectionBuilder builder);
+
     /**
      * @return The set (ordered) containing all connections this panel outputs.
      * */
     Set<PanelConnection<?>> getInputConnections();
+
     /**
      * @return The set (ordered) containing all connections this panel reads.
      * */
     Set<PanelConnection<?>> getOutputConnections();
+
     default <T> Optional<T> getConnectionValue(DeferredHolder<PanelConnection<?>, PanelConnection<T>> connection) {
         return getConnectionValue(connection.get());
     }
+
     <T> Optional<T> getConnectionValue(PanelConnection<T> connection);
+
     /**
      * @return A set of all panel connections two links share
      * @param from The panel pointing
@@ -135,7 +142,4 @@ public interface ProvidesConnection {
     default int overrideConnectionColor(int original, FactoryPanelConnection connection, float partialTicks) {
         return original;
     }
-
-
-
 }
