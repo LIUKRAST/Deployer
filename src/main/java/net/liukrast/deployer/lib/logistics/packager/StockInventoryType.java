@@ -238,7 +238,7 @@ public abstract class StockInventoryType<K,V,H> {
         if (targetBE == null)
             return false;
 
-        H targetInv = level.getCapability(getBlockCapability(), pos, state, targetBE, null);
+        H targetInv = level.getCapability(getBlockCapability(), pos, state, targetBE, side);
         if (targetInv == null)
             return false;
 
