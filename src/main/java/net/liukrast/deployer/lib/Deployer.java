@@ -1,5 +1,6 @@
 package net.liukrast.deployer.lib;
 
+import net.liukrast.deployer.lib.compat.sable.SableCompat;
 import net.liukrast.deployer.lib.helper.Constants;
 import net.liukrast.deployer.lib.registry.*;
 import net.neoforged.bus.api.IEventBus;
@@ -30,6 +31,7 @@ public class Deployer {
         container.registerConfig(ModConfig.Type.SERVER, DeployerConfig.Server.SPEC);
 
         if(ModList.get().isLoaded("psic_compat")) PSIC_INSTALLED = true;
+        if(ModList.get().isLoaded("sable")) SableCompat.SABLE_INSTALLED = true;
     }
 
     /* MOD BUS EVENTS */

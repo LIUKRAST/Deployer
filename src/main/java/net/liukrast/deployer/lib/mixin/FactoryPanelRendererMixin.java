@@ -12,11 +12,13 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.AllSpriteShifts;
 import com.simibubi.create.content.logistics.factoryBoard.*;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SpriteShiftEntry;
 import net.createmod.catnip.render.SuperByteBuffer;
 import net.createmod.catnip.theme.Color;
 import net.liukrast.deployer.lib.DeployerClient;
+import net.liukrast.deployer.lib.compat.sable.SableCompat;
 import net.liukrast.deployer.lib.helper.ClientRegisterHelpers;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
 import net.liukrast.deployer.lib.logistics.board.connection.*;
@@ -319,6 +321,12 @@ public class FactoryPanelRendererMixin {
             Vec3 lookVec = mc.player.getViewVector(partialTicks);
             double reach = mc.player.blockInteractionRange();
             Vec3 rayEnd = eyePos.add(lookVec.scale(reach));
+
+            Pair<Vec3, Vec3> ray = SableCompat.setRayFromSubLevel(behaviour.blockEntity, eyePos, rayEnd, lookVec, reach);
+            if (ray != null) {
+                eyePos = ray.getFirst();
+                rayEnd = ray.getSecond();
+            }
 
             AABB worldAABB = aabb.move(behaviour.blockEntity.getBlockPos());
             Optional<Vec3> hit = worldAABB.clip(eyePos, rayEnd);

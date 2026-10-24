@@ -1,4 +1,4 @@
-package net.liukrast.deployer.lib.compat;
+package net.liukrast.deployer.lib.compat.jade;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelBlock;
