@@ -518,11 +518,19 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         nbt.putInt("LastLevel", lastReportedLevelInStorage);
         nbt.putInt("LastPromised", lastReportedPromises);
         nbt.putInt("LastUnloadedLinks", lastReportedUnloadedLinks);
+        nbt.putBoolean("Satisfied", satisfied);
+        nbt.putBoolean("PromisedSatisfied", promisedSatisfied);
         nbt.putString("RecipeAddress", recipeAddress);
         nbt.putInt("RecipeOutput", recipeOutput);
         nbt.putInt("PromiseClearingInterval", promiseClearingInterval);
         nbt.putUUID("Freq", network);
         nbt.put("Craft", NBTHelper.writeItemList(activeCraftingArrangement, registries));
+    }
+
+    @Override
+    public void easyWriteSafe(CompoundTag nbt, HolderLookup.Provider registries) {
+        nbt.putString("RecipeAddress", recipeAddress);
+        nbt.putUUID("Freq", network);
     }
 
     @Override

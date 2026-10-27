@@ -140,6 +140,19 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour i
     }
 
     @Override
+    public void easyWriteSafe(CompoundTag nbt, HolderLookup.Provider registries) {
+        super.easyWriteSafe(nbt, registries);
+
+        stockInventoryType.valueHandler().codec().encodeStart(NbtOps.INSTANCE, filter)
+                .result()
+                .ifPresent(tag -> nbt.put("Stack", tag));
+        nbt.putInt("Count", count);
+        nbt.putInt("SeparateCount", separateCount);
+        nbt.putInt("Scale", scale);
+        nbt.putInt("FilterAmount", count);
+    }
+
+    @Override
     public void easyRead(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
         super.easyRead(nbt, registries, clientPacket);
         if (nbt.contains("Stack")) {

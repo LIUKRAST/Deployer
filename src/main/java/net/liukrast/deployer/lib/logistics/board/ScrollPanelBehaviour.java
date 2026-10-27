@@ -72,7 +72,11 @@ public abstract class ScrollPanelBehaviour extends AbstractPanelBehaviour {
     @Override
     public void easyWrite(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
         nbt.putInt("ScrollValue", value);
-        super.easyWrite(nbt, registries, clientPacket);
+    }
+
+    @Override
+    public void easyWriteSafe(CompoundTag nbt, HolderLookup.Provider registries) {
+        nbt.putInt("ScrollValue", value);
     }
 
     /**
@@ -85,7 +89,6 @@ public abstract class ScrollPanelBehaviour extends AbstractPanelBehaviour {
     @Override
     public void easyRead(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
         value = nbt.getInt("ScrollValue");
-        super.easyRead(nbt, registries, clientPacket);
     }
 
     /**

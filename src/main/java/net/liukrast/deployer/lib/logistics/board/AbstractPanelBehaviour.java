@@ -308,6 +308,15 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
     public void easyWrite(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {}
 
     /**
+     * Simplified safe NBT writing operation. Use this to save custom data into the
+     * specific NBT tag reserved for this behavior.
+     *
+     * @param nbt        the behavior's dedicated {@link CompoundTag}
+     * @param registries the provider for registry-based data
+     */
+    public void easyWriteSafe(CompoundTag nbt, HolderLookup.Provider registries) {}
+
+    /**
      * Simplified NBT reading operation. Use this to restore custom data from the
      * specific NBT tag reserved for this behavior.
      *
@@ -566,41 +575,48 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
 
     @ApiStatus.Internal
     @Override
-    public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+    public final void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(nbt, registries, clientPacket);
+
         CompoundTag panelTag = nbt.getCompound(CreateLang.asId(slot.name()));
         if (panelTag.isEmpty()) {
             active = false;
             return;
-        } else {
-            active = true;
         }
+        active = true;
         easyRead(panelTag, registries, clientPacket);
     }
 
     @ApiStatus.Internal
     @Override
-    public void writeSafe(CompoundTag nbt, HolderLookup.Provider registries) {
-        super.writeSafe(nbt, registries);
-        CompoundTag special = nbt.contains("CustomPanels") ? nbt.getCompound("CustomPanels") : new CompoundTag();
-        special.putString(CreateLang.asId(slot.name()), Objects.requireNonNull(DeployerRegistries.PANEL.getKey(type)).toString());
-        nbt.put("CustomPanels", special);
-    }
+    public final void writeSafe(CompoundTag nbt, HolderLookup.Provider registries) {
+        writeCustomPanelData(nbt);
 
-    @ApiStatus.Internal
-    @Override
-    public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
-        CompoundTag special = nbt.contains("CustomPanels") ? nbt.getCompound("CustomPanels") : new CompoundTag();
-        special.putString(CreateLang.asId(slot.name()), Objects.requireNonNull(DeployerRegistries.PANEL.getKey(type)).toString());
-        nbt.put("CustomPanels", special);
-        super.write(nbt, registries, clientPacket);
-        // We avoid adding some data that is pointless in a generic gauge.
-        // You can re-add it in your custom write method though
-        // NOTE: If you feel like some data should not be avoided, please open a GitHub issue to report this.
         if (!active)
             return;
 
         CompoundTag panelTag = new CompoundTag();
+        easyWriteSafe(panelTag, registries);
+        nbt.put(CreateLang.asId(slot.name()), panelTag);
+    }
+
+    /**
+     * @apiNote
+     * We avoid adding some data that is pointless in a generic gauge.
+     * You can re-add it in your custom write method though
+     * <p>
+     * <strong>If you feel like some data should not be avoided, please open a GitHub issue to report this.<strong/>
+     */
+    @ApiStatus.Internal
+    @Override
+    public final void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+        writeCustomPanelData(nbt);
+
+        if (!active)
+            return;
+
+        CompoundTag panelTag = new CompoundTag();
+        // TODO - "Satisfied" and "PromisedSatisfied" may be not necessary for regular panels
         panelTag.putBoolean("Satisfied", satisfied);
         panelTag.putBoolean("PromisedSatisfied", promisedSatisfied);
         panelTag.putBoolean("RedstonePowered", redstonePowered);
@@ -610,6 +626,13 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
         panelTag.put("TargetedByExtra", CatnipCodecUtils.encode(Codec.list(FactoryPanelConnection.CODEC), new ArrayList<>(getTargetedByExtra().values())).orElseThrow());
         easyWrite(panelTag, registries, clientPacket);
         nbt.put(CreateLang.asId(slot.name()), panelTag);
+    }
+
+    @ApiStatus.Internal
+    public final void writeCustomPanelData(CompoundTag nbt) {
+        CompoundTag customPanels = nbt.contains("CustomPanels") ? nbt.getCompound("CustomPanels") : new CompoundTag();
+        customPanels.putString(CreateLang.asId(slot.name()), Objects.requireNonNull(DeployerRegistries.PANEL.getKey(type)).toString());
+        nbt.put("CustomPanels", customPanels);
     }
 
     public final Map<BlockPos, FactoryPanelConnection> getTargetedByExtra() {
