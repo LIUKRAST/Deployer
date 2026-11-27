@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.compat.Mods;
 import com.simibubi.create.compat.jei.CreateJEI;
-import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
 import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestScreen;
 import com.simibubi.create.content.trains.station.NoShadowFontWrapper;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
@@ -86,17 +85,17 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
     private final Set<Integer> hiddenCategories;
     protected AbstractInventorySummary<K,V> forcedEntries;
 
-    public StockTabScreen(KeeperSourceContext context, StockKeeperRequestMenu menu, Component title, Item icon, StockInventoryType<K, V,?> type) {
-        super(context, menu, title, icon);
+    public StockTabScreen(KeeperSourceContext context, Component title, Item icon, StockInventoryType<K, V,?> type) {
+        super(context, title, icon);
         this.type = type;
         hiddenCategories =
-                new HashSet<>(context.getHiddenCategoriesByPlayer().getOrDefault(menu.player.getUUID(), List.of()));
+                new HashSet<>(context.getHiddenCategoriesByPlayer().getOrDefault(context.getPlayer().getUUID(), List.of()));
         forcedEntries = type.networkHandler().createSummary();
     }
 
-    public StockTabScreen(KeeperSourceContext context, StockKeeperRequestMenu menu, Item icon, StockInventoryType<K,V,?> type) {
+    public StockTabScreen(KeeperSourceContext context, Item icon, StockInventoryType<K,V,?> type) {
         this(
-                context, menu,
+                context,
                 Component.translatable(
                         "stock_inventory_type."
                                 + Objects.requireNonNull(DeployerRegistries.STOCK_INVENTORY.getKey(type)).getNamespace()

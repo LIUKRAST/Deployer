@@ -18,6 +18,7 @@ For developers
   - Removed the deprecated `PanelConnectionBuilder.put` (use `registerBoth`), `ColoredFactoryPanelSupportBehaviour`, `FPBEExtension`, `ACPExtension` and `DeployerClient.getCape`
   - The `mixin` packages and the `mixinExtensions` interfaces are marked `@ApiStatus.Internal`, except `LLBExtension`, which is the extension point for logistically linked behaviours of other mods
   - `AbstractPanelBehaviour.notifyOutputs` is now `final`; react to inputs in `notifiedFromInput`. The order and timing of target updates within a tick are not part of the contract
+  - Stock Keeper tabs no longer depend on the Stock Ticker menu: `KeeperTabScreen`/`StockTabScreen` constructors and `ClientRegisterHelpers.registerStockKeeperTab` take only a `KeeperSourceContext`, which now provides the player (`getPlayer`). Other screens can host the same tabs with their own context (`ClientRegisterHelpers.getKeeperTabs` is public)
   - Removed `VersionedTrackerBehaviour`, which nothing used (packagers use Create's tracker together with `VersionedWrapper`)
   - `StockInventoryType.IStorageHandler.isBulky` now means what its name says (a package with a bulky entry holds nothing else, like Create's items that cannot fit inside containers); it was read inverted before. Types that returned `false` to get one entry per package must return `true`
   - `AbstractPackagerBlockEntity.isValidPackage` no longer has side effects; `unwrapBox` passes invalid boxes through only when not simulating

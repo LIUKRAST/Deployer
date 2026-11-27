@@ -7,7 +7,6 @@ import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorBlockEnti
 import com.simibubi.create.content.kinetics.chainConveyor.ChainConveyorPackage;
 import com.simibubi.create.content.logistics.box.PackageEntity;
 import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterMenu;
-import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import net.createmod.catnip.render.SuperByteBuffer;
 import net.liukrast.deployer.lib.helper.client.PackageVisualExtension;
@@ -31,9 +30,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -68,7 +67,7 @@ public class ClientRegisterHelpers {
     public static <A extends AbstractPanelBehaviour> void registerGaugeSlot(PanelType<A> type, PanelFactory<A> factory) {
         GAUGE_MAP.put(type, factory);
     }
-    public static void registerStockKeeperTab(BiFunction<KeeperSourceContext, StockKeeperRequestMenu, KeeperTabScreen> screenFactory) {
+    public static void registerStockKeeperTab(Function<KeeperSourceContext, KeeperTabScreen> screenFactory) {
         KEEPER_TABS.add(screenFactory);
     }
     public static <V> void registerRedstoneRequesterTab(StockInventoryType<?, V, ?> type, RequesterFactory<V> factory) {
@@ -99,7 +98,7 @@ public class ClientRegisterHelpers {
     private static final List<EntityRenderer> ENTITY_RENDERERS = new ArrayList<>();
     private static final List<ChainConveyorFactory> CHAIN_VISUALS = new ArrayList<>();
     private static final List<EntityFactory> ENTITY_VISUALS = new ArrayList<>();
-    private static final List<BiFunction<KeeperSourceContext, StockKeeperRequestMenu, KeeperTabScreen>> KEEPER_TABS = new ArrayList<>();
+    private static final List<Function<KeeperSourceContext, KeeperTabScreen>> KEEPER_TABS = new ArrayList<>();
     private static final List<Consumer<AbstractPanelBehaviour>> PANEL_TICKERS = new ArrayList<>();
     private static final List<PanelRenderer> PANEL_RENDERERS = new ArrayList<>();
     private static final List<RequesterBuilder<?>> REQUESTER_TABS = new ArrayList<>();
@@ -144,8 +143,10 @@ public class ClientRegisterHelpers {
         return ENTITY_VISUALS.stream();
     }
 
-    @ApiStatus.Internal
-    public static Stream<BiFunction<KeeperSourceContext, StockKeeperRequestMenu, KeeperTabScreen>> getKeeperTabs() {
+    /**
+     * @return The factories of every registered Stock Keeper tab, for screens that host them with their own {@link KeeperSourceContext}
+     * */
+    public static Stream<Function<KeeperSourceContext, KeeperTabScreen>> getKeeperTabs() {
         return KEEPER_TABS.stream();
     }
 

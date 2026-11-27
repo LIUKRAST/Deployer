@@ -53,7 +53,7 @@ public class DeployerClient {
         for(int i = 0; i < 30; i++) {
             var opt =  BuiltInRegistries.ITEM.getRandom(rs);
             Item item = opt.map(Holder.Reference::value).orElse(Items.STONE);
-            ClientRegisterHelpers.registerStockKeeperTab((a,b) -> new KeeperTabScreen(a,b, Component.literal("Dev test"), item));
+            ClientRegisterHelpers.registerStockKeeperTab(a -> new KeeperTabScreen(a, Component.literal("Dev test"), item));
             ClientRegisterHelpers.registerRedstoneRequesterTab(null, (menu,type, data)-> new RequesterTabScreen<>(menu, Component.literal("Dev test"), item, type, data));
         }*/
     }

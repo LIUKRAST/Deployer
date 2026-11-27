@@ -90,9 +90,9 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Ljava/util/HashSet;<init>(Ljava/util/Collection;)V", ordinal = 0))
     private void init(StockKeeperRequestMenu container, Inventory inv, Component title, CallbackInfo ci) {
-        if(deployer$context == null) deployer$context = KeeperSourceContext.of(blockEntity);
+        if(deployer$context == null) deployer$context = KeeperSourceContext.of(blockEntity, inv.player);
         deployer$tabs = ClientRegisterHelpers.getKeeperTabs()
-                .map(func -> func.apply(deployer$context, menu))
+                .map(func -> func.apply(deployer$context))
                 .toList();
     }
 

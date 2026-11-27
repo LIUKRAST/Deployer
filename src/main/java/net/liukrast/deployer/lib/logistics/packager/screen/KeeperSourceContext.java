@@ -6,10 +6,15 @@ import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.mixin.accessors.StockTickerBlockEntityAccessor;
 import net.minecraft.world.item.ItemStack;
 
+import net.minecraft.world.entity.player.Player;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Where a Stock Keeper tab reads its stock from. Deployer builds one for every Stock Keeper screen,
+ * other screens (for example a portable stock requester) can implement it to host the same tabs
+ * */
 public interface KeeperSourceContext {
     <K,V> AbstractInventorySummary<K,V> getLastClientsideSnapshotAsSummary(StockInventoryType<K,V,?> type);
     Map<UUID, List<Integer>> getHiddenCategoriesByPlayer();
@@ -17,8 +22,18 @@ public interface KeeperSourceContext {
     <K,V,H> List<List<V>> getClientStockSnapshot(StockInventoryType<K,V,H> type);
     int getActiveLinks();
 
-    static KeeperSourceContext of(StockTickerBlockEntity be) {
+    /**
+     * @return The player looking at the stock
+     * */
+    Player getPlayer();
+
+    static KeeperSourceContext of(StockTickerBlockEntity be, Player player) {
         return new KeeperSourceContext() {
+            @Override
+            public Player getPlayer() {
+                return player;
+            }
+
             @Override
             public <K, V> AbstractInventorySummary<K, V> getLastClientsideSnapshotAsSummary(StockInventoryType<K, V, ?> type) {
                 return ((StockTickerBlockEntityAccessor)be).deployer$getLastClientsideStockSnapshotAsSummary(type);

@@ -1,6 +1,5 @@
 package net.liukrast.deployer.lib.logistics.packager.screen;
 
-import com.simibubi.create.content.logistics.stockTicker.StockKeeperRequestMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -13,16 +12,13 @@ import java.util.List;
 public class KeeperTabScreen extends Screen implements TabData {
     private final ItemStack icon;
     protected final KeeperSourceContext context;
-    protected final StockKeeperRequestMenu menu;
 
     private int guiLeft,guiTop;
 
-    public KeeperTabScreen(KeeperSourceContext context, StockKeeperRequestMenu menu, Component title, Item icon) {
+    public KeeperTabScreen(KeeperSourceContext context, Component title, Item icon) {
         super(title);
         this.icon = icon.getDefaultInstance();
         this.context = context;
-
-        this.menu = menu;
     }
 
     public void containerTick() {
