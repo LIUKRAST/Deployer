@@ -16,6 +16,7 @@ Fixes
 - Stock panels invalidated the item cache instead of the cache of their own stock type
 - Custom panels no longer disappear when copied with schematics or blueprints
 - Extra panel connections no longer load chunks while checking their source block
+- Panel inputs are read in the order they were connected, so string concatenation is predictable ([CreateExtraGauges#109](https://github.com/LIUKRAST/CreateExtraGauges/issues/109))
 
 For developers
 - No breaking changes: mods built against 0.1.3 keep working
@@ -25,4 +26,5 @@ For developers
 - `notifyOutputs` keeps notifying the other targets when one is unloaded
 - New `OrderingPanelBehaviour#invalidateNetworkSummary` hook, `PanelConnection.hasAnyListener` and `AbstractPanelBehaviour.collectValues`
 - `StockTabScreen#clickAmount` now has a default implementation
+- `getAllValues` and `getAllValuesWithSource` return values in connection order (panels, then links, then extra connections)
 - The point where Deployer cancels `FactoryPanelBehaviour#tickRequests` moved after Create's timer and state checks

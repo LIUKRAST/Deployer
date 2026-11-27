@@ -58,7 +58,7 @@ import java.util.function.Supplier;
 @Mixin(FactoryPanelBehaviour.class)
 public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour implements FPBExtension, ProvidesConnection, IPromiseVisuals, AdvancedValueSettingsBehaviour {
     //region Unique values
-    @Unique private final Map<BlockPos, FactoryPanelConnection> deployer$targetedByExtra = new HashMap<>();
+    @Unique private final Map<BlockPos, FactoryPanelConnection> deployer$targetedByExtra = new LinkedHashMap<>();
     @Unique private final Set<PanelConnection<?>> deployer$connectionsIn = new LinkedHashSet<>();
     @Unique private final Map<PanelConnection<?>, Supplier<?>> deployer$connectionsOut = new LinkedHashMap<>();
     //endregion
@@ -162,6 +162,12 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
     @Inject(method = "<init>", at = @At("RETURN"))
     private void deployer$registerDefaultConnections(FactoryPanelBlockEntity be, FactoryPanelBlock.PanelSlot slot, CallbackInfo ci) {
         addConnections(new PanelConnectionBuilder(deployer$connectionsOut, deployer$connectionsIn));
+    }
+
+    // Keeps inputs in connection order, so values like concatenated strings are predictable
+    @ModifyExpressionValue(method = {"<init>", "disable"}, at = @At(value = "NEW", target = "java/util/HashMap"))
+    private HashMap<?, ?> deployer$keepConnectionOrder(HashMap<?, ?> original) {
+        return new LinkedHashMap<>();
     }
 
     // Skips the default tick functions from the factory gauge
