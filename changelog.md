@@ -6,6 +6,7 @@ Fixes
 - Capes are fetched once per player and per game session, only when their cape is drawn, instead of at every player creation; downloads use a shared thread pool with timeouts and textures are registered on the render thread
 - Pending fluid and energy promises were lost when a world or chunk was saved and loaded again, so gauges ordered the same resources twice
 - Stock Keeper tabs of custom resources (fluids, energy) showed only the last 100 entries of a network with more than 100 different entries
+- Packagers of custom resources no longer take hold of an item package when another mod only simulates inserting it, which could duplicate the package
 - Restocking gauges of custom resources ordered at most 9 units of the selected scale per request (9 mB with a fluid gauge in mB); they now order the whole missing amount
 
 For developers
@@ -15,6 +16,8 @@ For developers
   - Removed the deprecated `PanelConnectionBuilder.put` (use `registerBoth`), `ColoredFactoryPanelSupportBehaviour`, `FPBEExtension`, `ACPExtension` and `DeployerClient.getCape`
   - The `mixin` packages and the `mixinExtensions` interfaces are marked `@ApiStatus.Internal`, except `LLBExtension`, which is the extension point for logistically linked behaviours of other mods
   - Removed `VersionedTrackerBehaviour`, which nothing used (packagers use Create's tracker together with `VersionedWrapper`)
+  - `StorageHandler.isBulky` now means what its name says (a package with a bulky entry holds nothing else, like Create's items that cannot fit inside containers); it was read inverted before. Types that returned `false` to get one entry per package must return `true`
+  - `AbstractPackagerBlockEntity.isValidPackage` no longer has side effects; `unwrapBox` passes invalid boxes through only when not simulating
   - `AbstractInventorySummary.getStacksByCount` lists the largest count first, like Create's `InventorySummary`
   - The panel and stock inventory registries no longer have a default key: `getKey` of an unregistered entry returns `null`
 - New `StockPanelBehaviour.getMaxRestockAmount`, to split restocks into smaller orders

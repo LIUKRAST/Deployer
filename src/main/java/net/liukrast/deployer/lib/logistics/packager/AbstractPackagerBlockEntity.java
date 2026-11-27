@@ -303,7 +303,7 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
                     if(requestQueue && !valueHandler.hashStrategy().equals(extracted, nextRequest.item()))
                         continue;
 
-                    boolean bulky = !handler.isBulky(valueHandler.fromValue(extracted));
+                    boolean bulky = handler.isBulky(valueHandler.fromValue(extracted));
                     if (bulky && anyItemPresent)
                         continue;
 
@@ -491,30 +491,24 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
 
     @Override
     public final boolean unwrapBox(ItemStack box, boolean simulate) {
-        if(!isValidPackage(box))
+        if(!isValidPackage(box)) {
+            if(!simulate) {
+                heldBox = box;
+                animationInward = false;
+                animationTicks = 20;
+                notifyUpdate();
+            }
             return false;
+        }
         return safeUnwrapBox(box, simulate);
     }
 
+    /**
+     * @return Whether this packager can unwrap the box. Boxes of other stock types are passed through
+     * by {@link #unwrapBox(ItemStack, boolean)} instead
+     * */
     public boolean isValidPackage(ItemStack box) {
-        /* We avoid unpacking boxes that are not for this packager.
-        A fluid packager cannot pack/unpack normal packages unless it's composite */
-        if(!(box.getItem() instanceof GenericPackageItem generic)) {
-            heldBox = box;
-            animationInward = false;
-            animationTicks = 20;
-            notifyUpdate();
-            return false;
-        }
-        var type = getStockType();
-        if(generic.getType() != type) {
-            heldBox = box;
-            animationInward = false;
-            animationTicks = 20;
-            notifyUpdate();
-            return false;
-        }
-        return true;
+        return box.getItem() instanceof GenericPackageItem generic && generic.getType() == getStockType();
     }
 
     public boolean safeUnwrapBox(ItemStack box, boolean simulate) {

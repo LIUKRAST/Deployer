@@ -141,6 +141,10 @@ public abstract class StockInventoryType<K,V,H> {
         V extract(H handler, V value, boolean simulate, AbstractPackagerBlockEntity<K,V,H> packager);
         int fill(H handler, V value, boolean simulate, AbstractPackagerBlockEntity<K,V,H> packager);
         V setInSlot(H handler, int slot, V value, boolean simulate);
+        /**
+         * @return {@code true} if a package holding this key must not hold anything else, like items that
+         * cannot fit inside container items in Create
+         * */
         boolean isBulky(K key);
         H create(int i);
         int getMaxPackageSlots();
