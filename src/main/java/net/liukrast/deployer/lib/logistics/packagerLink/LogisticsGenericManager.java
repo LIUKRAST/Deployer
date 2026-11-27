@@ -8,6 +8,7 @@ import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packager.PackagingRequest;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticsManager;
+import com.simibubi.create.content.logistics.packagerLink.PackagerLinkBlockEntity;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import com.simibubi.create.foundation.utility.TickBasedCache;
 import net.createmod.catnip.data.Pair;
@@ -16,6 +17,7 @@ import net.liukrast.deployer.lib.logistics.packager.*;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
 import net.liukrast.deployer.lib.mixin.accessors.LogisticsManagerAccessor;
 import net.liukrast.deployer.lib.mixinExtensions.LLBExtension;
+import net.liukrast.deployer.lib.mixinExtensions.PLBEExtension;
 import net.liukrast.deployer.lib.mixinExtensions.PRExtension;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
@@ -44,10 +46,10 @@ public class LogisticsGenericManager {
         try {
             return (accurate ? getAccurateSummaries(type) : getSummaries(type)).get(freqId, () -> {
                 AbstractInventorySummary<K,V> summaryOfLinks = type.networkHandler().createSummary();
-                Set<InventoryIdentifier> processedInventories = new HashSet<>();
+                Set<Object> processedInventories = new HashSet<>();
                 LogisticallyLinkedBehaviour.getAllPresent(freqId, false)
                         .forEach(link -> {
-                            InventoryIdentifier currentInventoryId = LogisticsManagerAccessor.invokeGetInventoryIdentifierFromLink(link);
+                            Object currentInventoryId = getInventoryKey(type, link);
                             if(currentInventoryId != null && !processedInventories.add(currentInventoryId))
                                 return;
 
@@ -147,7 +149,7 @@ public class LogisticsGenericManager {
         Multimap<AbstractPackagerBlockEntity<K,V,H>, GenericPackagingRequest<V>> requests = HashMultimap.create();
 
         // Packages need to track their index and successors for successful defrag
-        Iterable<LogisticallyLinkedBehaviour> availableLinks = LogisticallyLinkedBehaviour.getAllPresent(freqId, true);
+        List<LogisticallyLinkedBehaviour> availableLinks = oneLinkPerInventory(type, LogisticallyLinkedBehaviour.getAllPresent(freqId, true));
         List<LogisticallyLinkedBehaviour> usedLinks = new ArrayList<>();
         MutableBoolean finalLinkTracker = new MutableBoolean(false);
 
@@ -194,6 +196,40 @@ public class LogisticsGenericManager {
             }
         }
         return requests;
+    }
+
+    private static <K,V,H> List<LogisticallyLinkedBehaviour> oneLinkPerInventory(StockInventoryType<K,V,H> type, Iterable<LogisticallyLinkedBehaviour> links) {
+        List<LogisticallyLinkedBehaviour> all = new ArrayList<>();
+        Map<Object, List<LogisticallyLinkedBehaviour>> byInventory = new HashMap<>();
+        for (LogisticallyLinkedBehaviour link : links) {
+            all.add(link);
+            Object id = getInventoryKey(type, link);
+            if (id != null)
+                byInventory.computeIfAbsent(id, k -> new ArrayList<>()).add(link);
+        }
+        Set<LogisticallyLinkedBehaviour> skipped = new HashSet<>();
+        for (List<LogisticallyLinkedBehaviour> group : byInventory.values()) {
+            if (group.size() < 2)
+                continue;
+            LogisticallyLinkedBehaviour selected = group.get(LogisticsManagerAccessor.getR().nextInt(group.size()));
+            for (LogisticallyLinkedBehaviour link : group)
+                if (link != selected)
+                    skipped.add(link);
+        }
+        if (!skipped.isEmpty())
+            all.removeIf(skipped::contains);
+        return all;
+    }
+
+    @Nullable
+    private static <K,V,H> Object getInventoryKey(StockInventoryType<K,V,H> type, LogisticallyLinkedBehaviour link) {
+        if (!(link.blockEntity instanceof PackagerLinkBlockEntity plbe))
+            return null;
+        AbstractPackagerBlockEntity<K,V,H> packager = ((PLBEExtension) plbe).deployer$getPackager(type);
+        if (packager == null || packager.getLevel() == null || !packager.targetInventory.hasInventory())
+            return null;
+        InventoryIdentifier identifier = InventoryIdentifier.get(packager.getLevel(), packager.targetInventory.getTarget().getOpposite());
+        return identifier != null ? identifier : packager.targetInventory.getInventory();
     }
 
     public static <K,V,H> void performPackageRequests(Multimap<AbstractPackagerBlockEntity<K,V,H>, GenericPackagingRequest<V>> requests, int index, boolean isFinal) {

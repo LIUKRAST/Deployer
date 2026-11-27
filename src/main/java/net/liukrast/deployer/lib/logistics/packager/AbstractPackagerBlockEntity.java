@@ -553,7 +553,7 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
                 new IdentifiedContainer<>(
                         InventoryIdentifier.get(
                                 getLevel(),
-                                targetInventory.getTarget()
+                                targetInventory.getTarget().getOpposite()
                         ),
                         targetInventory.getInventory()
                 )
@@ -567,7 +567,7 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
                 new IdentifiedContainer<>(
                         InventoryIdentifier.get(
                                 getLevel(),
-                                targetInventory.getTarget()
+                                targetInventory.getTarget().getOpposite()
                         ),
                         targetInventory.getInventory()
                 ),
