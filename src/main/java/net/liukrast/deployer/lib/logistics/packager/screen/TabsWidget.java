@@ -57,7 +57,7 @@ public abstract class TabsWidget<T extends TabData> extends AbstractSimiWidget {
             }
         } else {
             renderBackground(graphics, mouseX, mouseY, partialTicks);
-            graphics.renderItem(getIcon(), getX() + 2, getY() + 18); //TODO Config
+            graphics.renderItem(getIcon(), getX() + 2, getY() + 18);
             for(int i = 0; i < maxTabs - 1; i++) {
                 if(i >= widgets.size()) break;
                 widgets.get(i).render(graphics, mouseX, mouseY, partialTicks);

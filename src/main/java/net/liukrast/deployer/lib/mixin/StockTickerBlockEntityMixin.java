@@ -109,7 +109,8 @@ public abstract class StockTickerBlockEntityMixin extends StockCheckingBlockEnti
 
     @Override
     public <K,V,H> void deployer$receiveStockPacket(StockInventoryType<K,V,H> type, List<V> stacks, boolean endOfTransmission) {
-        deployer$mappedInfo.setNewlyReceivedStockSnapshot(type, new ArrayList<>());
+        if(deployer$mappedInfo.getNewlyReceivedStockSnapshot(type) == null)
+            deployer$mappedInfo.setNewlyReceivedStockSnapshot(type, new ArrayList<>());
         deployer$mappedInfo.getNewlyReceivedStockSnapshot(type).addAll(stacks);
 
         if(!endOfTransmission) return;
@@ -119,12 +120,10 @@ public abstract class StockTickerBlockEntityMixin extends StockCheckingBlockEnti
         for(V stack : deployer$mappedInfo.getNewlyReceivedStockSnapshot(type))
             deployer$mappedInfo.getLastClientsideStockSnapshotAsSummary(type).add(stack);
 
-        //var cat = deployer$mappedInfo.getCategories(type);
-        //if(cat == null) cat = deployer$mappedInfo.setCategories(type, new ArrayList<>());
         for(ItemStack filter : categories) {
             List<V> inCategory = new ArrayList<>();
             if(!filter.isEmpty()) {
-                FilterItemStack filterItemStack = FilterItemStack.of(filter); //TODO: CHECK THIS OUT!!
+                FilterItemStack filterItemStack = FilterItemStack.of(filter);
                 for(Iterator<V> iterator = deployer$mappedInfo.getNewlyReceivedStockSnapshot(type).iterator(); iterator.hasNext();) {
                     V stack = iterator.next();
                     if(!type.valueHandler().test(filterItemStack, level, stack)) continue;

@@ -208,7 +208,7 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                                      @Local(argsOnly = true, ordinal = 1) int mouseY,
                                      @Local(argsOnly = true) float partialTicks
     ) {
-        if(deployer$tabsWidget == null || deployer$tabsWidget.getSelected() == null || hoveredSlot.getFirst() == -2 /*TODO: Check*/) return original;
+        if(deployer$tabsWidget == null || deployer$tabsWidget.getSelected() == null || hoveredSlot.getFirst() == -2) return original;
         graphics.pose().pushPose();
         graphics.pose().translate(getGuiLeft() + 18, getGuiTop() + 16, 0);
         deployer$tabsWidget.getSelected().render(graphics, mouseX - getGuiLeft() - 18, mouseY - getGuiTop() - 16, partialTicks);
@@ -394,5 +394,5 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
     /* MAX CRAFTABLE */
     /* REMOVE LEAST ESSENTIAL ITEMSTACK */
     /* REMOVE INGREDIENT AMOUNTS */
-    /* SYNC JEI */ //TODO
+    /* SYNC JEI */
 }

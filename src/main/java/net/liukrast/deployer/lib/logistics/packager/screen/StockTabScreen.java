@@ -258,7 +258,6 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
             emptyTicks++;
         else
             emptyTicks = 0;
-        //TODO: Check if successTicks if needed
 
         List<List<V>> clientStockSnapshot = context.getClientStockSnapshot(type);
         if(clientStockSnapshot != currentItemSource) {
@@ -401,8 +400,6 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
             ms.popPose();
         }
 
-        //TODO: JEI Imported?
-
         // Render tooltip of hovered item
         if (hoveredSlot != noneHovered) {
             int slot = hoveredSlot.getSecond();
@@ -481,8 +478,6 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
 
         return noneHovered;
     }
-
-    //TODO: JEI -> getHoveredIngredient
 
     private Component getTroubleshootingMessage() {
         if (currentItemSource == null)

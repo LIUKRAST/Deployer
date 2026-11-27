@@ -5,6 +5,8 @@ Features
 Fixes
 - Capes are fetched once per player and per game session, only when their cape is drawn, instead of at every player creation; downloads use a shared thread pool with timeouts and textures are registered on the render thread
 - Pending fluid and energy promises were lost when a world or chunk was saved and loaded again, so gauges ordered the same resources twice
+- Stock Keeper tabs of custom resources (fluids, energy) showed only the last 100 entries of a network with more than 100 different entries
+- Restocking gauges of custom resources ordered at most 9 units of the selected scale per request (9 mB with a fluid gauge in mB); they now order the whole missing amount
 
 For developers
 - First stable release: the public API (everything outside `mixin` packages and `@ApiStatus.Internal` classes) stays compatible until 2.0
@@ -12,7 +14,10 @@ For developers
   - `AbstractPanelBehaviour.read`, `write` and `writeSafe` are now `final`: override `easyRead`, `easyWrite` and `easyWriteSafe`
   - Removed the deprecated `PanelConnectionBuilder.put` (use `registerBoth`), `ColoredFactoryPanelSupportBehaviour`, `FPBEExtension`, `ACPExtension` and `DeployerClient.getCape`
   - The `mixin` packages and the `mixinExtensions` interfaces are marked `@ApiStatus.Internal`, except `LLBExtension`, which is the extension point for logistically linked behaviours of other mods
+  - Removed `VersionedTrackerBehaviour`, which nothing used (packagers use Create's tracker together with `VersionedWrapper`)
+  - `AbstractInventorySummary.getStacksByCount` lists the largest count first, like Create's `InventorySummary`
   - The panel and stock inventory registries no longer have a default key: `getKey` of an unregistered entry returns `null`
+- New `StockPanelBehaviour.getMaxRestockAmount`, to split restocks into smaller orders
 - New public helpers replacing internal accessors: `CreateHelpers.getIconX`, `getIconY`, `iconVertex`, `getGenericRepackageHelper` and `ClientRegisterHelpers.getSelectedRequesterTab`
 - `Constants` now extends `net.liukrast.constants.Constants` from Constants Manager (bundled with jarJar, loader independent): ids, logger, registry helpers and `translatable`/`literal`/`translationKey` live there, while `createDeferred`, `wrapWithShiftSummary` and the Catnip `LangBuilder` helpers stay in Deployer. code that uses Deployer's `Constants` compiles and runs unchanged
 - Built against NeoForge 21.1.268, Create 6.0.11-346, Ponder 1.0.92, JEI 19.76.1.482 and MixinExtras 0.5.5; the minimum NeoForge (21.1.265) and Create (6.0.10) versions are unchanged

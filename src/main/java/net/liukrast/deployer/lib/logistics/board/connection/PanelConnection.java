@@ -19,7 +19,6 @@ import java.util.function.ToIntFunction;
 public class PanelConnection<T> {
     //region Attributes
     private final Map<Block, ConnectionExtra<T>> extraConnections = new HashMap<>();
-    //TODO: Implement partial ticks and panel data
     private final ToIntFunction<T> colorProvider;
     //endregion
 

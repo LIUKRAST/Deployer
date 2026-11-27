@@ -441,7 +441,6 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
 
         // If a contained ItemStack instance is the same, we can be pretty sure these
         // inventories are the same (works for compound inventories)
-        //TODO: We cannot be sure of this for other stack types
         for (int i = 0; i < sh.getSlots(second); i++) {
             V stackInSlot = sh.getStackInSlot(second, i);
             if (vh.isEmpty(stackInSlot))

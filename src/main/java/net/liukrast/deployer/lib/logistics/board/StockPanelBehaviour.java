@@ -118,7 +118,7 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour i
         int inStorage = getLevelInStorage();
         int promised = getPromised();
         int demand = getDemand();
-        int amountToOrder = org.joml.Math.clamp(demand - promised - inStorage, 0, getDemandMultiplier() * 9 /* TODO: Give this a look */);
+        int amountToOrder = org.joml.Math.clamp(demand - promised - inStorage, 0, Math.max(0, getMaxRestockAmount()));
 
         var orderedItem = getStockInventoryType().valueHandler().copyWithCount(item, Math.min(amountToOrder, availableOnNetwork));
         GenericOrderContained<V> order = getStockInventoryType().valueHandler().createContained(List.of(orderedItem));
@@ -226,6 +226,14 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour i
     @Override
     public int getDemandMultiplier() {
         return getMultiplierMode()[scale].value;
+    }
+
+    /**
+     * @return The largest amount a restocking panel orders with one request. Defaults to the whole demand,
+     * override it to split restocks into smaller orders
+     * */
+    public int getMaxRestockAmount() {
+        return getDemand();
     }
 
     @Override

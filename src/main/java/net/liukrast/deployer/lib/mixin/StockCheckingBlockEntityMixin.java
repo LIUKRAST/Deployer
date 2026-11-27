@@ -46,7 +46,7 @@ public abstract class StockCheckingBlockEntityMixin extends SmartBlockEntity imp
 
     @Override
     public <K, V, H> boolean deployer$broadcastPackageRequest(StockInventoryType<K, V, H> type, LogisticallyLinkedBehaviour.RequestType requestType, GenericOrderContained<V> order, @Nullable IdentifiedContainer<H> ignoredHandler, String address) {
-        return LogisticsGenericManager.broadcastPackageRequest(type, behaviour.freqId, requestType, order, ignoredHandler, address, 0, true); //TODO: Check
+        return LogisticsGenericManager.broadcastPackageRequest(type, behaviour.freqId, requestType, order, ignoredHandler, address, 0, true);
     }
 
     @Override

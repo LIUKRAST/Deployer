@@ -637,7 +637,6 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
             return;
 
         CompoundTag panelTag = new CompoundTag();
-        // TODO - "Satisfied" and "PromisedSatisfied" may be not necessary for regular panels
         panelTag.putBoolean("Satisfied", satisfied);
         panelTag.putBoolean("PromisedSatisfied", promisedSatisfied);
         panelTag.putBoolean("RedstonePowered", redstonePowered);

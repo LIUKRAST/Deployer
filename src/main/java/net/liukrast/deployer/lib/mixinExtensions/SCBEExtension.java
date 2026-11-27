@@ -21,6 +21,6 @@ public interface SCBEExtension {
      * Mandatory: Middle ? in StockInventoryType must match ? in GenericOrderContained
      *
      */
-    boolean deployer$broadcastAllPackageRequest(PackageOrderWithCrafts defaultOrder, LogisticallyLinkedBehaviour.RequestType requestType, Map<StockInventoryType<?,?,?>, GenericOrderContained<?>> requests /* TODO: Introduce handler? */, String address);
+    boolean deployer$broadcastAllPackageRequest(PackageOrderWithCrafts defaultOrder, LogisticallyLinkedBehaviour.RequestType requestType, Map<StockInventoryType<?,?,?>, GenericOrderContained<?>> requests, String address);
     <K,V,H> boolean deployer$broadcastPackageRequest(StockInventoryType<K,V,H> type, LogisticallyLinkedBehaviour.RequestType requestType, GenericOrderContained<V> order, @Nullable IdentifiedContainer<H> ignoredHandler, String address);
 }

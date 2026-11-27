@@ -223,14 +223,13 @@ public abstract class AbstractInventorySummary<K, V> {
     }
 
     /**
-     * @return The list of stacks inside the summary, sorted
+     * @return The list of stacks inside the summary, largest count first, like Create's {@code InventorySummary}
      * */
-    //TODO: Cant it just call #getStacks????
     public List<V> getStacksByCount() {
         if(stacksByCount == null) {
             stacksByCount = new ArrayList<>();
             items.forEach((i, list) -> stacksByCount.addAll(list));
-            stacksByCount.sort(Comparator.comparingInt(this::getCount));
+            stacksByCount.sort((a, b) -> Integer.compare(getCount(b), getCount(a)));
         }
         return stacksByCount;
     }
@@ -248,7 +247,7 @@ public abstract class AbstractInventorySummary<K, V> {
 
         List<V> currentList = null;
 
-        if(stacks.isEmpty()) //TODO: Check later
+        if(stacks.isEmpty())
             CatnipServices.NETWORK.sendToClient(player, new LogisticalStockGenericResponsePacket<>(true, pos, type, Collections.emptyList()));
 
         for(V entry : stacks) {
@@ -262,7 +261,6 @@ public abstract class AbstractInventorySummary<K, V> {
                 break;
             if(currentList.size() < 100)
                 continue;
-            //TODO: Check later
             CatnipServices.NETWORK.sendToClient(player, new LogisticalStockGenericResponsePacket<>(false, pos, type, currentList));
             currentList = null;
         }
