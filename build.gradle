@@ -13,7 +13,7 @@ repositories {
     mavenLocal()
     maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
     maven { url = "https://mvn.devos.one/snapshots" } // Registrate
-    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
+    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // JEI
     maven { url = "https://maven.blamejared.com/"}
     maven { url = "https://cursemaven.com"}
     maven { url = "https://maven.liukrast.net" }
@@ -110,7 +110,7 @@ neoForge {
 sourceSets.main.resources {srcDir 'src/generated/resources'}
 
 dependencies {
-    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
+    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}") { transitive = false }
     implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
@@ -130,15 +130,9 @@ dependencies {
     compileOnly("maven.modrinth:jade:${jade_version}")
     implementation("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}")
 
-
-    // Compat
-    implementation "curse.maven:create-additional-logistics-1359885:7460280"
-    implementation "curse.maven:createaddition-439890:7518252"
-    implementation "curse.maven:create-buzzy-bees-1491979:7867713"
-    implementation "curse.maven:kotlin-for-forge-351264:7471280"
-    implementation "curse.maven:curios-309927:6529130"
-    implementation "curse.maven:geckolib-388172:7707149"
-    implementation "curse.maven:wakes-reforged-1223529:7562282"
+    implementation "curse.maven:kotlin-for-forge-351264:8335665"
+    implementation "curse.maven:architectury-api-419699:8492726"
+    implementation "curse.maven:observable-509575:6697124"
 
 }
 
