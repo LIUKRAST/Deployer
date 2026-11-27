@@ -141,7 +141,7 @@ public class RequestPromiseQueueMixin implements RPQExtension {
         var special = tag.getCompound("deployer$ExtraLists");
         RPQExtension result = (RPQExtension) cir.getReturnValue();
         for(var type : DeployerRegistries.STOCK_INVENTORY) {
-            ListTag tagList = special.getList(String.valueOf(DeployerRegistries.STOCK_INVENTORY.getKey(type)), Tag.TAG_END); //TODO: Check if TAG_END is correct
+            ListTag tagList = special.get(String.valueOf(DeployerRegistries.STOCK_INVENTORY.getKey(type))) instanceof ListTag list ? list : new ListTag();
             deployer$readSingle(type, tagList, result);
         }
     }

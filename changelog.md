@@ -22,6 +22,7 @@ Fixes
 - Panel inputs are read in the order they were connected, so string concatenation is predictable ([CreateExtraGauges#109](https://github.com/LIUKRAST/CreateExtraGauges/issues/109))
 - Custom redstone requester tabs no longer hide the player inventory when another mod wraps its slots ([Repackaged#31](https://github.com/LIUKRAST/Repackaged/issues/31))
 - Package Couriers planes no longer void the fluid or energy of generic packages when they unpack on arrival to a player ([Repackaged#44](https://github.com/LIUKRAST/Repackaged/issues/44))
+- Pending fluid and energy promises were lost when a world or chunk was saved and loaded again, so gauges ordered the same resources twice
 
 For developers
 - No breaking changes: mods built against 0.1.3 keep working
