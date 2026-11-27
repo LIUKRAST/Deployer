@@ -1,5 +1,6 @@
 package net.liukrast.deployer.lib.mixinExtensions;
 
+import org.jetbrains.annotations.ApiStatus;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
 import net.liukrast.deployer.lib.logistics.packager.screen.RequesterTabScreen;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
@@ -8,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
+@ApiStatus.Internal
 public interface RRSExtension {
     @Nullable RequesterTabScreen<?> deployer$getTab();
     void deployer$receiveData(Map<StockInventoryType<?,?,?>, GenericOrderContained<?>> dataMap);

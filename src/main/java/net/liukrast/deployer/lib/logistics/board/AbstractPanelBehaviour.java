@@ -590,12 +590,11 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
     }
 
     /**
-     * Override {@link #easyRead} instead. This method will become {@code final} in a future release.
+     * Override {@link #easyRead} instead.
      */
     @ApiStatus.Internal
-    @ApiStatus.NonExtendable
     @Override
-    public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+    public final void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(nbt, registries, clientPacket);
 
         String slotKey = CreateLang.asId(slot.name());
@@ -605,12 +604,11 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
     }
 
     /**
-     * Override {@link #easyWriteSafe} instead. This method will become {@code final} in a future release.
+     * Override {@link #easyWriteSafe} instead.
      */
     @ApiStatus.Internal
-    @ApiStatus.NonExtendable
     @Override
-    public void writeSafe(CompoundTag nbt, HolderLookup.Provider registries) {
+    public final void writeSafe(CompoundTag nbt, HolderLookup.Provider registries) {
         writeCustomPanelData(nbt);
 
         if (!active)
@@ -628,12 +626,11 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
      * <p>
      * <strong>If you feel like some data should not be avoided, please open a GitHub issue to report this.<strong/>
      * <p>
-     * Override {@link #easyWrite} instead. This method will become {@code final} in a future release.
+     * Override {@link #easyWrite} instead.
      */
     @ApiStatus.Internal
-    @ApiStatus.NonExtendable
     @Override
-    public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+    public final void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
         writeCustomPanelData(nbt);
 
         if (!active)

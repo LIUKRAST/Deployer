@@ -22,6 +22,9 @@ import net.liukrast.deployer.lib.logistics.packager.screen.RequesterTabScreen;
 import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
+import com.simibubi.create.content.logistics.redstoneRequester.RedstoneRequesterScreen;
+import net.liukrast.deployer.lib.mixinExtensions.RRSExtension;
 import oshi.util.tuples.Pair;
 
 import java.util.ArrayList;
@@ -209,5 +212,13 @@ public class ClientRegisterHelpers {
     @FunctionalInterface
     public interface RequesterFactory<V> {
         RequesterTabScreen<V> create(RedstoneRequesterMenu menu, StockInventoryType<?, V, ?> type, GenericOrderContained<V> orderData);
+    }
+
+    /**
+     * @return the Deployer tab currently open in a redstone requester screen, or {@code null} when the default tab is shown
+     */
+    @Nullable
+    public static RequesterTabScreen<?> getSelectedRequesterTab(RedstoneRequesterScreen screen) {
+        return ((RRSExtension) screen).deployer$getTab();
     }
 }

@@ -1,5 +1,6 @@
 package net.liukrast.deployer.lib.mixinExtensions;
 
+import org.jetbrains.annotations.ApiStatus;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.stockTicker.PackageOrderWithCrafts;
 import net.liukrast.deployer.lib.logistics.packager.AbstractInventorySummary;
@@ -11,6 +12,7 @@ import net.liukrast.deployer.lib.logistics.stockTicker.GenericOrderContained;
 import java.util.List;
 import java.util.Map;
 
+@ApiStatus.Internal
 public interface STBEExtension {
     <K,V,H> List<List<V>> deployer$getClientStockSnapshot(StockInventoryType<K,V,H> type);
     <K,V,H> AbstractInventorySummary<K,V> deployer$getLastClientsideStockSnapshotAsSummary(StockInventoryType<K,V,H> type);

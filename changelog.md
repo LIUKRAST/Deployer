@@ -7,6 +7,12 @@ Fixes
 - Pending fluid and energy promises were lost when a world or chunk was saved and loaded again, so gauges ordered the same resources twice
 
 For developers
+- Breaking changes, done before 1.0.0 so the API stays stable until 2.0:
+  - `AbstractPanelBehaviour.read`, `write` and `writeSafe` are now `final`: override `easyRead`, `easyWrite` and `easyWriteSafe`
+  - Removed the deprecated `PanelConnectionBuilder.put` (use `registerBoth`), `ColoredFactoryPanelSupportBehaviour`, `FPBEExtension`, `ACPExtension` and `DeployerClient.getCape`
+  - The `mixin` packages and the `mixinExtensions` interfaces are marked `@ApiStatus.Internal`, except `LLBExtension`, which is the extension point for logistically linked behaviours of other mods
+  - The panel and stock inventory registries no longer have a default key: `getKey` of an unregistered entry returns `null`
+- New public helpers replacing internal accessors: `CreateHelpers.getIconX`, `getIconY`, `iconVertex`, `getGenericRepackageHelper` and `ClientRegisterHelpers.getSelectedRequesterTab`
 - `Constants` now extends `net.liukrast.constants.Constants` from Constants Manager (bundled with jarJar, loader independent): ids, logger, registry helpers and `translatable`/`literal`/`translationKey` live there, while `createDeferred`, `wrapWithShiftSummary` and the Catnip `LangBuilder` helpers stay in Deployer. Mods built against 0.1.x keep working
 - Built against NeoForge 21.1.268, Create 6.0.11-346, Ponder 1.0.92, JEI 19.76.1.482 and MixinExtras 0.5.5; the minimum NeoForge (21.1.265) and Create (6.0.10) versions are unchanged
 - The published POM no longer lists dev-only mods (Sable, Kotlin for Forge, Architectury, Observable, JEI runtime)

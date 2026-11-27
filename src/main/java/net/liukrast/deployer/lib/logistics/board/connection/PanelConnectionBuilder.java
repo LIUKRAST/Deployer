@@ -90,21 +90,4 @@ public class PanelConnectionBuilder {
     public <T> PanelConnectionBuilder registerBoth(@NotNull PanelConnection<T> panelConnection, @NotNull Supplier<T> getter) {
         return registerInput(panelConnection).registerOutput(panelConnection, getter);
     }
-
-    /**
-     * @deprecated Use {@link #registerBoth(DeferredHolder, Supplier)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "2.1.0")
-    public <T> PanelConnectionBuilder put(@NotNull DeferredHolder<PanelConnection<?>, PanelConnection<T>> panelConnection, @NotNull Supplier<T> getter) {
-        return put(panelConnection.get(), getter);
-    }
-
-    /**
-     * @deprecated Use {@link #registerBoth(PanelConnection, Supplier)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "2.1.0")
-    public <T> PanelConnectionBuilder put(@NotNull PanelConnection<T> panelConnection, @NotNull Supplier<T> getter) {
-        out.put(panelConnection, getter);
-        return this;
-    }
 }
