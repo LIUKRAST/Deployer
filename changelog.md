@@ -25,6 +25,7 @@ Fixes
 
 For developers
 - No breaking changes: mods built against 0.1.3 keep working
+- Built against NeoForge 21.1.265 and Create 6.0.11; the supported version ranges are unchanged
 - New `easyWriteSafe` hook: override it to keep data when a panel is saved in a schematic or blueprint
 - `AbstractPanelBehaviour.read`, `write` and `writeSafe` should not be overridden anymore (use `easyRead`, `easyWrite`, `easyWriteSafe`); they will become final in a future release
 - `AbstractPanelBehaviour.getValue` returns `Empty` instead of throwing when the connection is not registered on the panel
