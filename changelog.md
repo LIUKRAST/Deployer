@@ -16,7 +16,7 @@ For developers
   - Removed the deprecated `PanelConnectionBuilder.put` (use `registerBoth`), `ColoredFactoryPanelSupportBehaviour`, `FPBEExtension`, `ACPExtension` and `DeployerClient.getCape`
   - The `mixin` packages and the `mixinExtensions` interfaces are marked `@ApiStatus.Internal`, except `LLBExtension`, which is the extension point for logistically linked behaviours of other mods
   - Removed `VersionedTrackerBehaviour`, which nothing used (packagers use Create's tracker together with `VersionedWrapper`)
-  - `StorageHandler.isBulky` now means what its name says (a package with a bulky entry holds nothing else, like Create's items that cannot fit inside containers); it was read inverted before. Types that returned `false` to get one entry per package must return `true`
+  - `StockInventoryType.IStorageHandler.isBulky` now means what its name says (a package with a bulky entry holds nothing else, like Create's items that cannot fit inside containers); it was read inverted before. Types that returned `false` to get one entry per package must return `true`
   - `AbstractPackagerBlockEntity.isValidPackage` no longer has side effects; `unwrapBox` passes invalid boxes through only when not simulating
   - `AbstractInventorySummary.getStacksByCount` lists the largest count first, like Create's `InventorySummary`
   - The panel and stock inventory registries no longer have a default key: `getKey` of an unregistered entry returns `null`
