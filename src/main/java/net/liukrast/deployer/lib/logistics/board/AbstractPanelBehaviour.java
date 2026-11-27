@@ -589,23 +589,28 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
         }
     }
 
+    /**
+     * Override {@link #easyRead} instead. This method will become {@code final} in a future release.
+     */
     @ApiStatus.Internal
+    @ApiStatus.NonExtendable
     @Override
-    public final void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+    public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(nbt, registries, clientPacket);
 
-        CompoundTag panelTag = nbt.getCompound(CreateLang.asId(slot.name()));
-        if (panelTag.isEmpty()) {
-            active = false;
-            return;
-        }
-        active = true;
-        easyRead(panelTag, registries, clientPacket);
+        String slotKey = CreateLang.asId(slot.name());
+        active = nbt.contains(slotKey);
+        if (active)
+            easyRead(nbt.getCompound(slotKey), registries, clientPacket);
     }
 
+    /**
+     * Override {@link #easyWriteSafe} instead. This method will become {@code final} in a future release.
+     */
     @ApiStatus.Internal
+    @ApiStatus.NonExtendable
     @Override
-    public final void writeSafe(CompoundTag nbt, HolderLookup.Provider registries) {
+    public void writeSafe(CompoundTag nbt, HolderLookup.Provider registries) {
         writeCustomPanelData(nbt);
 
         if (!active)
@@ -622,10 +627,13 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
      * You can re-add it in your custom write method though
      * <p>
      * <strong>If you feel like some data should not be avoided, please open a GitHub issue to report this.<strong/>
+     * <p>
+     * Override {@link #easyWrite} instead. This method will become {@code final} in a future release.
      */
     @ApiStatus.Internal
+    @ApiStatus.NonExtendable
     @Override
-    public final void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+    public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
         writeCustomPanelData(nbt);
 
         if (!active)

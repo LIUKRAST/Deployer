@@ -17,7 +17,6 @@ import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.factoryBoard.*;
 import com.simibubi.create.content.logistics.packager.PackagerBlockEntity;
 import com.simibubi.create.content.logistics.packager.PackagingRequest;
-import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBehaviour;
 import com.simibubi.create.content.logistics.packagerLink.LogisticallyLinkedBlockItem;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
@@ -29,19 +28,12 @@ import net.liukrast.deployer.lib.blockEntity.behaviour.advancedValueSettings.Row
 import net.liukrast.deployer.lib.logistics.IPromiseVisuals;
 import net.liukrast.deployer.lib.logistics.LogisticallyLinked;
 import net.liukrast.deployer.lib.logistics.board.AbstractPanelBehaviour;
-import net.liukrast.deployer.lib.logistics.board.GenericConnections;
+import net.liukrast.deployer.lib.logistics.board.PanelRequestHelper;
 import net.liukrast.deployer.lib.logistics.board.connection.*;
-import net.liukrast.deployer.lib.logistics.packager.AbstractInventorySummary;
-import net.liukrast.deployer.lib.logistics.packager.AbstractPackagerBlockEntity;
-import net.liukrast.deployer.lib.logistics.packager.GenericPackagingRequest;
 import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
-import net.liukrast.deployer.lib.logistics.packagerLink.LogisticsGenericManager;
-import net.liukrast.deployer.lib.mixin.accessors.LogisticsManagerAccessor;
 import net.liukrast.deployer.lib.mixinExtensions.FPBExtension;
 import net.liukrast.deployer.lib.mixinExtensions.FPCExtension;
-import net.liukrast.deployer.lib.mixinExtensions.PRExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
-import net.liukrast.deployer.lib.registry.DeployerRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -62,8 +54,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Mixin(FactoryPanelBehaviour.class)
 public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour implements FPBExtension, ProvidesConnection, IPromiseVisuals, AdvancedValueSettingsBehaviour {
@@ -170,44 +160,34 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
 
     // Adds default connections to the factory gauge and child classes
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void init(FactoryPanelBlockEntity be, FactoryPanelBlock.PanelSlot slot, CallbackInfo ci) {
+    private void deployer$registerDefaultConnections(FactoryPanelBlockEntity be, FactoryPanelBlock.PanelSlot slot, CallbackInfo ci) {
         addConnections(new PanelConnectionBuilder(deployer$connectionsOut, deployer$connectionsIn));
     }
 
     // Skips the default tick functions from the factory gauge
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;isClientSide()Z"), cancellable = true)
-    private void tick(CallbackInfo ci) {
-
-
+    private void deployer$skipVanillaTickForCustomPanels(CallbackInfo ci) {
         if(FactoryPanelBehaviour.class.cast(this) instanceof AbstractPanelBehaviour) ci.cancel();
     }
 
     @Inject(method = "lazyTick", at = @At("RETURN"))
-    private void lazyTick(CallbackInfo ci) {
-        deployer$targetedByExtra.keySet().removeIf(panel -> {
-            boolean found = false;
-            for (var pc : DeployerRegistries.PANEL_CONNECTION) {
-                if (pc.getListener(getWorld().getBlockState(panel).getBlock()) != null) {
-                    found = true;
-                    break;
-                }
-            }
-            return !found;
-        });
+    private void deployer$pruneExtraTargets(CallbackInfo ci) {
+        var level = getWorld();
+        deployer$targetedByExtra.keySet().removeIf(pos -> level.isLoaded(pos) && !PanelConnection.hasAnyListener(level.getBlockState(pos).getBlock()));
     }
 
     // Prevents null values from making the game crash
     @Definition(id = "behaviour", local = @Local(type = FactoryPanelBehaviour.class))
     @Definition(id = "active", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;active:Z") @Expression("behaviour.active")
     @WrapOperation(method = "at(Lnet/minecraft/world/level/BlockAndTintGetter;Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelPosition;)Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private static boolean at(FactoryPanelBehaviour instance, Operation<Boolean> original) {
+    private static boolean deployer$allowMissingBehaviour(FactoryPanelBehaviour instance, Operation<Boolean> original) {
         if(instance == null) return true;
         return original.call(instance);
     }
 
     // Instantiates the custom panel instead of the normal one
     @ModifyVariable(method = "moveTo", at = @At(value = "STORE", ordinal = 0))
-    private FactoryPanelBehaviour moveTo(FactoryPanelBehaviour at) {
+    private FactoryPanelBehaviour deployer$recreateCustomPanel(FactoryPanelBehaviour at) {
         var be = ((FactoryPanelBlockEntity) at.blockEntity);
         var slot = at.slot;
         if(be.panels.get(slot) instanceof AbstractPanelBehaviour superOriginal)
@@ -217,7 +197,7 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
 
     // Adds extra targets to the max-range-24 limit
     @Inject(method = "moveTo", at = @At(value = "INVOKE", target = "Ljava/util/Map;keySet()Ljava/util/Set;", ordinal = 0), cancellable = true)
-    private void moveTo(FactoryPanelPosition newPos, ServerPlayer player, CallbackInfo ci) {
+    private void deployer$keepExtraTargetsInRange(FactoryPanelPosition newPos, ServerPlayer player, CallbackInfo ci) {
         for(BlockPos pos : deployer$targetedByExtra.keySet()) {
             if(!pos.closerThan(newPos.pos(), 24)) {
                 ci.cancel();
@@ -231,48 +211,18 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
     @Definition(id = "LogisticallyLinkedBlockItem", type = LogisticallyLinkedBlockItem.class)
     @Expression("heldItem.getItem() instanceof LogisticallyLinkedBlockItem")
     @ModifyExpressionValue(method = "onShortInteract", at = @At(value = "MIXINEXTRAS:EXPRESSION"))
-    private boolean onShortInteract(boolean original, @Local(name = "heldItem") ItemStack heldItem) {
+    private boolean deployer$acceptLinkedItems(boolean original, @Local(name = "heldItem") ItemStack heldItem) {
         return (heldItem.getItem() instanceof LogisticallyLinked) || original;
     }
 
-    // Initializes the consolidated share
-    // Consolidated is a map of all orders to make
-    @Inject(method = "tickRequests", at = @At("HEAD"))
-    private void tickRequests(
-            CallbackInfo ci,
-            @Share("real_targeted_by") LocalRef<Map<FactoryPanelPosition, FactoryPanelConnection>> realTargeted,
-            @Share("real_targeted_empty") LocalBooleanRef realTargetedEmpty,
-            @Share("future_consolidated") LocalRef<Map<UUID, Map<ItemStack, FactoryPanelBehaviour.ItemStackConnections>>> future$consolidated,
-            @Share("consolidated") LocalRef<Map<StockInventoryType<?,?,?>, Map<UUID, Map<?, GenericConnections<?>>>>> consolidated
-    ) {
-
-        realTargetedEmpty.set(true);
-        consolidated.set(new HashMap<>());
-        future$consolidated.set(new HashMap<>());
-        realTargeted.set(targetedBy
-                .entrySet()
-                .stream()
-                .filter(e -> {
-                    var connection = e.getValue();
-                    FactoryPanelBehaviour source = at(getWorld(), connection);
-                    if(!(source instanceof AbstractPanelBehaviour)) {
-                        if(((FPCExtension)connection).deployer$getLinkMode() == null) {
-                            ((FPCExtension)connection).deployer$setLinkMode(DeployerPanelConnections.STOCK_CONNECTION.get());
-                        }
-                    }
-                    var pc = ProvidesConnection.getCurrentConnection(connection, () -> ProvidesConnection.getPossibleConnections(source, this).stream().findFirst().orElse(null));
-                    if(pc == null || pc != DeployerPanelConnections.STOCK_CONNECTION.get()) return false;
-                    PanelValue<StockConnection<?>> result = AbstractPanelBehaviour.getValue(connection, DeployerPanelConnections.STOCK_CONNECTION.get(), FactoryPanelBehaviour.class.cast(this));
-                    if(result instanceof PanelValue.Present<StockConnection<?>>(StockConnection<?> value))
-                        value.register(future$consolidated.get(), consolidated.get(), source, connection);
-                    realTargetedEmpty.set(false);
-                    return !(source instanceof AbstractPanelBehaviour);
-                })
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue
-                ))
-        );
+    @Inject(method = "tickRequests", at = @At(value = "NEW", target = "java/util/HashMap", ordinal = 0), cancellable = true)
+    private void deployer$collectStockTargets(CallbackInfo ci, @Share("targets") LocalRef<PanelRequestHelper.StockTargets> targets) {
+        var collected = PanelRequestHelper.collectStockTargets(FactoryPanelBehaviour.class.cast(this));
+        if (collected == null || collected.isEmpty()) {
+            ci.cancel();
+            return;
+        }
+        targets.set(collected);
     }
 
     @ModifyExpressionValue(
@@ -280,177 +230,82 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
             at = @At(
                     value = "FIELD",
                     target = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;targetedBy:Ljava/util/Map;",
-                    opcode = Opcodes.GETFIELD
+                    opcode = Opcodes.GETFIELD,
+                    ordinal = 1
             )
     )
-    private Map<FactoryPanelPosition, FactoryPanelConnection> tickRequests(
+    private Map<FactoryPanelPosition, FactoryPanelConnection> deployer$onlyVanillaTargets(
             Map<FactoryPanelPosition, FactoryPanelConnection> original,
-            @Share("real_targeted_by") LocalRef<Map<FactoryPanelPosition, FactoryPanelConnection>> realTargets
+            @Share("targets") LocalRef<PanelRequestHelper.StockTargets> targets
     ) {
-        return realTargets.get();
-    }
-
-    @ModifyExpressionValue(method = "tickRequests", at = @At(value = "INVOKE", target = "Ljava/util/Map;isEmpty()Z"))
-    private boolean tickRequests(boolean original, @Share("real_targeted_empty") LocalBooleanRef realTargetedEmpty) {
-        return realTargetedEmpty.get();
-    }
-
-    @Inject(method = "tickRequests", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/HashMultimap;create()Lcom/google/common/collect/HashMultimap;"))
-    private void tickRequests(
-            CallbackInfo ci,
-            @Local(name = "failed") LocalBooleanRef failed,
-            @Share("consolidated") LocalRef<Map<StockInventoryType<?,?,?>, Map<UUID, Map<?, GenericConnections<?>>>>> consolidated,
-            @Share("toRequest") LocalRef<Map<StockInventoryType<?,?,?>, Multimap<UUID, ?>>> toRequest,
-            @Share("saved_uuids") LocalRef<Map<UUID, Integer>> savedUUIDs
-    ) {
-        toRequest.set(new HashMap<>());
-        savedUUIDs.set(new HashMap<>());
-        for (var e : consolidated.get().entrySet()) deployer$tickRequests(e.getKey(), e.getValue(), failed, toRequest.get().computeIfAbsent(e.getKey(), k -> HashMultimap.create()));
+        return targets.get().vanillaTargets();
     }
 
     @ModifyExpressionValue(method = "tickRequests", at = @At(value = "NEW", target = "()Ljava/util/HashMap;"))
-    private HashMap<UUID, Map<ItemStack, FactoryPanelBehaviour.ItemStackConnections>> tickRequests(
+    private HashMap<UUID, Map<ItemStack, FactoryPanelBehaviour.ItemStackConnections>> deployer$addCustomItemTargets(
             HashMap<UUID, Map<ItemStack, FactoryPanelBehaviour.ItemStackConnections>> original,
-            @Share("future_consolidated") LocalRef<Map<UUID, Map<ItemStack, FactoryPanelBehaviour.ItemStackConnections>>> future$consolidated
+            @Share("targets") LocalRef<PanelRequestHelper.StockTargets> targets
     ) {
-        original.putAll(future$consolidated.get());
+        original.putAll(targets.get().items());
         return original;
     }
 
-    @Unique
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private <K, V, H> void deployer$tickRequests(
-            StockInventoryType<K, V, H> type,
-            Map<UUID, Map<?, GenericConnections<?>>> map,
-            @Local LocalBooleanRef failed,
-            Multimap<UUID, ?> toRequest
-            ) {
-        for (var entry : map.entrySet()) {
-            UUID network = entry.getKey();
-            Map<V, GenericConnections<V>> typed =
-                    (Map) entry.getValue();
-
-            AbstractInventorySummary<K, V> summary = LogisticsGenericManager.getSummaryOfNetwork(type, network, true);
-
-            for(GenericConnections<V> connections : typed.values()) {
-                if (connections.totalAmount == 0 || type.valueHandler().isEmpty(connections.item) || summary.getCountOf(connections.item) < connections.totalAmount) {
-                    for (FactoryPanelConnection connection : connections)
-                        sendEffect(connection.from, false);
-                    failed.set(true);
-                    continue;
-                }
-
-                V stack = type.valueHandler().copyWithCount(connections.item, connections.totalAmount);
-                ((Multimap<UUID, V>) toRequest).put(network, stack);
-                for (FactoryPanelConnection connection : connections)
-                    sendEffect(connection.from, true);
-            }
-        }
+    @Inject(method = "tickRequests", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/HashMultimap;create()Lcom/google/common/collect/HashMultimap;"))
+    private void deployer$collectGenericStock(
+            CallbackInfo ci,
+            @Local(name = "failed") LocalBooleanRef failed,
+            @Share("targets") LocalRef<PanelRequestHelper.StockTargets> targets,
+            @Share("genericToRequest") LocalRef<Map<StockInventoryType<?, ?, ?>, Multimap<UUID, ?>>> genericToRequest,
+            @Share("orderIds") LocalRef<Map<UUID, Integer>> orderIds
+    ) {
+        genericToRequest.set(PanelRequestHelper.collectAvailableGenericStock(
+                targets.get().generic(),
+                (from, success) -> sendEffect(from, success),
+                () -> failed.set(true)
+        ));
+        orderIds.set(new HashMap<>());
     }
 
     @Inject(method = "tickRequests", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z"))
-    private void tickRequests(
+    private void deployer$captureOrderId(
             CallbackInfo ci,
             @Local(name = "entry") Map.Entry<UUID, Collection<BigItemStack>> entry,
             @Local(name = "request") Multimap<PackagerBlockEntity, PackagingRequest> request,
-            @Share("saved_uuids") LocalRef<Map<UUID, Integer>> savedUUIDs,
-            @Share("isValsEmpty") LocalBooleanRef isValsEmpty
+            @Share("orderIds") LocalRef<Map<UUID, Integer>> orderIds,
+            @Share("lastRequestEmpty") LocalBooleanRef lastRequestEmpty
     ) {
-        var vals = request.values();
-        int id = vals.isEmpty() ? LogisticsManagerAccessor.getR().nextInt() :
-                Optional.ofNullable(vals.iterator().next()).map(PackagingRequest::orderId)
-                                .orElseGet(() -> LogisticsManagerAccessor.getR().nextInt());
-        savedUUIDs.get().put(entry.getKey(), id);
-        isValsEmpty.set(vals.isEmpty());
+        orderIds.get().put(entry.getKey(), PanelRequestHelper.orderIdOf(request));
+        lastRequestEmpty.set(request.isEmpty());
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Definition(id = "requests", local = @Local(type = List.class, name = "requests"))
     @Definition(id = "iterator", method = "Ljava/util/List;iterator()Ljava/util/Iterator;")
     @Expression("requests.iterator()")
     @Inject(method = "tickRequests", at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 0), cancellable = true)
-    private void tickRequests(
+    private void deployer$sendGenericRequests(
             CallbackInfo ci,
             @Local(name = "requests") List<Multimap<PackagerBlockEntity, PackagingRequest>> requests,
-            @Share("toRequest") LocalRef<Map<StockInventoryType<?,?,?>, Multimap<UUID, ?>>> toRequest,
-            @Share("saved_uuids") LocalRef<Map<UUID, Integer>> savedUUIDs,
-            @Share("isValsEmpty") LocalBooleanRef isValsEmpty
+            @Share("genericToRequest") LocalRef<Map<StockInventoryType<?, ?, ?>, Multimap<UUID, ?>>> genericToRequest,
+            @Share("orderIds") LocalRef<Map<UUID, Integer>> orderIds,
+            @Share("lastRequestEmpty") LocalBooleanRef lastRequestEmpty
     ) {
-        Map<StockInventoryType<?,?,?>, Map<UUID, Collection<?>>> asMap = new HashMap<>();
-        Map<StockInventoryType<?,?,?>, List<Multimap<AbstractPackagerBlockEntity<?,?,?>, GenericPackagingRequest<?>>>> d$requests = new HashMap<>();
-
-        // Map init
-        for(var e : toRequest.get().entrySet()) {
-            asMap.put(e.getKey(), (Map)e.getValue().asMap());
-            d$requests.put(e.getKey(), new ArrayList<>());
+        var genericRequests = PanelRequestHelper.findGenericPackagers(genericToRequest.get(), recipeAddress, orderIds.get());
+        if (genericRequests.anyPackagerBusy()) {
+            ci.cancel();
+            return;
         }
-
-        // Collect request distributions
-        for(var e : asMap.entrySet()) {
-            deployer$tickRequests(e.getKey(), e.getValue(), d$requests.get(e.getKey()), savedUUIDs.get());
-        }
-
-        // Check if any packager is busy, cancel all
-        for(var e : d$requests.values()) {
-            for(var entry : e) {
-                for(AbstractPackagerBlockEntity<?,?,?> packager : entry.keySet())
-                    if(packager.isTooBusyFor(LogisticallyLinkedBehaviour.RequestType.RESTOCK)) {
-                        ci.cancel();
-                        return;
-                    }
-            }
-        }
-
-        // Send it
-
-        int index = isValsEmpty.get() ? 0 : 1;
-        boolean oneFound = false;
-        for(var e : d$requests.entrySet()) {
-            if(e.getValue().isEmpty()) continue;
-            var it = e.getValue().iterator();
-            while(it.hasNext()) {
-                var entry = it.next();
-                boolean isLast = !it.hasNext();
-                deployer$tickRequests(entry, index, isLast);
-            }
-            oneFound = true;
-            index++;
-        }
-
-        if(oneFound)
-            for(var e : requests) {
-                e.values().forEach(pr -> ((PRExtension)(Object)pr).deployer$flag());
-            }
+        if (genericRequests.send(lastRequestEmpty.get() ? 0 : 1))
+            PanelRequestHelper.flagVanillaRequests(requests);
     }
-    @Unique
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private <K,V,H> void deployer$tickRequests(StockInventoryType<K,V,H> type, Map<UUID, Collection<?>> asMap$raw, List<Multimap<AbstractPackagerBlockEntity<?,?,?>, GenericPackagingRequest<?>>> requests$raw, Map<UUID, Integer> savedUUIDs) {
-        Map<UUID, Collection<V>> asMap = (Map) asMap$raw;
-        List<Multimap<AbstractPackagerBlockEntity<K,V,H>, GenericPackagingRequest<V>>> requests = (List)requests$raw;
-        for(var entry : asMap.entrySet()) {
-            var order = type.valueHandler().createContained(new ArrayList<>(entry.getValue()));
-            Multimap<AbstractPackagerBlockEntity<K,V,H>, GenericPackagingRequest<V>> request =
-                    LogisticsGenericManager.findPackagersForRequest(type, entry.getKey(), order, null, recipeAddress, () -> savedUUIDs.computeIfAbsent(entry.getKey(), key -> LogisticsManagerAccessor.getR().nextInt()));
-            requests.add(request);
-        }
-    }
-
-    @Unique
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private <K,V,H> void deployer$tickRequests(Multimap<AbstractPackagerBlockEntity<?,?,?>, GenericPackagingRequest<?>> entry$raw, int index, boolean isLast) {
-        Multimap<AbstractPackagerBlockEntity<K,V,H>, GenericPackagingRequest<V>> entry = (Multimap)entry$raw;
-        LogisticsGenericManager.performPackageRequests(entry, index, isLast);
-    }
-
 
     /* DATA */
     @Inject(method = "write", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;putUUID(Ljava/lang/String;Ljava/util/UUID;)V"))
-    private void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci, @Local(name = "panelTag") CompoundTag panelTag) {
+    private void deployer$writeExtraTargets(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci, @Local(name = "panelTag") CompoundTag panelTag) {
         panelTag.put("TargetedByExtra", CatnipCodecUtils.encode(Codec.list(FactoryPanelConnection.CODEC), new ArrayList<>(deployer$targetedByExtra.values())).orElseThrow());
     }
 
     @Inject(method = "read", at = @At(value = "INVOKE", target = "Ljava/util/Map;clear()V"))
-    private void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci, @Local(name = "panelTag") CompoundTag panelTag) {
+    private void deployer$readExtraTargets(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci, @Local(name = "panelTag") CompoundTag panelTag) {
         deployer$targetedByExtra.clear();
         CatnipCodecUtils.decode(Codec.list(FactoryPanelConnection.CODEC), panelTag.get("TargetedByExtra")).orElse(List.of())
                 .forEach(c -> deployer$targetedByExtra.put(c.from.pos(), c));
@@ -460,14 +315,10 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
 
     // Adds extra connections
     @Inject(method = "addConnection", at = @At("HEAD"), cancellable = true)
-    private void addConnection(FactoryPanelPosition fromPos, CallbackInfo ci) {
+    private void deployer$connectExtraSource(FactoryPanelPosition fromPos, CallbackInfo ci) {
         var i = FactoryPanelBehaviour.class.cast(this);
         var fromState = i.getWorld().getBlockState(fromPos.pos());
-        if(PanelConnection.makeContext(i.getWorld().getBlockState(i.getPos())) == PanelConnection.makeContext(fromState) && DeployerRegistries.PANEL_CONNECTION
-                .stream()
-                .map(c -> c.getListener(fromState.getBlock()))
-                .anyMatch(Objects::nonNull)
-        ) {
+        if(PanelConnection.makeContext(i.getWorld().getBlockState(i.getPos())) == PanelConnection.makeContext(fromState) && PanelConnection.hasAnyListener(fromState.getBlock())) {
             var conn = new FactoryPanelConnection(fromPos, 1);
             deployer$targetedByExtra.put(fromPos.pos(), conn);
             var pc = ProvidesConnection.getCurrentConnection(conn, () -> getInputConnections()
@@ -490,7 +341,7 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
                     opcode = Opcodes.GETFIELD
             )
     )
-    private boolean addConnection(boolean original) {
+    private boolean deployer$ignoreRestockerForCustomPanels(boolean original) {
         if(FactoryPanelBehaviour.class.cast(this) instanceof AbstractPanelBehaviour) return false;
         return original;
     }
@@ -501,7 +352,7 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
             method = "addConnection",
             at = @At("MIXINEXTRAS:EXPRESSION")
     )
-    private boolean addConnection(boolean original, @Local(name = "source") FactoryPanelBehaviour source) {
+    private boolean deployer$rejectInvalidCustomConnection(boolean original, @Local(name = "source") FactoryPanelBehaviour source) {
         var inst = FactoryPanelBehaviour.class.cast(this);
         // if true cancel, false is "connect"
         // If a panel is null cancel
@@ -525,7 +376,7 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
             ),
             index = 1
     )
-    private <K> K addConnection(K original, @Local(name = "link") FactoryPanelSupportBehaviour link) {
+    private <K> K deployer$assignLinkMode(K original, @Local(name = "link") FactoryPanelSupportBehaviour link) {
         FactoryPanelConnection conn = ((FactoryPanelConnection)original);
         if(link instanceof AbstractPanelSupportBehaviour apsb) {
             Supplier<PanelConnection<?>> def = apsb.isOutput() ?
@@ -549,7 +400,7 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
             ),
             index = 1
     )
-    private <K> K addConnection$1(K original, @Local(name = "source") FactoryPanelBehaviour source) {
+    private <K> K deployer$assignPanelLinkMode(K original, @Local(name = "source") FactoryPanelBehaviour source) {
         FactoryPanelConnection conn = ((FactoryPanelConnection)original);
         var pc = ProvidesConnection.getCurrentConnection(conn, () -> ProvidesConnection.getPossibleConnections(source, this).stream().findFirst().orElse(null));
         ((FPCExtension)conn).deployer$setLinkMode(pc);
@@ -559,7 +410,7 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
     }
 
     @ModifyArg(method = "addConnection", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelConnection;<init>(Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelPosition;I)V", ordinal = 1), index = 1)
-    private int addConnection(int amount, @Local(name = "source") FactoryPanelBehaviour source) {
+    private int deployer$defaultConnectionAmount(int amount, @Local(name = "source") FactoryPanelBehaviour source) {
         if(source instanceof AbstractPanelBehaviour apb) {
             return apb.getDefaultConnectionAmount();
         }
@@ -567,57 +418,52 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
     }
 
     @Inject(method = "disconnectAllLinks", at = @At("TAIL"))
-    private void disconnectAllLinks(CallbackInfo ci) {
+    private void deployer$clearExtraTargets(CallbackInfo ci) {
         deployer$targetedByExtra.clear();
     }
 
     @SuppressWarnings("AddedMixinMembersNamePattern")
     @Override
     public @Nullable <T> List<AbstractPanelBehaviour.ConnectionValue<T>> getAllValuesWithSource(PanelConnection<T> connection) {
-        List<AbstractPanelBehaviour.ConnectionValue<T>> out = new ArrayList<>();
-        boolean shouldAbort = Stream.of(targetedBy.values(), targetedByLinks.values(), this.deployer$getExtra().values())
-                .flatMap(Collection::stream)
-                .anyMatch(gauge -> {
-                    PanelValue<T> result = AbstractPanelBehaviour.getValue(gauge, connection, FactoryPanelBehaviour.class.cast(this));
-                    if (result instanceof PanelValue.Abort) return true;
-                    if (result instanceof PanelValue.Present<T>(T value))
-                        out.add(new AbstractPanelBehaviour.ConnectionValue<>(gauge, value));
-                    return false;
-                });
-
-        return shouldAbort ? null : out;
+        return AbstractPanelBehaviour.collectValues(FactoryPanelBehaviour.class.cast(this), connection);
     }
 
-    /* OTHER PANELS UPDATE */
     @ModifyVariable(method = "checkForRedstoneInput", at = @At(value = "STORE", ordinal = 0), name = "shouldPower")
-    private boolean checkForRedstoneInput(boolean shouldPower) {
-        var li = getAllValues(DeployerPanelConnections.REDSTONE.get());
-        if(li == null) return false;
-        return li.stream().anyMatch(k -> k);
+    private boolean deployer$readRedstoneInputs(boolean shouldPower) {
+        var inputs = getAllValues(DeployerPanelConnections.REDSTONE.get());
+        return inputs != null && inputs.contains(true);
     }
 
     @Definition(id = "shouldPower", local = @Local(type = boolean.class))
     @Definition(id = "redstonePowered", field = "Lcom/simibubi/create/content/logistics/factoryBoard/FactoryPanelBehaviour;redstonePowered:Z")
     @Expression("shouldPower == this.redstonePowered")
     @ModifyExpressionValue(method = "checkForRedstoneInput", at = @At("MIXINEXTRAS:EXPRESSION"))
-    private boolean checkForRedstoneInput$1(boolean original) {
-        var nums = getAllValues(DeployerPanelConnections.NUMBERS.get());
-        var strs = getAllValues(DeployerPanelConnections.STRING.get());
-        if (nums == null || strs == null) return false;
+    private boolean deployer$applyNumberAndAddressInputs(boolean redstoneUnchanged) {
+        boolean valuesChanged = deployer$applyCountInput() | deployer$applyAddressInput();
+        if (valuesChanged && redstoneUnchanged)
+            blockEntity.notifyUpdate();
+        return redstoneUnchanged;
+    }
 
-        Integer total = nums.isEmpty() ? null : (int)(float)nums.stream().reduce(0f, Float::sum);
-        String fAddress = strs.isEmpty() ? null : String.join("", strs);
+    @Unique
+    private boolean deployer$applyCountInput() {
+        var numbers = getAllValues(DeployerPanelConnections.NUMBERS.get());
+        if (numbers == null || numbers.isEmpty()) return false;
+        float sum = 0;
+        for (float number : numbers) sum += number;
+        int total = (int) sum;
+        if (total == count) return false;
+        count = total;
+        return true;
+    }
 
-        boolean changed = original
-                || (total != null && !total.equals(count))
-                || (fAddress != null && !fAddress.equals(recipeAddress));
-
-        if (changed) {
-            if (total != null) count = total;
-            if (fAddress != null) recipeAddress = fAddress;
-            return true;
-        }
-
-        return false;
+    @Unique
+    private boolean deployer$applyAddressInput() {
+        var strings = getAllValues(DeployerPanelConnections.STRING.get());
+        if (strings == null || strings.isEmpty()) return false;
+        String address = String.join("", strings);
+        if (address.equals(recipeAddress)) return false;
+        recipeAddress = address;
+        return true;
     }
 }
