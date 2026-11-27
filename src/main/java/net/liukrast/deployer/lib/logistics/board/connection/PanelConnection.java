@@ -2,7 +2,9 @@ package net.liukrast.deployer.lib.logistics.board.connection;
 
 import net.liukrast.deployer.lib.Deployer;
 import net.liukrast.deployer.lib.registry.DeployerRegistries;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -48,6 +50,19 @@ public class PanelConnection<T> {
 
     public void addListener(ConnectionExtra<T> supplier, Collection<Block> validBlocks) {
         addListener(supplier, validBlocks.toArray(Block[]::new));
+    }
+
+    /**
+     * Tells the panels that read the block at {@code pos} through an extra connection
+     * (see {@link #addListener(ConnectionExtra, Block...)}) that its value changed.
+     * <p>
+     * Calling it is optional: panels also re-read their extra sources periodically. Blocks that change
+     * often or need a fast reaction should call it after every change, from the server side.
+     *
+     * @param level the level of the changed block
+     * @param pos   the position of the changed block
+     */
+    public static void notifySource(Level level, BlockPos pos) {
     }
 
     /**

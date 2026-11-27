@@ -390,9 +390,12 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
      * Sends an update notification to all panels being pointed to by this instance.
      * Use this whenever your output value changes to trigger logic updates or
      * redstone re-evaluations in connected panels.
+     * <p>
+     * Targets are updated within the same tick, but neither their order nor whether they are updated
+     * before this method returns is part of the contract: do not read a target's state right after calling it.
      */
     @SuppressWarnings("unused")
-    public void notifyOutputs() {
+    public final void notifyOutputs() {
         notifyOutputs(false);
     }
 
@@ -402,8 +405,9 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
      * redstone re-evaluations in connected panels.
      *
      * @param forced whether the notification should be forced
+     * @see #notifyOutputs()
      */
-    public void notifyOutputs(boolean forced) {
+    public final void notifyOutputs(boolean forced) {
         for(FactoryPanelPosition panelPos : targeting) {
             FactoryPanelBehaviour behaviour = FactoryPanelBehaviour.at(getWorld(), panelPos);
             if(behaviour != null) behaviour.checkForRedstoneInput();
@@ -434,6 +438,10 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
         super.tick();
     }
 
+    /**
+     * Called when one of the inputs of this panel may have changed. Recompute the output here and call
+     * {@link #notifyOutputs()} if it changed. Updates past {@code factoryPanelMaxCyclesPerTick} in one tick are not delivered
+     * */
     public void notifiedFromInput() {
     }
 

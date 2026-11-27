@@ -17,11 +17,13 @@ For developers
   - `AbstractPanelBehaviour.read`, `write` and `writeSafe` are now `final`: override `easyRead`, `easyWrite` and `easyWriteSafe`
   - Removed the deprecated `PanelConnectionBuilder.put` (use `registerBoth`), `ColoredFactoryPanelSupportBehaviour`, `FPBEExtension`, `ACPExtension` and `DeployerClient.getCape`
   - The `mixin` packages and the `mixinExtensions` interfaces are marked `@ApiStatus.Internal`, except `LLBExtension`, which is the extension point for logistically linked behaviours of other mods
+  - `AbstractPanelBehaviour.notifyOutputs` is now `final`; react to inputs in `notifiedFromInput`. The order and timing of target updates within a tick are not part of the contract
   - Removed `VersionedTrackerBehaviour`, which nothing used (packagers use Create's tracker together with `VersionedWrapper`)
   - `StockInventoryType.IStorageHandler.isBulky` now means what its name says (a package with a bulky entry holds nothing else, like Create's items that cannot fit inside containers); it was read inverted before. Types that returned `false` to get one entry per package must return `true`
   - `AbstractPackagerBlockEntity.isValidPackage` no longer has side effects; `unwrapBox` passes invalid boxes through only when not simulating
   - `AbstractInventorySummary.getStacksByCount` lists the largest count first, like Create's `InventorySummary`
   - The panel and stock inventory registries no longer have a default key: `getKey` of an unregistered entry returns `null`
+- New `PanelConnection.notifySource(level, pos)`: blocks read through extra connections can call it after a change. It is optional today (panels still re-read extra sources periodically) and will make panels update right away once event-driven propagation lands, without API changes
 - New `StockPanelBehaviour.getMaxRestockAmount`, to split restocks into smaller orders
 - New public helpers replacing internal accessors: `CreateHelpers.getIconX`, `getIconY`, `iconVertex`, `getGenericRepackageHelper` and `ClientRegisterHelpers.getSelectedRequesterTab`
 - `Constants` now extends `net.liukrast.constants.Constants` from Constants Manager (bundled with jarJar, loader independent): ids, logger, registry helpers and `translatable`/`literal`/`translationKey` live there, while `createDeferred`, `wrapWithShiftSummary` and the Catnip `LangBuilder` helpers stay in Deployer. code that uses Deployer's `Constants` compiles and runs unchanged
