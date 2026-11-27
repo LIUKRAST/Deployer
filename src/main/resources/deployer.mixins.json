@@ -68,7 +68,6 @@
     "compat.jei.GhostIngredientHandlerMixin"
   ],
   "client": [
-    "AbstractClientPlayerMixin",
     "AbstractContainerScreenMixin",
     "BitmapProvider$DefinitionMixin",
     "CapeLayerMixin",

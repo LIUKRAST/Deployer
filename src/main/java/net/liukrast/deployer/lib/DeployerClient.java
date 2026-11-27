@@ -1,11 +1,9 @@
 package net.liukrast.deployer.lib;
 
-import com.mojang.blaze3d.platform.NativeImage;
+import net.liukrast.deployer.lib.client.Capes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelConnection;
 import com.simibubi.create.content.logistics.factoryBoard.FactoryPanelPosition;
-import io.netty.util.collection.IntObjectHashMap;
-import io.netty.util.collection.IntObjectMap;
 import net.createmod.catnip.config.ui.BaseConfigScreen;
 import net.createmod.catnip.platform.CatnipServices;
 import net.liukrast.deployer.lib.helper.ClientRegisterHelpers;
@@ -14,8 +12,6 @@ import net.liukrast.deployer.lib.logistics.board.renderer.ScrollPanelRenderer;
 import net.liukrast.deployer.lib.logistics.board.renderer.StockPanelRenderer;
 import net.liukrast.deployer.lib.registry.DeployerKeys;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -30,15 +26,12 @@ import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 
-import java.net.URI;
 
 @Mod(value = "deployer", dist = Dist.CLIENT)
 public class DeployerClient {
 
     public static FactoryPanelConnection SELECTED_CONNECTION = null;
     public static FactoryPanelPosition SELECTED_SOURCE = null;
-
-    private static final IntObjectMap<ResourceLocation> CAPE_TEXTURES = new IntObjectHashMap<>();
 
     public DeployerClient(IEventBus eventBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, DeployerConfig.Client.SPEC);
@@ -66,23 +59,7 @@ public class DeployerClient {
     }
 
     private void clientPlayerNetworkLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
-        CAPE_TEXTURES.clear();
-    }
-
-    public static ResourceLocation getCape(int id) {
-        if(CAPE_TEXTURES.containsKey(id)) return CAPE_TEXTURES.get(id);
-
-        CAPE_TEXTURES.put(id, null);
-        new Thread(() -> {
-            try {
-                NativeImage nativeImage = NativeImage.read(URI.create("https://liukrast.net/assets/liukrast/textures/capes/" + id + ".png?t=" + System.currentTimeMillis()).toURL().openStream());
-                CAPE_TEXTURES.put(id, Minecraft.getInstance().getTextureManager().register("deployer_capes/", new DynamicTexture(nativeImage)));
-            } catch (Exception e) {
-                CAPE_TEXTURES.put(id, null);
-            }
-        }).start();
-
-        return null;
+        Capes.clearTextures();
     }
 
     private void onTickPost(InputEvent.InteractionKeyMappingTriggered event) {

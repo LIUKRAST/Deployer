@@ -4,8 +4,7 @@ import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.liukrast.deployer.lib.DeployerClient;
-import net.liukrast.deployer.lib.mixinExtensions.ACPExtension;
+import net.liukrast.deployer.lib.client.Capes;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.layers.ElytraLayer;
 import net.minecraft.client.resources.PlayerSkin;
@@ -23,10 +22,7 @@ public class ElytraLayerMixin {
             at = @At("MIXINEXTRAS:EXPRESSION")
     )
     private boolean render(boolean original, @Local AbstractClientPlayer player) {
-        var cape = ((ACPExtension)player).deployer$getCape();
-        if(cape == -1) return original;
-        var capeTexture = DeployerClient.getCape(cape);
-        return capeTexture != null || original;
+        return original || Capes.getTexture(player) != null;
     }
 
     @ModifyExpressionValue(
@@ -34,9 +30,7 @@ public class ElytraLayerMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/PlayerSkin;capeTexture()Lnet/minecraft/resources/ResourceLocation;")
     )
     private ResourceLocation render(ResourceLocation original, @Local AbstractClientPlayer player) {
-        var cape = ((ACPExtension)player).deployer$getCape();
-        if(cape == -1) return original;
-        var capeTexture = DeployerClient.getCape(cape);
+        var capeTexture = Capes.getTexture(player);
         return capeTexture == null ? original : capeTexture;
     }
 }

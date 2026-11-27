@@ -2,8 +2,7 @@ package net.liukrast.deployer.lib.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.liukrast.deployer.lib.DeployerClient;
-import net.liukrast.deployer.lib.mixinExtensions.ACPExtension;
+import net.liukrast.deployer.lib.client.Capes;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -27,9 +26,7 @@ public abstract class CapeLayerMixin extends RenderLayer<AbstractClientPlayer, P
             )
     )
     private ResourceLocation render(ResourceLocation original, @Local(argsOnly = true) AbstractClientPlayer player) {
-        var cape = ((ACPExtension)player).deployer$getCape();
-        if(cape == -1) return original;
-        var capeTexture = DeployerClient.getCape(cape);
+        var capeTexture = Capes.getTexture(player);
         return capeTexture == null ? original : capeTexture;
     }
 }

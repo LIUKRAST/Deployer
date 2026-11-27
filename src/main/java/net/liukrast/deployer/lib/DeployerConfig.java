@@ -9,6 +9,10 @@ public class DeployerConfig {
         private Client() {}
         private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
+        public static final ModConfigSpec.BooleanValue CAPES = BUILDER
+                .comment("Shows Deployer supporter capes. When enabled, the UUID of each player whose cape is drawn is sent once per game session to api.liukrast.net")
+                .define("capes", true);
+
         static final ModConfigSpec SPEC = BUILDER.build();
     }
 

@@ -61,3 +61,7 @@ Deployer is a create library for addon-developers to simplify logistics
 
 ## Optimization and fix
 We also include a bunch of fixes and optimizations, and we want to focus the second part of this API on that, improving some useless and expensive algorithms that create for some reason has
+## Capes
+Deployer shows supporter capes. To know which cape to draw, the client sends the UUID of each player whose cape is rendered to `api.liukrast.net`, once per game session, and downloads the cape texture from `liukrast.net`. Nothing is sent from servers.
+
+To turn this off, set `capes = false` in `config/deployer-client.toml`, or disable it from the in-game config screen.

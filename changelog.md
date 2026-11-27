@@ -2,6 +2,8 @@ Features
 - Deployer and Extra Gauges now work together with Create: Factory Logistics 1.6.1 or newer ([#24](https://github.com/LIUKRAST/Deployer/issues/24)). Repackaged is still incompatible with it, see [fl.md](https://github.com/LIUKRAST/Deployer/blob/master/fl.md)
 
 Fixes
+- Capes are fetched once per player and per game session, only when their cape is drawn, instead of at every player creation; downloads use a shared thread pool with timeouts and textures are registered on the render thread
+- New client option `capes` to turn capes (and the requests they need) off
 - Pending fluid and energy promises were lost when a world or chunk was saved and loaded again, so gauges ordered the same resources twice
 
 For developers
