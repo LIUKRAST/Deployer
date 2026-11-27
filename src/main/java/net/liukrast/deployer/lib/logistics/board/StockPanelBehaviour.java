@@ -80,6 +80,11 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour i
 
 
     @Override
+    protected void invalidateNetworkSummary() {
+        LogisticsGenericManager.getSummaries(stockInventoryType).invalidate(network);
+    }
+
+    @Override
     public void reset() {
         this.filter = stockInventoryType.valueHandler().empty();
     }

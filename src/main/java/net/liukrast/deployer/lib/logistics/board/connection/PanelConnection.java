@@ -82,6 +82,13 @@ public class PanelConnection<T> {
         return extraConnections.get(block);
     }
 
+    public static boolean hasAnyListener(Block block) {
+        for (PanelConnection<?> connection : DeployerRegistries.PANEL_CONNECTION)
+            if (connection.getListener(block) != null)
+                return true;
+        return false;
+    }
+
     public int getColor(T value) {
         return colorProvider.applyAsInt(value);
     }

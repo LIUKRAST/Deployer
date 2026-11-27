@@ -2,7 +2,6 @@ package net.liukrast.deployer.lib.logistics.board;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.logistics.BigItemStack;
@@ -18,20 +17,12 @@ import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import com.simibubi.create.foundation.utility.CreateLang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
-import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.createmod.catnip.nbt.NBTHelper;
 import net.createmod.catnip.platform.CatnipServices;
 import net.createmod.catnip.theme.Color;
 import net.liukrast.deployer.lib.logistics.LogisticallyLinked;
 import net.liukrast.deployer.lib.logistics.board.connection.*;
-import net.liukrast.deployer.lib.logistics.packager.AbstractInventorySummary;
-import net.liukrast.deployer.lib.logistics.packager.AbstractPackagerBlockEntity;
-import net.liukrast.deployer.lib.logistics.packager.GenericPackagingRequest;
-import net.liukrast.deployer.lib.logistics.packager.StockInventoryType;
-import net.liukrast.deployer.lib.logistics.packagerLink.LogisticsGenericManager;
-import net.liukrast.deployer.lib.mixin.accessors.LogisticsManagerAccessor;
-import net.liukrast.deployer.lib.mixinExtensions.PRExtension;
 import net.liukrast.deployer.lib.registry.DeployerPanelConnections;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
@@ -46,14 +37,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackLinkedSet;
 import net.minecraft.world.phys.BlockHitResult;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.joml.Math;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour implements RenderFilterSlot {
-    // Factory gauge inherits
     private boolean promisePrimedForMarkDirty;
     private int lastReportedUnloadedLinks;
     private int lastReportedLevelInStorage;
@@ -134,10 +123,6 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         tickRequests();
     }
 
-    //moveTo
-    //moveToSlot
-    //initialize
-
     @Override
     public void notifiedFromInput() {
         if (!active)
@@ -148,7 +133,6 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         if(redstoneInput()) {
 
             boolean shouldPower;
-            //Injected
             var li = getAllValues(DeployerPanelConnections.REDSTONE.get());
             if (li == null) shouldPower = false;
             else shouldPower = li.stream().anyMatch(k -> k);
@@ -197,11 +181,8 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
 
     private void tickStorageMonitor() {
         int unloadedLinkCount = getUnloadedLinks();
-        if (!hasInteraction("restocker") && unloadedLinkCount == 0 && lastReportedLevelInStorage != 0) {
-            // All links have been loaded, invalidate the cache so we can get an accurate summary!
-            // Otherwise, we will have to wait for 20 ticks and unnecessary packages will be sent!
-            LogisticsManager.SUMMARIES.invalidate(network);
-        }
+        if (!hasInteraction("restocker") && unloadedLinkCount == 0 && lastReportedUnloadedLinks != 0)
+            invalidateNetworkSummary();
         int inStorage = getLevelInStorage();
         int promised = getPromised();
         int demand = getDemand();
@@ -232,6 +213,10 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
             notifyOutputs(true);
     }
 
+    protected void invalidateNetworkSummary() {
+        LogisticsManager.SUMMARIES.invalidate(network);
+    }
+
     public int getDemand() {
         return getAmount() * getDemandMultiplier();
     }
@@ -240,40 +225,15 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         return 1;
     }
 
-    //notifyRedstoneOutputs
-
     private int getConfigRequestIntervalInTicks() {
         return AllConfigs.server().logistics.factoryGaugeTimer.get();
     }
 
     private void tickRequests() {
-        //region Injected
-        Map<UUID, Map<ItemStack, FactoryPanelBehaviour.ItemStackConnections>> future$consolidated = new HashMap<>();
-        Map<StockInventoryType<?,?,?>, Map<UUID, Map<?, GenericConnections<?>>>> consolidated$1 = new HashMap<>();
-        AtomicBoolean realTargetedEmpty = new AtomicBoolean(true);
-        Map<FactoryPanelPosition, FactoryPanelConnection> realTargeted = targetedBy
-                .entrySet()
-                .stream()
-                .filter(e -> {
-                    var connection = e.getValue();
-                    FactoryPanelBehaviour source = at(getWorld(), connection);
-                    var pc = ProvidesConnection.getCurrentConnection(connection, () -> ProvidesConnection.getPossibleConnections(source, (ProvidesConnection) this).stream().findFirst().orElse(null));
-                    if(pc == null || pc != DeployerPanelConnections.STOCK_CONNECTION.get()) return false;
-                    PanelValue<StockConnection<?>> result = AbstractPanelBehaviour.getValue(connection, DeployerPanelConnections.STOCK_CONNECTION.get(), this);
-                    if(result instanceof PanelValue.Present<StockConnection<?>>(StockConnection<?> value))
-                        value.register(future$consolidated, consolidated$1, source, connection);
-                    realTargetedEmpty.set(false);
-                    return !(source instanceof AbstractPanelBehaviour);
-                })
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue
-                ));
-        //endregion
-        FactoryPanelBlockEntity panelBE = panelBE();
-        if (realTargetedEmpty.get() /*Injected*/ && !hasInteraction("restocker"))
+        boolean restocker = hasInteraction("restocker");
+        if (targetedBy.isEmpty() && !restocker)
             return;
-        if (hasInteraction("restocker"))
+        if (restocker)
             restockerPromises.tick();
         if (satisfied || promisedSatisfied || waitingForNetwork || redstonePowered)
             return;
@@ -288,155 +248,86 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         if (recipeAddress.isBlank())
             return;
 
-        if (hasInteraction("restocker")) {
+        if (restocker) {
             tryRestock();
             return;
         }
 
-        // Injected boolean -> AtomicBoolean
-        AtomicBoolean failed = new AtomicBoolean(false);
+        var targets = PanelRequestHelper.collectStockTargets(this);
+        if (targets == null || targets.isEmpty())
+            return;
 
-        Map<UUID, Map<ItemStack, ItemStackConnections>> consolidated = new HashMap<>(/* Injected */future$consolidated);
-
-        for (FactoryPanelConnection connection : realTargeted.values() /* Injected */) {
+        Map<UUID, Map<ItemStack, ItemStackConnections>> consolidated = new HashMap<>(targets.items());
+        for (FactoryPanelConnection connection : targets.vanillaTargets().values()) {
             FactoryPanelBehaviour source = at(getWorld(), connection);
             if (source == null)
                 return;
 
             ItemStack item = source.getFilter();
-
-
             Map<ItemStack, ItemStackConnections> networkItemCounts = consolidated.computeIfAbsent(source.network, $ -> new Object2ObjectOpenCustomHashMap<>(ItemStackLinkedSet.TYPE_AND_TAG));
-            networkItemCounts.computeIfAbsent(item, $ -> new ItemStackConnections(item));
-            ItemStackConnections existingConnections = networkItemCounts.get(item);
+            ItemStackConnections existingConnections = networkItemCounts.computeIfAbsent(item, $ -> new ItemStackConnections(item));
             existingConnections.add(connection);
             existingConnections.totalAmount += connection.amount;
         }
 
+        MutableBoolean failed = new MutableBoolean(false);
+        var genericToRequest = PanelRequestHelper.collectAvailableGenericStock(targets.generic(), this::sendEffect, failed::setTrue);
+
         Multimap<UUID, BigItemStack> toRequest = HashMultimap.create();
-
-        //region Injected
-        Map<StockInventoryType<?,?,?>, Multimap<UUID, ?>> toRequest$1 = new HashMap<>();
-        Map<UUID, Integer> savedUUIDs = new HashMap<>();
-        for (var e : consolidated$1.entrySet()) deployer$tickRequests(e.getKey(), e.getValue(), failed::set, toRequest$1.computeIfAbsent(e.getKey(), k -> HashMultimap.create()));
-
-        //endregion
-
         for (Map.Entry<UUID, Map<ItemStack, ItemStackConnections>> entry : consolidated.entrySet()) {
             UUID network = entry.getKey();
             InventorySummary summary = LogisticsManager.getSummaryOfNetwork(network, true);
 
             for (ItemStackConnections connections : entry.getValue().values()) {
-                if (connections.totalAmount == 0 || connections.item.isEmpty() || summary.getCountOf(connections.item) < connections.totalAmount) {
-                    for (FactoryPanelConnection connection : connections)
-                        sendEffect(connection.from, false);
-                    failed.set(true);
+                boolean available = connections.totalAmount != 0 && !connections.item.isEmpty() && summary.getCountOf(connections.item) >= connections.totalAmount;
+                for (FactoryPanelConnection connection : connections)
+                    sendEffect(connection.from, available);
+                if (!available) {
+                    failed.setTrue();
                     continue;
                 }
-
-                BigItemStack stack = new BigItemStack(connections.item, connections.totalAmount);
-                toRequest.put(network, stack);
-                for (FactoryPanelConnection connection : connections)
-                    sendEffect(connection.from, true);
+                toRequest.put(network, new BigItemStack(connections.item, connections.totalAmount));
             }
         }
 
-        if (failed.get())
+        if (failed.isTrue())
             return;
 
-        // Input items may come from differing networks
-        Map<UUID, Collection<BigItemStack>> asMap = toRequest.asMap();
-        PackageOrderWithCrafts craftingContext = PackageOrderWithCrafts.empty();
+        PackageOrderWithCrafts craftingContext = activeCraftingArrangement.isEmpty()
+                ? PackageOrderWithCrafts.empty()
+                : PackageOrderWithCrafts.singleRecipe(activeCraftingArrangement.stream()
+                        .map(stack -> new BigItemStack(stack.copyWithCount(1)))
+                        .toList());
+
         List<Multimap<PackagerBlockEntity, PackagingRequest>> requests = new ArrayList<>();
-
-        // Panel may enforce item arrangement
-        if (!activeCraftingArrangement.isEmpty())
-            craftingContext = PackageOrderWithCrafts.singleRecipe(activeCraftingArrangement.stream()
-                    .map(stack -> new BigItemStack(stack.copyWithCount(1)))
-                    .toList());
-
-        //Injected
-        boolean isValsEmpty = false;
-
-        // Collect request distributions
-        for (Map.Entry<UUID, Collection<BigItemStack>> entry : asMap.entrySet()) {
-            PackageOrderWithCrafts order =
-                    new PackageOrderWithCrafts(new PackageOrder(new ArrayList<>(entry.getValue())), craftingContext.orderedCrafts());
-            Multimap<PackagerBlockEntity, PackagingRequest> request =
-                    LogisticsManager.findPackagersForRequest(entry.getKey(), order, null, recipeAddress);
+        Map<UUID, Integer> orderIds = new HashMap<>();
+        boolean lastRequestEmpty = false;
+        for (Map.Entry<UUID, Collection<BigItemStack>> entry : toRequest.asMap().entrySet()) {
+            PackageOrderWithCrafts order = new PackageOrderWithCrafts(new PackageOrder(new ArrayList<>(entry.getValue())), craftingContext.orderedCrafts());
+            Multimap<PackagerBlockEntity, PackagingRequest> request = LogisticsManager.findPackagersForRequest(entry.getKey(), order, null, recipeAddress);
             requests.add(request);
-            //region Injected
-            var vals = request.values();
-            int id = vals.isEmpty() ? LogisticsManagerAccessor.getR().nextInt() :
-                    Optional.ofNullable(vals.iterator().next()).map(PackagingRequest::orderId)
-                    .orElseGet(() -> LogisticsManagerAccessor.getR().nextInt());
-            savedUUIDs.put(entry.getKey(), id);
-            isValsEmpty = vals.isEmpty();
-            //endregion
+            orderIds.put(entry.getKey(), PanelRequestHelper.orderIdOf(request));
+            lastRequestEmpty = request.isEmpty();
         }
 
-        //region Injected
-        Map<StockInventoryType<?,?,?>, Map<UUID, Collection<?>>> asMap$1 = new HashMap<>();
-        Map<StockInventoryType<?,?,?>, List<Multimap<AbstractPackagerBlockEntity<?,?,?>, GenericPackagingRequest<?>>>> d$requests = new HashMap<>();
-        // Map init
-        for(var e : toRequest$1.entrySet()) {
-            //noinspection unchecked,rawtypes
-            asMap$1.put(e.getKey(), (Map)e.getValue().asMap());
-            d$requests.put(e.getKey(), new ArrayList<>());
-        }
+        var genericRequests = PanelRequestHelper.findGenericPackagers(genericToRequest, recipeAddress, orderIds);
+        if (genericRequests.anyPackagerBusy())
+            return;
+        if (genericRequests.send(lastRequestEmpty ? 0 : 1))
+            PanelRequestHelper.flagVanillaRequests(requests);
 
-        // Collect request distributions
-        for(var e : asMap$1.entrySet()) {
-            deployer$tickRequests(e.getKey(), e.getValue(), d$requests.get(e.getKey()), savedUUIDs);
-        }
-
-        // Check if any packager is busy, cancel all
-        for(var e : d$requests.values()) {
-            for(var entry : e) {
-                for(AbstractPackagerBlockEntity<?,?,?> packager : entry.keySet())
-                    if(packager.isTooBusyFor(LogisticallyLinkedBehaviour.RequestType.RESTOCK)) {
-                        return;
-                    }
-            }
-        }
-
-        // Send it
-
-        int index = isValsEmpty ? 0 : 1;
-        boolean oneFound = false;
-        for(var e : d$requests.entrySet()) {
-            if(e.getValue().isEmpty()) continue;
-            var it = e.getValue().iterator();
-            while(it.hasNext()) {
-                var entry = it.next();
-                boolean isLast = !it.hasNext();
-                deployer$tickRequests(entry, index, isLast);
-            }
-            oneFound = true;
-            index++;
-        }
-
-        if(oneFound)
-            for(var e : requests) {
-                e.values().forEach(pr -> ((PRExtension)(Object)pr).deployer$flag());
-            }
-        //endregion
-        // Check if any packager is busy - cancel all
-        for (Multimap<PackagerBlockEntity, PackagingRequest> entry : requests)
-            for (PackagerBlockEntity packager : entry.keySet())
+        for (Multimap<PackagerBlockEntity, PackagingRequest> request : requests)
+            for (PackagerBlockEntity packager : request.keySet())
                 if (packager.isTooBusyFor(LogisticallyLinkedBehaviour.RequestType.RESTOCK))
                     return;
 
-        // Send it
-        for (Multimap<PackagerBlockEntity, PackagingRequest> entry : requests)
-            LogisticsManager.performPackageRequests(entry);
+        for (Multimap<PackagerBlockEntity, PackagingRequest> request : requests)
+            LogisticsManager.performPackageRequests(request);
 
-        // Keep the output promise
         RequestPromiseQueue promises = Create.LOGISTICS.getQueuedPromises(network);
-
         if (promises != null)
             addPromises(promises);
-        panelBE.advancements.awardPlayer(AllAdvancements.FACTORY_GAUGE);
+        panelBE().advancements.awardPlayer(AllAdvancements.FACTORY_GAUGE);
     }
 
     @Override
@@ -450,55 +341,6 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
     }
 
     public abstract void addPromises(RequestPromiseQueue queue);
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private <K, V, H> void deployer$tickRequests(
-            StockInventoryType<K, V, H> type,
-            Map<UUID, Map<?, GenericConnections<?>>> map,
-            @Local BooleanConsumer failed,
-            Multimap<UUID, ?> toRequest
-    ) {
-        for (var entry : map.entrySet()) {
-            UUID network = entry.getKey();
-            Map<V, GenericConnections<V>> typed =
-                    (Map) entry.getValue();
-
-            AbstractInventorySummary<K, V> summary = LogisticsGenericManager.getSummaryOfNetwork(type, network, true);
-
-            for(GenericConnections<V> connections : typed.values()) {
-                if (connections.totalAmount == 0 || type.valueHandler().isEmpty(connections.item) || summary.getCountOf(connections.item) < connections.totalAmount) {
-                    for (FactoryPanelConnection connection : connections)
-                        sendEffect(connection.from, false);
-                    failed.accept(true);
-                    continue;
-                }
-
-                V stack = type.valueHandler().copyWithCount(connections.item, connections.totalAmount);
-                ((Multimap<UUID, V>) toRequest).put(network, stack);
-                for (FactoryPanelConnection connection : connections)
-                    sendEffect(connection.from, true);
-            }
-        }
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private <K,V,H> void deployer$tickRequests(StockInventoryType<K,V,H> type, Map<UUID, Collection<?>> asMap$raw, List<Multimap<AbstractPackagerBlockEntity<?,?,?>, GenericPackagingRequest<?>>> requests$raw, Map<UUID, Integer> savedUUIDs) {
-        Map<UUID, Collection<V>> asMap = (Map) asMap$raw;
-        List<Multimap<AbstractPackagerBlockEntity<K,V,H>, GenericPackagingRequest<V>>> requests = (List)requests$raw;
-        for(var entry : asMap.entrySet()) {
-            var order = type.valueHandler().createContained(new ArrayList<>(entry.getValue()));
-            Multimap<AbstractPackagerBlockEntity<K,V,H>, GenericPackagingRequest<V>> request =
-                    LogisticsGenericManager.findPackagersForRequest(type, entry.getKey(), order, null, recipeAddress, () -> savedUUIDs.computeIfAbsent(entry.getKey(), key -> LogisticsManagerAccessor.getR().nextInt()));
-            requests.add(request);
-        }
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private <K,V,H> void deployer$tickRequests(Multimap<AbstractPackagerBlockEntity<?,?,?>, GenericPackagingRequest<?>> entry$raw, int index, boolean isLast) {
-        Multimap<AbstractPackagerBlockEntity<K,V,H>, GenericPackagingRequest<V>> entry = (Multimap)entry$raw;
-        LogisticsGenericManager.performPackageRequests(entry, index, isLast);
-    }
-
 
     public void tryRestock() {
     }

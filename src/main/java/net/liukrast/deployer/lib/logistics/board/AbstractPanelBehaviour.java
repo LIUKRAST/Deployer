@@ -50,7 +50,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /**
  * <h1>AbstractPanelBehaviour</h1>
@@ -177,56 +176,89 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
      * <li>{@link PanelValue.Empty}: if no value is found or connection types mismatch</li>
      * <li>{@link PanelValue.Present}: if the value was successfully retrieved</li>
      * </ul>
-     * @throws IllegalStateException if the connection is not registered in any of the source's maps
+     * A connection that is not registered in any of the source's maps yields {@link PanelValue.Empty}.
      */
     @NotNull
     public static <T> PanelValue<T> getValue(FactoryPanelConnection position, PanelConnection<T> connection, FactoryPanelBehaviour source) {
-        if(!source.getWorld().isLoaded(position.from.pos())) return PanelValue.abort();
-        if(source.targetedBy.containsValue(position)) {
-            FactoryPanelBehaviour at = at(source.getWorld(), position);
-            if(at == null) return PanelValue.empty();
-            var pc = ProvidesConnection.getCurrentConnection(position, () -> ProvidesConnection.getPossibleConnections(at, source).stream().findFirst().orElse(null));
-            if(pc == null || pc != connection) return PanelValue.empty();
-            return PanelValue.of(((ProvidesConnection)at).getConnectionValue(connection));
-        }
-        if(source.targetedByLinks.containsValue(position)) {
-            FactoryPanelSupportBehaviour linkAt = linkAt(source.getWorld(), position);
-            if(linkAt == null) return PanelValue.empty();
-            if(!linkAt.isOutput()) return PanelValue.empty();
-            if(linkAt instanceof AbstractPanelSupportBehaviour apsb) {
-                var pc = ProvidesConnection.getCurrentConnection(position, () -> ProvidesConnection.getPossibleConnections(apsb, source).stream().findFirst().orElse(null));
-                if(pc == null || pc != connection) return PanelValue.empty();
-                return PanelValue.of(apsb.getConnectionValue(connection));
-            } else if(connection == DeployerPanelConnections.REDSTONE.get()) //noinspection unchecked
-                return PanelValue.of((T)(Boolean)(linkAt.shouldPanelBePowered()));
-            else return PanelValue.empty();
-        }
-        if(((FPBExtension)source).deployer$getExtra().containsValue(position)) {
-            var pos = position.from.pos();
-            var level = source.getWorld();
-            var state = level.getBlockState(pos);
+        if(source.targetedBy.containsValue(position)) return getPanelValue(position, connection, source);
+        if(source.targetedByLinks.containsValue(position)) return getLinkValue(position, connection, source);
+        if(((FPBExtension)source).deployer$getExtra().containsValue(position)) return getExtraValue(position, connection, source);
+        return PanelValue.empty();
+    }
 
-            var pc = ProvidesConnection.getCurrentConnection(position, () -> DeployerRegistries.PANEL_CONNECTION.stream()
-                    .filter(c -> ((ProvidesConnection)source).getInputConnections().contains(c))
-                    .filter(c -> c.getListener(state.getBlock()) != null)
-                    .findFirst().orElse(null)
-            );
-            if(pc == null || pc != connection) return PanelValue.empty();
-            var listener = connection.getListener(state.getBlock());
-            if(listener == null) return PanelValue.empty();
-            return PanelValue.of(listener.invalidate(level, state, pos, level.getBlockEntity(pos)));
+    private static <T> PanelValue<T> getPanelValue(FactoryPanelConnection position, PanelConnection<T> connection, FactoryPanelBehaviour source) {
+        if(!source.getWorld().isLoaded(position.from.pos())) return PanelValue.abort();
+        FactoryPanelBehaviour at = at(source.getWorld(), position);
+        if(at == null) return PanelValue.empty();
+        var pc = ProvidesConnection.getCurrentConnection(position, () -> ProvidesConnection.getPossibleConnections(at, source).stream().findFirst().orElse(null));
+        if(pc != connection) return PanelValue.empty();
+        return PanelValue.of(((ProvidesConnection)at).getConnectionValue(connection));
+    }
+
+    private static <T> PanelValue<T> getLinkValue(FactoryPanelConnection position, PanelConnection<T> connection, FactoryPanelBehaviour source) {
+        if(!source.getWorld().isLoaded(position.from.pos())) return PanelValue.abort();
+        FactoryPanelSupportBehaviour linkAt = linkAt(source.getWorld(), position);
+        if(linkAt == null || !linkAt.isOutput()) return PanelValue.empty();
+        if(linkAt instanceof AbstractPanelSupportBehaviour apsb) {
+            var pc = ProvidesConnection.getCurrentConnection(position, () -> ProvidesConnection.getPossibleConnections(apsb, source).stream().findFirst().orElse(null));
+            if(pc != connection) return PanelValue.empty();
+            return PanelValue.of(apsb.getConnectionValue(connection));
         }
-        throw new IllegalStateException("Cannot get value on a panel not connected to the input one (Position: " + position.from.pos() + ")");
+        if(connection != DeployerPanelConnections.REDSTONE.get()) return PanelValue.empty();
+        //noinspection unchecked
+        return PanelValue.of((T)(Boolean)linkAt.shouldPanelBePowered());
+    }
+
+    private static <T> PanelValue<T> getExtraValue(FactoryPanelConnection position, PanelConnection<T> connection, FactoryPanelBehaviour source) {
+        var pos = position.from.pos();
+        var level = source.getWorld();
+        if(!level.isLoaded(pos)) return PanelValue.abort();
+        var state = level.getBlockState(pos);
+        var pc = ProvidesConnection.getCurrentConnection(position, () -> firstInputWithListener((ProvidesConnection) source, state));
+        if(pc != connection) return PanelValue.empty();
+        var listener = connection.getListener(state.getBlock());
+        if(listener == null) return PanelValue.empty();
+        return PanelValue.of(listener.invalidate(level, state, pos, level.getBlockEntity(pos)));
+    }
+
+    @Nullable
+    private static PanelConnection<?> firstInputWithListener(ProvidesConnection target, BlockState state) {
+        for(PanelConnection<?> input : target.getInputConnections())
+            if(input.getListener(state.getBlock()) != null)
+                return input;
+        return null;
     }
 
     public record ConnectionValue<T>(FactoryPanelConnection connection, T value) {}
 
     /**
-     * Aggregates all values from all connected sources for a specific connection type.
-     * <p>
-     * This version uses a unified stream to process standard panels, links, and extra
-     * block connections, maintaining the "Abort" logic for unloaded chunks.
-     * </p>
+     * Aggregates all values from all connected sources of {@code target} for a specific connection type.
+     *
+     * @return a {@link List} of all values and their {@link FactoryPanelConnection}, or {@code null} if any source
+     * returned an "Abort" state.
+     */
+    @ApiStatus.Internal
+    @Nullable
+    public static <T> List<ConnectionValue<T>> collectValues(FactoryPanelBehaviour target, PanelConnection<T> connection) {
+        List<ConnectionValue<T>> out = new ArrayList<>();
+        for(FactoryPanelConnection position : target.targetedBy.values())
+            if(!addValue(out, position, getPanelValue(position, connection, target))) return null;
+        for(FactoryPanelConnection position : target.targetedByLinks.values())
+            if(!addValue(out, position, getLinkValue(position, connection, target))) return null;
+        for(FactoryPanelConnection position : ((FPBExtension)target).deployer$getExtra().values())
+            if(!addValue(out, position, getExtraValue(position, connection, target))) return null;
+        return out;
+    }
+
+    private static <T> boolean addValue(List<ConnectionValue<T>> out, FactoryPanelConnection position, PanelValue<T> value) {
+        if(value instanceof PanelValue.Abort) return false;
+        if(value instanceof PanelValue.Present<T>(T present)) out.add(new ConnectionValue<>(position, present));
+        return true;
+    }
+
+    /**
+     * Aggregates all values from all connected sources for a specific connection type,
+     * processing standard panels, links, and extra block connections.
      *
      * @param connection the type of data connection to poll
      * @param <T>        the type of the values
@@ -235,18 +267,7 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
      */
     @Override
     public @Nullable <T> List<ConnectionValue<T>> getAllValuesWithSource(PanelConnection<T> connection) {
-        List<AbstractPanelBehaviour.ConnectionValue<T>> out = new ArrayList<>();
-        boolean shouldAbort = Stream.of(targetedBy.values(), targetedByLinks.values(), getTargetedByExtra().values())
-                .flatMap(Collection::stream)
-                .anyMatch(gauge -> {
-                    PanelValue<T> result = getValue(gauge, connection, this);
-                    if (result instanceof PanelValue.Abort) return true;
-                    if (result instanceof PanelValue.Present<T>(T value))
-                        out.add(new AbstractPanelBehaviour.ConnectionValue<>(gauge, value));
-                    return false;
-                });
-
-        return shouldAbort ? null : out;
+        return collectValues(this, connection);
     }
 
 
@@ -384,24 +405,19 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
      */
     public void notifyOutputs(boolean forced) {
         for(FactoryPanelPosition panelPos : targeting) {
-            if(!getWorld().isLoaded(panelPos.pos()))
-                return;
             FactoryPanelBehaviour behaviour = FactoryPanelBehaviour.at(getWorld(), panelPos);
-            if(behaviour == null) continue;
-            behaviour.checkForRedstoneInput();
+            if(behaviour != null) behaviour.checkForRedstoneInput();
         }
         for (FactoryPanelConnection connection : targetedByLinks.values()) {
             BlockPos pos = connection.from.pos();
             if (!getWorld().isLoaded(pos))
-                return;
+                continue;
             BlockState state = getWorld().getBlockState(pos);
-            if (state.getBlock() instanceof DisplayLinkBlock && state.getOptionalValue(DisplayLinkBlock.POWERED).orElse(true) && !forced)
-                return;
+            if (!forced && state.getBlock() instanceof DisplayLinkBlock && state.getOptionalValue(DisplayLinkBlock.POWERED).orElse(true))
+                continue;
             FactoryPanelSupportBehaviour linkAt = linkAt(getWorld(), connection);
-            if (linkAt == null)
-                return;
-            if(linkAt.isOutput()) continue;
-            linkAt.notifyLink();
+            if (linkAt != null && !linkAt.isOutput())
+                linkAt.notifyLink();
         }
     }
 
