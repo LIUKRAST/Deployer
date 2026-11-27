@@ -262,7 +262,8 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
             @Local(name = "failed") LocalBooleanRef failed,
             @Share("targets") LocalRef<PanelRequestHelper.StockTargets> targets,
             @Share("genericToRequest") LocalRef<Map<StockInventoryType<?, ?, ?>, Multimap<UUID, ?>>> genericToRequest,
-            @Share("orderIds") LocalRef<Map<UUID, Integer>> orderIds
+            @Share("orderIds") LocalRef<Map<UUID, Integer>> orderIds,
+            @Share("requestsByNetwork") LocalRef<Map<UUID, Multimap<PackagerBlockEntity, PackagingRequest>>> requestsByNetwork
     ) {
         genericToRequest.set(PanelRequestHelper.collectAvailableGenericStock(
                 targets.get().generic(),
@@ -270,6 +271,7 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
                 () -> failed.set(true)
         ));
         orderIds.set(new HashMap<>());
+        requestsByNetwork.set(new HashMap<>());
     }
 
     @Inject(method = "tickRequests", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z"))
@@ -278,10 +280,10 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
             @Local(name = "entry") Map.Entry<UUID, Collection<BigItemStack>> entry,
             @Local(name = "request") Multimap<PackagerBlockEntity, PackagingRequest> request,
             @Share("orderIds") LocalRef<Map<UUID, Integer>> orderIds,
-            @Share("lastRequestEmpty") LocalBooleanRef lastRequestEmpty
+            @Share("requestsByNetwork") LocalRef<Map<UUID, Multimap<PackagerBlockEntity, PackagingRequest>>> requestsByNetwork
     ) {
         orderIds.get().put(entry.getKey(), PanelRequestHelper.orderIdOf(request));
-        lastRequestEmpty.set(request.isEmpty());
+        requestsByNetwork.get().put(entry.getKey(), request);
     }
 
     @Definition(id = "requests", local = @Local(type = List.class, name = "requests"))
@@ -290,18 +292,18 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
     @Inject(method = "tickRequests", at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 0), cancellable = true)
     private void deployer$sendGenericRequests(
             CallbackInfo ci,
-            @Local(name = "requests") List<Multimap<PackagerBlockEntity, PackagingRequest>> requests,
             @Share("genericToRequest") LocalRef<Map<StockInventoryType<?, ?, ?>, Multimap<UUID, ?>>> genericToRequest,
             @Share("orderIds") LocalRef<Map<UUID, Integer>> orderIds,
-            @Share("lastRequestEmpty") LocalBooleanRef lastRequestEmpty
+            @Share("requestsByNetwork") LocalRef<Map<UUID, Multimap<PackagerBlockEntity, PackagingRequest>>> requestsByNetwork
     ) {
         var genericRequests = PanelRequestHelper.findGenericPackagers(genericToRequest.get(), recipeAddress, orderIds.get());
         if (genericRequests.anyPackagerBusy()) {
             ci.cancel();
             return;
         }
-        if (genericRequests.send(lastRequestEmpty.get() ? 0 : 1))
-            PanelRequestHelper.flagVanillaRequests(requests);
+        var byNetwork = requestsByNetwork.get();
+        var genericNetworks = genericRequests.send(PanelRequestHelper.networksWithRequests(byNetwork));
+        PanelRequestHelper.flagVanillaRequests(byNetwork, genericNetworks);
     }
 
     /* DATA */

@@ -41,30 +41,30 @@ public final class PanelRequestHelper {
             boolean isEmpty
     ) {}
 
-    public record GenericRequests(Map<StockInventoryType<?, ?, ?>, List<Multimap<AbstractPackagerBlockEntity<?, ?, ?>, GenericPackagingRequest<?>>>> byType) {
+    public record GenericRequests(Map<StockInventoryType<?, ?, ?>, Map<UUID, Multimap<AbstractPackagerBlockEntity<?, ?, ?>, GenericPackagingRequest<?>>>> byType) {
         public boolean anyPackagerBusy() {
             for (var requests : byType.values())
-                for (var request : requests)
+                for (var request : requests.values())
                     for (var packager : request.keySet())
                         if (packager.isTooBusyFor(LogisticallyLinkedBehaviour.RequestType.RESTOCK))
                             return true;
             return false;
         }
 
-        public boolean send(int firstIndex) {
-            int index = firstIndex;
-            boolean anySent = false;
-            for (var requests : byType.values()) {
-                if (requests.isEmpty()) continue;
-                var iterator = requests.iterator();
-                while (iterator.hasNext()) {
-                    var request = iterator.next();
-                    perform(request, index, !iterator.hasNext());
-                }
-                anySent = true;
-                index++;
+        public Set<UUID> send(Set<UUID> networksWithItems) {
+            Map<UUID, List<Multimap<AbstractPackagerBlockEntity<?, ?, ?>, GenericPackagingRequest<?>>>> byNetwork = new LinkedHashMap<>();
+            for (var requests : byType.values())
+                for (var entry : requests.entrySet())
+                    if (!entry.getValue().isEmpty())
+                        byNetwork.computeIfAbsent(entry.getKey(), $ -> new ArrayList<>()).add(entry.getValue());
+
+            for (var entry : byNetwork.entrySet()) {
+                int index = networksWithItems.contains(entry.getKey()) ? 1 : 0;
+                var requests = entry.getValue();
+                for (int i = 0; i < requests.size(); i++)
+                    perform(requests.get(i), index + i, i == requests.size() - 1);
             }
-            return anySent;
+            return byNetwork.keySet();
         }
     }
 
@@ -114,7 +114,7 @@ public final class PanelRequestHelper {
             String address,
             Map<UUID, Integer> orderIds
     ) {
-        Map<StockInventoryType<?, ?, ?>, List<Multimap<AbstractPackagerBlockEntity<?, ?, ?>, GenericPackagingRequest<?>>>> byType = new HashMap<>();
+        Map<StockInventoryType<?, ?, ?>, Map<UUID, Multimap<AbstractPackagerBlockEntity<?, ?, ?>, GenericPackagingRequest<?>>>> byType = new LinkedHashMap<>();
         for (var entry : toRequest.entrySet())
             byType.put(entry.getKey(), findPackagers(entry.getKey(), entry.getValue(), address, orderIds));
         return new GenericRequests(byType);
@@ -127,10 +127,21 @@ public final class PanelRequestHelper {
         return first == null ? randomOrderId() : first.orderId();
     }
 
-    public static void flagVanillaRequests(List<Multimap<PackagerBlockEntity, PackagingRequest>> requests) {
-        for (var request : requests)
+    public static void flagVanillaRequests(Map<UUID, Multimap<PackagerBlockEntity, PackagingRequest>> requestsByNetwork, Set<UUID> networks) {
+        for (UUID network : networks) {
+            var request = requestsByNetwork.get(network);
+            if (request == null) continue;
             for (PackagingRequest packagingRequest : request.values())
                 ((PRExtension) (Object) packagingRequest).deployer$flag();
+        }
+    }
+
+    public static Set<UUID> networksWithRequests(Map<UUID, Multimap<PackagerBlockEntity, PackagingRequest>> requestsByNetwork) {
+        Set<UUID> networks = new HashSet<>();
+        for (var entry : requestsByNetwork.entrySet())
+            if (!entry.getValue().isEmpty())
+                networks.add(entry.getKey());
+        return networks;
     }
 
     private static int randomOrderId() {
@@ -168,20 +179,20 @@ public final class PanelRequestHelper {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static <K, V, H> List<Multimap<AbstractPackagerBlockEntity<?, ?, ?>, GenericPackagingRequest<?>>> findPackagers(
+    private static <K, V, H> Map<UUID, Multimap<AbstractPackagerBlockEntity<?, ?, ?>, GenericPackagingRequest<?>>> findPackagers(
             StockInventoryType<K, V, H> type,
             Multimap<UUID, ?> toRequest,
             String address,
             Map<UUID, Integer> orderIds
     ) {
-        List<Multimap<AbstractPackagerBlockEntity<?, ?, ?>, GenericPackagingRequest<?>>> requests = new ArrayList<>();
+        Map<UUID, Multimap<AbstractPackagerBlockEntity<?, ?, ?>, GenericPackagingRequest<?>>> requests = new LinkedHashMap<>();
         Map<UUID, Collection<V>> byNetwork = (Map) toRequest.asMap();
         for (var entry : byNetwork.entrySet()) {
             UUID network = entry.getKey();
             var order = type.valueHandler().createContained(new ArrayList<>(entry.getValue()));
             var request = LogisticsGenericManager.findPackagersForRequest(type, network, order, null, address,
                     () -> orderIds.computeIfAbsent(network, $ -> randomOrderId()));
-            requests.add((Multimap) request);
+            requests.put(network, (Multimap) request);
         }
         return requests;
     }

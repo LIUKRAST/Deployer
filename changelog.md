@@ -17,6 +17,8 @@ Fixes
 - Custom panels no longer disappear when copied with schematics or blueprints
 - Extra panel connections no longer load chunks while checking their source block
 - Marked Create: FluidLogistics versions before 1.3.3 as incompatible: they stopped the Re-Packager from merging item and fluid packages ([#26](https://github.com/LIUKRAST/Deployer/issues/26))
+- Gauges ordering only custom resources (for example only fluids) no longer produce packages that package shelves never see as complete ([Repackaged#28](https://github.com/LIUKRAST/Repackaged/issues/28))
+- Gauge orders mixing several resource types now mark only the last type as final, on each network separately
 - Panel inputs are read in the order they were connected, so string concatenation is predictable ([CreateExtraGauges#109](https://github.com/LIUKRAST/CreateExtraGauges/issues/109))
 
 For developers

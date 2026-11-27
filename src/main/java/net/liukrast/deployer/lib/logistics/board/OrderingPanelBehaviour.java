@@ -300,21 +300,21 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
                         .toList());
 
         List<Multimap<PackagerBlockEntity, PackagingRequest>> requests = new ArrayList<>();
+        Map<UUID, Multimap<PackagerBlockEntity, PackagingRequest>> requestsByNetwork = new HashMap<>();
         Map<UUID, Integer> orderIds = new HashMap<>();
-        boolean lastRequestEmpty = false;
         for (Map.Entry<UUID, Collection<BigItemStack>> entry : toRequest.asMap().entrySet()) {
             PackageOrderWithCrafts order = new PackageOrderWithCrafts(new PackageOrder(new ArrayList<>(entry.getValue())), craftingContext.orderedCrafts());
             Multimap<PackagerBlockEntity, PackagingRequest> request = LogisticsManager.findPackagersForRequest(entry.getKey(), order, null, recipeAddress);
             requests.add(request);
+            requestsByNetwork.put(entry.getKey(), request);
             orderIds.put(entry.getKey(), PanelRequestHelper.orderIdOf(request));
-            lastRequestEmpty = request.isEmpty();
         }
 
         var genericRequests = PanelRequestHelper.findGenericPackagers(genericToRequest, recipeAddress, orderIds);
         if (genericRequests.anyPackagerBusy())
             return;
-        if (genericRequests.send(lastRequestEmpty ? 0 : 1))
-            PanelRequestHelper.flagVanillaRequests(requests);
+        var genericNetworks = genericRequests.send(PanelRequestHelper.networksWithRequests(requestsByNetwork));
+        PanelRequestHelper.flagVanillaRequests(requestsByNetwork, genericNetworks);
 
         for (Multimap<PackagerBlockEntity, PackagingRequest> request : requests)
             for (PackagerBlockEntity packager : request.keySet())
