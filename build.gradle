@@ -134,6 +134,10 @@ dependencies {
     implementation "curse.maven:architectury-api-419699:8492726"
     implementation "curse.maven:observable-509575:6697124"
 
+    if (project.findProperty("withFL") == "true") {
+        runtimeOnly("maven.modrinth:QMGO17gm:${project.findProperty("fl_version") ?: "1.6.1"}")
+    }
+
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
