@@ -167,13 +167,13 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
                     : stack.getHoverName()
                     .getString(),
                     0);
-            ((StockKeeperRequestScreenAccessor.CategoryEntryAccessor)entry).setHidden(hiddenCategories.contains(i));
+            ((StockKeeperRequestScreenAccessor.CategoryEntryAccessor)entry).deployer$setHidden(hiddenCategories.contains(i));
             addCategory(entry);
         }
 
         StockKeeperRequestScreen.CategoryEntry unsorted = new StockKeeperRequestScreen.CategoryEntry(-1, CreateLang.translate("gui.stock_keeper.unsorted_category")
                 .string(), 0);
-        ((StockKeeperRequestScreenAccessor.CategoryEntryAccessor)unsorted).setHidden(hiddenCategories.contains(-1));
+        ((StockKeeperRequestScreenAccessor.CategoryEntryAccessor)unsorted).deployer$setHidden(hiddenCategories.contains(-1));
         addCategory(unsorted);
 
         String valueWithPrefix = searchBox.getValue();
@@ -185,7 +185,7 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
 
             int categoryY = 0;
             for (int categoryIndex = 0; categoryIndex < currentItemSource.size(); categoryIndex++) {
-                categories.get(categoryIndex).setY(categoryY);
+                categories.get(categoryIndex).deployer$setY(categoryY);
                 List<V> displayedItemsInCategory = displayedItems.get(categoryIndex);
                 if (displayedItemsInCategory.isEmpty())
                     continue;
@@ -193,7 +193,7 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
                     anyItemsInCategory = true;
 
                 categoryY += rowHeight;
-                if (!categories.get(categoryIndex).getHidden())
+                if (!categories.get(categoryIndex).deployer$getHidden())
                     categoryY += (int) (Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight);
             }
 
@@ -211,7 +211,7 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
         int categoryY = 0;
         for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
             List<V> category = currentItemSource.get(categoryIndex);
-            categories.get(categoryIndex).setY(categoryY);
+            categories.get(categoryIndex).deployer$setY(categoryY);
 
             if (displayedItems.size() <= categoryIndex)
                 break;
@@ -229,7 +229,7 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
 
             categoryY += rowHeight;
 
-            if (!(categories.get(categoryIndex)).getHidden())
+            if (!(categories.get(categoryIndex)).deployer$getHidden())
                 categoryY += (int) (Math.ceil(displayedItemsInCategory.size() / (float) cols) * rowHeight);
         }
 
@@ -347,16 +347,16 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
         for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
             List<V> category = displayedItems.get(categoryIndex);
             var categoryEntry = categories.isEmpty() ? null : categories.get(categoryIndex);
-            int categoryY = categories.isEmpty() ? 0 : categoryEntry.getY();
+            int categoryY = categories.isEmpty() ? 0 : categoryEntry.deployer$getY();
             if (category.isEmpty())
                 continue;
 
             if (!categories.isEmpty()) {
-                (categoryEntry.getHidden() ? AllGuiTextures.STOCK_KEEPER_CATEGORY_HIDDEN
+                (categoryEntry.deployer$getHidden() ? AllGuiTextures.STOCK_KEEPER_CATEGORY_HIDDEN
                         : AllGuiTextures.STOCK_KEEPER_CATEGORY_SHOWN).render(graphics, 6, 17 + categoryY + 6);
-                graphics.drawString(font, categoryEntry.getName(), 6 + 10, 17 + categoryY + 8, 0x4A2D31, false);
-                graphics.drawString(font, categoryEntry.getName(), 6 + 9, 17 + categoryY + 7, 0xF8F8EC, false);
-                if (categoryEntry.getHidden())
+                graphics.drawString(font, categoryEntry.deployer$getName(), 6 + 10, 17 + categoryY + 8, 0x4A2D31, false);
+                graphics.drawString(font, categoryEntry.deployer$getName(), 6 + 9, 17 + categoryY + 7, 0xF8F8EC, false);
+                if (categoryEntry.deployer$getHidden())
                     continue;
             }
 
@@ -461,10 +461,10 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
 
         for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
             StockKeeperRequestScreenAccessor.CategoryEntryAccessor entry = categories.isEmpty() ? (StockKeeperRequestScreenAccessor.CategoryEntryAccessor)new StockKeeperRequestScreen.CategoryEntry(0, "", 0) : categories.get(categoryIndex);
-            if (entry.getHidden())
+            if (entry.deployer$getHidden())
                 continue;
 
-            int row = Mth.floor((localY - (categories.isEmpty() ? 4 : rowHeight) - entry.getY()) / (float) rowHeight
+            int row = Mth.floor((localY - (categories.isEmpty() ? 4 : rowHeight) - entry.deployer$getY()) / (float) rowHeight
                     + itemScroll.getChaseTarget());
 
             int col = (x - itemsX) / colWidth;
@@ -538,16 +538,16 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
                 && pMouseY <= height-39) {
             for (int categoryIndex = 0; categoryIndex < displayedItems.size(); categoryIndex++) {
                 StockKeeperRequestScreenAccessor.CategoryEntryAccessor entry = categories.get(categoryIndex);
-                if (Mth.floor((localY - entry.getY()) / (float) rowHeight + itemScroll.getChaseTarget()) != 0)
+                if (Mth.floor((localY - entry.deployer$getY()) / (float) rowHeight + itemScroll.getChaseTarget()) != 0)
                     continue;
                 if (displayedItems.get(categoryIndex)
                         .isEmpty())
                     continue;
-                int indexOf = entry.getTargetBECategory();
+                int indexOf = entry.deployer$getTargetBECategory();
                 if (indexOf >= context.getCategories().size())
                     continue;
 
-                if (!entry.getHidden()) {
+                if (!entry.deployer$getHidden()) {
                     hiddenCategories.add(indexOf);
                     playUiSound(SoundEvents.ITEM_FRAME_ROTATE_ITEM, 1f, 1.5f);
                 } else {
@@ -690,7 +690,7 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
             if (list.isEmpty())
                 continue;
             totalRows++;
-            if (categories.size() > i && categories.get(i).getHidden())
+            if (categories.size() > i && categories.get(i).deployer$getHidden())
                 continue;
             totalRows += (int) Math.ceil(list.size() / (float) cols);
         }

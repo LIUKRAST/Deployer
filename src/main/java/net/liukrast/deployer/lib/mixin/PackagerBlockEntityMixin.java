@@ -61,30 +61,4 @@ public abstract class PackagerBlockEntityMixin extends SmartBlockEntity {
         }
         original.call(instance, queuedRequests);
     }
-
-    @Inject(method = "unwrapBox", at = @At("HEAD"), cancellable = true)
-    private void unwrapBox(ItemStack box, boolean simulate, CallbackInfoReturnable<Boolean> cir) {
-        if(!(box.getItem() instanceof GenericPackageItem)) return;
-        if(heldBox.isEmpty()) {
-            heldBox = box;
-            animationInward = false;
-            animationTicks = 20;
-            notifyUpdate();
-        }
-        cir.setReturnValue(false);
-        cir.cancel();
-    }
-
-    @Inject(
-            method = "attemptToSend",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lcom/simibubi/create/content/logistics/box/PackageItem;setOrder(Lnet/minecraft/world/item/ItemStack;IIZIZLcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;)V"
-            )
-    )
-    private void attemptToSend(List<PackagingRequest> queuedRequests, CallbackInfo ci, @Local(name = "createdBox") ItemStack createdBox, @Local(name = "nextRequest") PackagingRequest nextRequest) {
-        //noinspection DataFlowIssue
-        if(!PRExtension.class.cast(nextRequest).deployer$isFlagged()) return;
-        createdBox.set(DeployerDataComponents.ORDER_STOCK_TYPE_DATA.get(), new OrderStockTypeData(0, false));
-    }
 }

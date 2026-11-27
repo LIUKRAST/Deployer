@@ -21,7 +21,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
 
-@Mixin(RequestPromiseQueue.class)
+// Priority above 1000: applied after Create Factory Logistics, which overwrites some of these methods
+@Mixin(value = RequestPromiseQueue.class, priority = 1100)
 public class RequestPromiseQueueMixin implements RPQExtension {
 
     @Shadow private Runnable onChanged;

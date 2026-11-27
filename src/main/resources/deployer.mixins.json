@@ -3,7 +3,7 @@
   "mixinextras": {
 	"minVersion": "0.5.0"
   },
-  "plugin": "net.liukrast.compat.DefaultMixinPlugin",
+  "plugin": "net.liukrast.deployer.lib.DeployerMixinPlugin",
   "package": "net.liukrast.deployer.lib.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
@@ -31,6 +31,9 @@
     "PackageEntityMixin",
     "PackageItemMixin",
     "PackagerBlockEntityMixin",
+    "PackagerBlockEntityUnwrapMixin",
+    "withoutfl.PackagerBlockEntitySendMixin",
+    "withoutfl.RedstoneRequesterTriggerMixin",
     "PackagerBlockMixin",
     "PackageRepackageHelperMixin",
     "PackagerItemHandlerMixin",

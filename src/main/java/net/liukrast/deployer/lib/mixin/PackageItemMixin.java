@@ -13,7 +13,8 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.List;
 
-@Mixin(PackageItem.class)
+// Priority above 1000: applied after Create Factory Logistics, which overwrites some of these methods
+@Mixin(value = PackageItem.class, priority = 1100)
 public class PackageItemMixin {
     @SuppressWarnings("WrapWithConditionTargetsNonVoid")
     @WrapWithCondition(method = "<init>", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z"))

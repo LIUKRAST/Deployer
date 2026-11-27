@@ -10,17 +10,17 @@ public interface StockKeeperRequestScreenAccessor {
     @Mixin(StockKeeperRequestScreen.CategoryEntry.class)
     interface CategoryEntryAccessor {
         @Accessor("y")
-        void setY(int value);
+        void deployer$setY(int value);
         @Accessor("hidden")
-        void setHidden(boolean hidden);
+        void deployer$setHidden(boolean hidden);
         @Accessor("hidden")
-        boolean getHidden();
+        boolean deployer$getHidden();
         @Accessor("y")
-        int getY();
+        int deployer$getY();
         @Accessor("name")
-        String getName();
+        String deployer$getName();
 
         @Accessor("targetBECategory")
-        int getTargetBECategory();
+        int deployer$getTargetBECategory();
     }
 }

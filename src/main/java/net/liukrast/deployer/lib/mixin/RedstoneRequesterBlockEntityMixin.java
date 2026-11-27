@@ -63,60 +63,6 @@ public abstract class RedstoneRequesterBlockEntityMixin extends StockCheckingBlo
         return (GenericOrderContained<V>) deployer$encodedRequests.getOrDefault(type, GenericOrderContained.empty());
     }
 
-    @Inject(method = "triggerRequest", at = @At("HEAD"), cancellable = true)
-    private void triggerRequest(CallbackInfo ci, @Share("any_succeeded") LocalBooleanRef anySucceededLoc) {
-        boolean anySucceeded = false;
-        for(StockInventoryType<?,?,?> type : DeployerRegistries.STOCK_INVENTORY) {
-            anySucceeded |= deployer$triggerRequest(type, ci);
-        }
-        anySucceededLoc.set(anySucceeded);
-    }
-
-    @Unique
-    private <K,V,H> boolean deployer$triggerRequest(StockInventoryType<K, V, H> type, CallbackInfo ci) {
-        GenericOrderContained<V> encodedRequest = deployer$getEncodedRequest(type);
-
-        if(encodedRequest.isEmpty())
-            return false;
-
-        boolean anySucceeded = false;
-        AbstractInventorySummary<K, V> summaryOfOrder = type.networkHandler().createSummary();
-        encodedRequest.stacks().forEach(summaryOfOrder::add);
-
-        AbstractInventorySummary<K, V> summary = ((SCBEExtension)this).deployer$getAccurateSummary(type);
-
-        for(V entry : summaryOfOrder.getStacks()) {
-            if(summary.getCountOf(entry) >= type.valueHandler().getCount(entry)) {
-                anySucceeded = true;
-                continue;
-            }
-            if(!allowPartialRequests && level instanceof ServerLevel serverLevel) {
-                CatnipServices.NETWORK.sendToClientsAround(serverLevel, worldPosition, 32,
-                        new RedstoneRequesterEffectPacket(worldPosition, false));
-                ci.cancel();
-                return false;
-            }
-        }
-
-        return anySucceeded;
-    }
-
-    @ModifyExpressionValue(method = "triggerRequest", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;isEmpty()Z"))
-    private boolean triggerRequest$1(boolean original) {
-        return original && deployer$encodedRequests.values().stream().allMatch(GenericOrderContained::isEmpty);
-    }
-
-    @ModifyArg(method = "triggerRequest", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/redstoneRequester/RedstoneRequesterEffectPacket;<init>(Lnet/minecraft/core/BlockPos;Z)V"), index = 1)
-    private boolean triggerRequest(boolean original, @Share("any_succeeded") LocalBooleanRef anySucceededLoc) {
-        return original || anySucceededLoc.get();
-    }
-
-    @WrapOperation(method = "triggerRequest", at = @At(value = "INVOKE", target = "Lcom/simibubi/create/content/logistics/redstoneRequester/RedstoneRequesterBlockEntity;broadcastPackageRequest(Lcom/simibubi/create/content/logistics/packagerLink/LogisticallyLinkedBehaviour$RequestType;Lcom/simibubi/create/content/logistics/stockTicker/PackageOrderWithCrafts;Lcom/simibubi/create/content/logistics/packager/IdentifiedInventory;Ljava/lang/String;)Z"))
-    private boolean triggerRequest(RedstoneRequesterBlockEntity instance, LogisticallyLinkedBehaviour.RequestType requestType, PackageOrderWithCrafts packageOrderWithCrafts, IdentifiedInventory identifiedInventory, String s, Operation<Boolean> original, @Share("any_succeeded") LocalBooleanRef anySucceededLoc) {
-        if(!anySucceededLoc.get()) return original.call(instance, requestType, packageOrderWithCrafts, identifiedInventory, s);
-        return ((SCBEExtension)this).deployer$broadcastAllPackageRequest(packageOrderWithCrafts, requestType, deployer$encodedRequests, s);
-    }
-
     @Inject(method = "read", at = @At("TAIL"))
     private void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket, CallbackInfo ci) {
         CompoundTag specialData = tag.getCompound("deployer$encodedRequest");
