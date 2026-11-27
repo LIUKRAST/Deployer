@@ -7,8 +7,6 @@ import net.createmod.catnip.lang.FontHelper;
 import net.createmod.catnip.lang.LangBuilder;
 import net.createmod.catnip.lang.LangNumberFormat;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,11 +15,13 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.stream.Stream;
-
-
-public interface Constants {
+/**
+ * {@link net.liukrast.constants.Constants} with NeoForge and Create helpers.
+ * <p>
+ * Ids, logger, registry and plain text helpers come from Constants Manager; this interface adds
+ * {@link DeferredRegister} creation, Create item tooltips and Catnip {@link LangBuilder}s.
+ */
+public interface Constants extends net.liukrast.constants.Constants {
 
     static Constants of(String modId) {
         return of(modId, "1.0.0");
@@ -47,30 +47,8 @@ public interface Constants {
         };
     }
 
-    String getModId();
-    Logger getLogger();
-    String getProtocol();
-
-    default ResourceLocation id(String path, Object... args) {
-        return ResourceLocation.fromNamespaceAndPath(getModId(), String.format(path, args));
-    }
-
     default <T> DeferredRegister<T> createDeferred(Registry<T> registry) {
         return DeferredRegister.create(registry, getModId());
-    }
-
-    default <T> Stream<T> getElements(Registry<T> registry) {
-        return getElementEntries(registry).map(Map.Entry::getValue);
-    }
-
-    default <T> Stream<Map.Entry<String, T>> getElementEntries(Registry<T> registry) {
-        return registry.entrySet().stream()
-                .filter(t -> t.getKey().location().getNamespace().equals(getModId()))
-                .map(e -> Map.entry(e.getKey().location().getPath(), e.getValue()));
-    }
-
-    default <T> ResourceKey<T> registerKey(ResourceKey<? extends Registry<T>> registry, String name) {
-        return ResourceKey.create(registry, id(name));
     }
 
     default Item wrapWithShiftSummary(Item item) {

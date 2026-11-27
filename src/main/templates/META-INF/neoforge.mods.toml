@@ -40,6 +40,12 @@ config="${mod_id}.mixins.json"
     versionRange="*"
     ordering="AFTER"
     side="BOTH"
+[[dependencies."${mod_id}"]]
+    modId="constants_manager"
+    type="required"
+    versionRange="[1.0.0,2.0.0)"
+    ordering="NONE"
+    side="BOTH"
 
 [[dependencies."${mod_id}"]]
     modId="create_factory_logistics"
