@@ -20,6 +20,7 @@ Fixes
 - Gauges ordering only custom resources (for example only fluids) no longer produce packages that package shelves never see as complete ([Repackaged#28](https://github.com/LIUKRAST/Repackaged/issues/28))
 - Gauge orders mixing several resource types now mark only the last type as final, on each network separately
 - Panel inputs are read in the order they were connected, so string concatenation is predictable ([CreateExtraGauges#109](https://github.com/LIUKRAST/CreateExtraGauges/issues/109))
+- Custom redstone requester tabs no longer hide the player inventory when another mod wraps its slots ([Repackaged#31](https://github.com/LIUKRAST/Repackaged/issues/31))
 
 For developers
 - No breaking changes: mods built against 0.1.3 keep working
