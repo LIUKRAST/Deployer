@@ -109,6 +109,11 @@ neoForge {
 
 sourceSets.main.resources {srcDir 'src/generated/resources'}
 
+configurations {
+    localRuntime
+    runtimeClasspath.extendsFrom localRuntime
+}
+
 dependencies {
     implementation("com.simibubi.create:create-${minecraft_version}:${create_version}") { transitive = false }
     implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
@@ -116,26 +121,28 @@ dependencies {
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
 
-    implementation(jarJar("io.github.llamalad7:mixinextras-neoforge:0.5.0"))
+    implementation(jarJar("io.github.llamalad7:mixinextras-neoforge:0.5.5") { version { strictly "[0.5.0,)"; prefer "0.5.5" } })
     implementation(jarJar("net.liukrast:compat_manager-${minecraft_version}:${compat_manager_version}"))
 
     // compile against the JEI API but do not include it at runtime
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
     // at runtime, use the full JEI jar for NeoForge
-    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    localRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
-    implementation fileTree(dir: "${rootDir}/libs", include: ['*.jar'])
+    compileOnly fileTree(dir: "${rootDir}/libs", include: ['*.jar'])
+    localRuntime fileTree(dir: "${rootDir}/libs", include: ['*.jar'])
 
     //Optional dependency
     compileOnly("maven.modrinth:jade:${jade_version}")
-    implementation("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}")
+    compileOnly("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}")
+    localRuntime("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:${sable_version}")
 
-    implementation "curse.maven:kotlin-for-forge-351264:8335665"
-    implementation "curse.maven:architectury-api-419699:8492726"
-    implementation "curse.maven:observable-509575:6697124"
+    localRuntime "curse.maven:kotlin-for-forge-351264:8335665"
+    localRuntime "curse.maven:architectury-api-419699:8492726"
+    localRuntime "curse.maven:observable-509575:6697124"
 
     if (project.findProperty("withFL") == "true") {
-        runtimeOnly("maven.modrinth:QMGO17gm:${project.findProperty("fl_version") ?: "1.6.1"}")
+        localRuntime("maven.modrinth:QMGO17gm:${project.findProperty("fl_version") ?: "1.6.1"}")
     }
 
 }
