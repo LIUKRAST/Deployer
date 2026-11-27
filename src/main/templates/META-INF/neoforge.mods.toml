@@ -43,8 +43,10 @@ config="${mod_id}.mixins.json"
 
 [[dependencies."${mod_id}"]]
     modId="create_factory_logistics"
-    type="incompatible"
-    reason="Create Factory logistics is not supported and marked as incompatible with deployer. Learn more at https://github.com/LIUKRAST/Deployer/blob/master/fl.md"
+    type="optional"
+    versionRange="[1.6.1,)"
+    ordering="NONE"
+    side="BOTH"
 [[dependencies."${mod_id}"]]
     modId="fluidlogistics"
     type="incompatible"
