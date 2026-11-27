@@ -310,16 +310,16 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
             orderIds.put(entry.getKey(), PanelRequestHelper.orderIdOf(request));
         }
 
+        for (Multimap<PackagerBlockEntity, PackagingRequest> request : requests)
+            for (PackagerBlockEntity packager : request.keySet())
+                if (packager.isTooBusyFor(LogisticallyLinkedBehaviour.RequestType.RESTOCK))
+                    return;
+
         var genericRequests = PanelRequestHelper.findGenericPackagers(genericToRequest, recipeAddress, orderIds);
         if (genericRequests.anyPackagerBusy())
             return;
         var genericNetworks = genericRequests.send(PanelRequestHelper.networksWithRequests(requestsByNetwork));
         PanelRequestHelper.flagVanillaRequests(requestsByNetwork, genericNetworks);
-
-        for (Multimap<PackagerBlockEntity, PackagingRequest> request : requests)
-            for (PackagerBlockEntity packager : request.keySet())
-                if (packager.isTooBusyFor(LogisticallyLinkedBehaviour.RequestType.RESTOCK))
-                    return;
 
         for (Multimap<PackagerBlockEntity, PackagingRequest> request : requests)
             LogisticsManager.performPackageRequests(request);

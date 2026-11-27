@@ -8,6 +8,7 @@ Fixes
 - Stock Keeper tabs of custom resources (fluids, energy) showed only the last 100 entries of a network with more than 100 different entries
 - Packagers of custom resources no longer take hold of an item package when another mod only simulates inserting it, which could duplicate the package
 - Two packagers of the same custom resource on the same inventory (for example two fluid packagers on one tank) counted it twice in the Stock Keeper and split orders between them, so part of the order was never sent. Like Create does for items, the network now counts each inventory once and asks one of its packagers
+- Gauges ordering items together with fluids or energy sent the fluid and energy part even when an item packager was too busy, so that part was sent again on the next attempt
 - Restocking gauges of custom resources ordered at most 9 units of the selected scale per request (9 mB with a fluid gauge in mB); they now order the whole missing amount
 
 For developers

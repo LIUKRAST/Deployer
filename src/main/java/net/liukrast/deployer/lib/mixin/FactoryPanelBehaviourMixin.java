@@ -289,7 +289,7 @@ public abstract class FactoryPanelBehaviourMixin extends FilteringBehaviour impl
     @Definition(id = "requests", local = @Local(type = List.class, name = "requests"))
     @Definition(id = "iterator", method = "Ljava/util/List;iterator()Ljava/util/Iterator;")
     @Expression("requests.iterator()")
-    @Inject(method = "tickRequests", at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 0), cancellable = true)
+    @Inject(method = "tickRequests", at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 1), cancellable = true)
     private void deployer$sendGenericRequests(
             CallbackInfo ci,
             @Share("genericToRequest") LocalRef<Map<StockInventoryType<?, ?, ?>, Multimap<UUID, ?>>> genericToRequest,
