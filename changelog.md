@@ -16,6 +16,7 @@ Fixes
 - Stock panels invalidated the item cache instead of the cache of their own stock type
 - Custom panels no longer disappear when copied with schematics or blueprints
 - Extra panel connections no longer load chunks while checking their source block
+- Marked Create: FluidLogistics versions before 1.3.3 as incompatible: they stopped the Re-Packager from merging item and fluid packages ([#26](https://github.com/LIUKRAST/Deployer/issues/26))
 - Panel inputs are read in the order they were connected, so string concatenation is predictable ([CreateExtraGauges#109](https://github.com/LIUKRAST/CreateExtraGauges/issues/109))
 
 For developers
