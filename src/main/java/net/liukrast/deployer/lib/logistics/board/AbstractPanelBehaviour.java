@@ -505,6 +505,9 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
     }
     //endregion
     //region Interaction
+    /**
+     * Registers the blocks that change how this gauge works when it is attached to them. See {@link PanelInteractionBuilder}
+     */
     public void addInteractions(PanelInteractionBuilder builder) {
 
     }
@@ -513,6 +516,9 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
         return interactions.values().stream().anyMatch(InteractionData::getValue);
     }
 
+    /**
+     * @return Whether the gauge is attached to a block matching the interaction registered with this key
+     */
     public boolean hasInteraction(String key) {
         if(!interactions.containsKey(key)) return false;
         return interactions.get(key).getValue();
@@ -541,6 +547,9 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
         return attached;
     }
 
+    /**
+     * @return The block entity of the attached block if it matches the interaction, otherwise {@code null}
+     */
     @Nullable
     public BlockEntity getInteractionBlockEntity(String key) {
         var data = getInteraction(key);
@@ -677,6 +686,9 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
         return ItemStack.EMPTY;
     }
 
+    /**
+     * @return The amount given to a new connection that starts from this gauge
+     */
     public int getDefaultConnectionAmount() {
         return 1;
     }
@@ -745,6 +757,9 @@ public abstract class AbstractPanelBehaviour extends FactoryPanelBehaviour imple
         onShortInteract(player, hand, side, hitResult, isClientSide);
     }
 
+    /**
+     * Called after a connection into this gauge was added
+     */
     public void onConnectionAdded(FactoryPanelConnection connection) {
 
     }

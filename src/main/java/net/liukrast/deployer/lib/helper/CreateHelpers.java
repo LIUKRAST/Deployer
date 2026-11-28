@@ -15,10 +15,16 @@ import org.joml.Matrix4f;
 import java.util.function.Consumer;
 
 public class CreateHelpers {
+    /**
+     * @return A block builder step that registers the stress capacity of the block, like Create's {@code BlockStressDefaults}
+     */
     public static <T extends Block> Consumer<T> withStressCapacity(double value) {
         return block -> BlockStressValues.CAPACITIES.register(block, () -> value);
     }
 
+    /**
+     * @return A block builder step that registers the stress impact of the block
+     */
     public static <T extends Block> Consumer<T> withStressImpact(double value) {
         return block -> BlockStressValues.IMPACTS.register(block, () -> value);
     }

@@ -104,6 +104,9 @@ public abstract class StockInventoryType<K,V,H> {
             return orderContainedStreamCodec;
         }
 
+        /**
+         * @return An order of the given values, skipping empty ones
+         */
         public GenericOrderContained<V> createContained(List<V> itemsToOrder) {
             boolean allEmpty = true;
             List<V> real = new ArrayList<>();
@@ -116,21 +119,60 @@ public abstract class StockInventoryType<K,V,H> {
             return GenericOrderContained.simple(real, hashStrategy());
         }
 
+        /**
+         * @return How much one scroll changes an amount in screens, depending on the held modifier keys
+         */
         public int getStepSize(boolean ctrl, boolean shift, boolean alt) {
             return ctrl ? 100 : (shift ? 1000 : (alt ? 1 : 10));
         }
 
+        /**
+         * Equality of two values ignoring their amount (for items: same item and components)
+         */
         public abstract Hash.Strategy<? super V> hashStrategy();
+        /**
+         * @return The key of a value (for items: the Item of an ItemStack)
+         */
         public abstract K fromValue(V key);
+        /**
+         * @return Whether a Create filter matches the value. Used by Stock Keeper categories and filters
+         */
         public abstract boolean test(FilterItemStack filter, Level level, V value);
+        /**
+         * @return The amount of a value
+         */
         public abstract int getCount(V value);
+        /**
+         * Changes the amount of a value in place
+         */
         public abstract void setCount(V value, int count);
+        /**
+         * @return Whether the value is empty (no key or no amount)
+         */
         public abstract boolean isEmpty(V stack);
+        /**
+         * @return A new value of the key with the given amount
+         */
         public abstract V create(K key, int amount);
+        /**
+         * Removes the amount from the value in place
+         */
         public abstract void shrink(V stack, int amount);
+        /**
+         * @return A copy of the value with another amount
+         */
         public abstract V copyWithCount(V stack, int amount);
+        /**
+         * @return A copy of the value
+         */
         public abstract V copy(V stack);
+        /**
+         * @return Whether values equal for {@link #hashStrategy()} merge into one slot when inserted
+         */
         public abstract boolean isStackable(V stack);
+        /**
+         * @return The empty value
+         */
         public abstract V empty();
     }
 
@@ -179,6 +221,9 @@ public abstract class StockInventoryType<K,V,H> {
                              TooltipFlag tooltipFlag, H handler);
     }
 
+    /**
+     * @return The capability packagers use to find the handler of the block they face
+     */
     public abstract BlockCapability<H, @Nullable Direction> getBlockCapability();
 
     public final SimpleRegistry<Block, GenericUnpackingHandler<K,V,H>> registry = SimpleRegistry.create();

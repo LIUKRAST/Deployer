@@ -41,12 +41,21 @@ public class ClientRegisterHelpers {
     public static void registerPackageRenderer4ChainConveyor(SuperByteBufferFactory renderer) {
         CHAIN_RENDERERS.add(renderer);
     }
+    /**
+     * Registers a renderer for custom packages flying as entities (for example thrown by a Frogport)
+     */
     public static void registerPackageRenderer4Entity(EntityRenderer renderer) {
         ENTITY_RENDERERS.add(renderer);
     }
+    /**
+     * Registers a Flywheel visual for custom packages on chain conveyors
+     */
     public static void registerPackageVisual4ChainConveyor(ChainConveyorFactory factory) {
         CHAIN_VISUALS.add(factory);
     }
+    /**
+     * Registers a Flywheel visual for package entities matching the predicate
+     */
     public static void registerPackageVisual4Entity(EntityFactory.Simple factory, Predicate<PackageEntity> predicate) {
         registerPackageVisual4Entity(new EntityFactory() {
             @Override
@@ -61,31 +70,55 @@ public class ClientRegisterHelpers {
         });
     }
 
+    /**
+     * Registers a Flywheel visual for package entities
+     */
     public static void registerPackageVisual4Entity(EntityFactory factory) {
         ENTITY_VISUALS.add(factory);
     }
+    /**
+     * Registers how gauges of this type are drawn when used as an input of a factory gauge, in its screen
+     */
     public static <A extends AbstractPanelBehaviour> void registerGaugeSlot(PanelType<A> type, PanelFactory<A> factory) {
         GAUGE_MAP.put(type, factory);
     }
+    /**
+     * Registers a Stock Keeper tab. The factory is called every time a Stock Keeper screen is opened
+     */
     public static void registerStockKeeperTab(Function<KeeperSourceContext, KeeperTabScreen> screenFactory) {
         KEEPER_TABS.add(screenFactory);
     }
+    /**
+     * Registers a Redstone Requester tab for a stock inventory type
+     */
     public static <V> void registerRedstoneRequesterTab(StockInventoryType<?, V, ?> type, RequesterFactory<V> factory) {
         REQUESTER_TABS.add(new RequesterBuilder<>(type, factory));
     }
 
+    /**
+     * Registers code run every client tick for the Deployer gauge the player is looking at
+     */
     public static void registerPanelTicker(Consumer<AbstractPanelBehaviour> ticker) {
         PANEL_TICKERS.add(ticker);
     }
 
+    /**
+     * Registers a renderer called while every Deployer gauge is rendered
+     */
     public static void registerPanelRenderer(PanelRenderer renderer) {
         PANEL_RENDERERS.add(renderer);
     }
 
+    /**
+     * Adds hovering information shown while the flag is true
+     */
     public static void registerSpecialHovering(BooleanSupplier flag, IHaveHoveringInformation info) {
         SPECIAL_HOVERS.add(new Pair<>(flag, info));
     }
 
+    /**
+     * Adds goggle information shown while the flag is true
+     */
     public static void registerSpecialGoggle(BooleanSupplier flag, IHaveGoggleInformation info) {
         registerSpecialHovering(flag, (IHaveHoveringInformation) info);
     }

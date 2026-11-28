@@ -511,6 +511,9 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         return box.getItem() instanceof GenericPackageItem generic && generic.getType() == getStockType();
     }
 
+    /**
+     * Unwraps a box of this packager's type into the facing block. Called by {@link #unwrapBox(ItemStack, boolean)} after the box was validated
+     */
     public boolean safeUnwrapBox(ItemStack box, boolean simulate) {
         if (animationTicks > 0)
             return false;
@@ -544,6 +547,9 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         return unpacked;
     }
 
+    /**
+     * @return The amount of the value available on the network, without this packager's own inventory
+     */
     public int getStockOf(UUID network, V item) {
         assert getLevel() != null;
         return LogisticsGenericManager.getStockOf(
@@ -560,6 +566,10 @@ public abstract class AbstractPackagerBlockEntity<K,V,H> extends PackagerBlockEn
         );
     }
 
+    /**
+     * Sends an order to the other packagers of the network, delivered to the given address
+     * @return Whether the order was sent (false if no packager can take it now)
+     */
     public boolean pleaseBroadcast(UUID network, LogisticallyLinkedBehaviour.RequestType requestType, GenericOrderContained<V> order, String recipeAddress) {
         assert getLevel() != null;
         return LogisticsGenericManager.broadcastPackageRequest(

@@ -21,19 +21,31 @@ public class KeeperTabScreen extends Screen implements TabData {
         this.context = context;
     }
 
+    /**
+     * Called every client tick while the Stock Keeper screen is open, even when the tab is not selected
+     */
     public void containerTick() {
 
     }
 
+    /**
+     * @return The icon of the tab
+     */
     public ItemStack getIcon() {
         return icon;
     }
 
 
+    /**
+     * Called when the player sends the order of the Stock Keeper screen
+     */
     public void onSendIt() {
 
     }
 
+    /**
+     * Called when the player presses the chat key while the tab is selected, to focus or unfocus a text field
+     */
     public void switchFocused() {
 
     }
@@ -51,6 +63,9 @@ public class KeeperTabScreen extends Screen implements TabData {
         this.guiTop = top;
     }
 
+    /**
+     * @return A warning shown on the tab icon, or an empty list
+     */
     public List<Component> getWarnTooltip() {
         return null;
     }

@@ -19,14 +19,23 @@ public class PanelInteractionBuilder {
         this.map = map;
     }
 
+    /**
+     * Registers an interaction active when the gauge is attached to a block matching the predicate
+     */
     public void register(String key, TriPredicate<Level, BlockPos, BlockState> predicate) {
         map.put(key, predicate);
     }
 
+    /**
+     * Registers an interaction active when the gauge is attached to a block whose state matches
+     */
     public void registerState(String key, Predicate<BlockState> predicate) {
         register(key, (level, pos, state) -> predicate.test(state));
     }
 
+    /**
+     * Registers an interaction active when the gauge is attached to a block whose block entity matches
+     */
     public void registerEntity(String key, Predicate<@Nullable BlockEntity> predicate) {
         register(key, (level, pos, state) -> {
             var be = level.getBlockEntity(pos);
@@ -34,6 +43,9 @@ public class PanelInteractionBuilder {
         });
     }
 
+    /**
+     * Registers an interaction active when the gauge is attached to a block entity of this type
+     */
     public void registerEntity(String key, BlockEntityType<?> type) {
         registerEntity(key, blockEntity -> {
             if(blockEntity == null) return false;
@@ -41,6 +53,9 @@ public class PanelInteractionBuilder {
         });
     }
 
+    /**
+     * Registers an interaction active when the gauge is attached to this block
+     */
     public void registerBlock(String key, Block block) {
         registerState(key, state -> state.is(block));
     }

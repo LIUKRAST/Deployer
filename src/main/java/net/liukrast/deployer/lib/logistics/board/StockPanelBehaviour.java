@@ -60,8 +60,14 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour i
 
     }
 
+    /**
+     * @return The units the player can pick for the amount (for fluids: mB, B, KB). Index 0 is the default
+     */
     public abstract Multiplier[] getMultiplierMode();
 
+    /**
+     * @return The stock inventory type this gauge orders
+     */
     public StockInventoryType<K, V, ?> getStockInventoryType() {
         return stockInventoryType;
     }
@@ -307,6 +313,9 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour i
         return ((RPQExtension)(queue)).deployer$getTotalPromisedAndRemoveExpired(stockInventoryType, filter, promiseExpiryTime);
     }
 
+    /**
+     * @return The value set as filter when a player clicks the gauge with this item, or an empty value
+     */
     public abstract V parseFromHeldItem(ItemStack heldItem);
 
     @Override
@@ -317,6 +326,9 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour i
         }
     }
 
+    /**
+     * @return The filter of this gauge
+     */
     public V getStack() {
         return filter;
     }
@@ -375,6 +387,9 @@ public abstract class StockPanelBehaviour<K, V> extends OrderingPanelBehaviour i
         }
     }
 
+    /**
+     * @return The value box shown when the player looks at the gauge
+     */
     public abstract ValueBox createBox(Component label, AABB bb, BlockPos pos);
 
     public abstract void render(float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay);

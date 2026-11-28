@@ -66,14 +66,23 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
             builder.registerBoth(DeployerPanelConnections.STRING, () -> getDisplayLinkComponent(false).getString());
     }
 
+    /**
+     * @return Whether this gauge sends its satisfied state as redstone to other gauges
+     */
     public boolean redstoneInput() {
         return true;
     }
 
+    /**
+     * @return Whether this gauge sends its stock level as a number to other gauges
+     */
     public boolean intInput() {
         return true;
     }
 
+    /**
+     * @return Whether this gauge sends its display text to other gauges
+     */
     public boolean stringInput() {
         return true;
     }
@@ -217,10 +226,16 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         LogisticsManager.SUMMARIES.invalidate(network);
     }
 
+    /**
+     * @return The amount this gauge wants in storage, in base units
+     */
     public int getDemand() {
         return getAmount() * getDemandMultiplier();
     }
 
+    /**
+     * @return How many base units one unit of the amount set by the player is worth
+     */
     public int getDemandMultiplier() {
         return 1;
     }
@@ -340,8 +355,14 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         timer = getConfigRequestIntervalInTicks() / 2;
     }
 
+    /**
+     * Adds the promise of what this gauge just ordered to the queue of its network
+     */
     public abstract void addPromises(RequestPromiseQueue queue);
 
+    /**
+     * Called when the gauge is placed on a packager of its type and should restock it
+     */
     public void tryRestock() {
     }
 
@@ -401,6 +422,9 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         return getActualLevelInStorage();
     }
 
+    /**
+     * @return The amount of the filter currently on the network, in base units
+     */
     protected abstract int getActualLevelInStorage();
 
     private int getPromiseExpiryTimeInTicks() {
@@ -441,8 +465,14 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         return getTotalPromisedAndRemoveExpired(promises, getPromiseExpiryTimeInTicks());
     }
 
+    /**
+     * Removes every promise of this gauge's filter from the queue
+     */
     protected abstract void forceClearPromises(RequestPromiseQueue queue);
 
+    /**
+     * @return The promised amount of this gauge's filter, after removing promises older than the expiry time
+     */
     protected abstract int getTotalPromisedAndRemoveExpired(RequestPromiseQueue queue, int promiseExpiryTime);
 
     @Override
@@ -482,6 +512,9 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
                 .component();
     }
 
+    /**
+     * @return The name of the filter
+     */
     public abstract Component getHoverName();
 
     @Override
@@ -515,10 +548,16 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
                 .component();
     }
 
+    /**
+     * @return Whether the player set an amount
+     */
     public boolean hasAmount() {
         return count != 0;
     }
 
+    /**
+     * @return The size of one display unit, used to format the stock level
+     */
     public abstract int getMultiplier();
 
     public abstract void setItem(Player player, InteractionHand hand, Direction side, BlockHitResult hitResult, boolean client);
@@ -548,10 +587,16 @@ public abstract class OrderingPanelBehaviour extends AbstractPanelBehaviour impl
         super.onShortInteract(player, hand, side, hitResult, client);
     }
 
+    /**
+     * @return The amount formatted for display
+     */
     public String formatCount(int count) {
         return getCountName(count);
     }
 
+    /**
+     * @return The display text of an amount, with its unit
+     */
     public abstract String getCountName(int inStorage);
 
     @Override

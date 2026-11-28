@@ -107,10 +107,19 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
 
     /* IMPLEMENTATIONS */
     public abstract void renderTooltip(@NotNull GuiGraphics graphics, V entry, int mouseX, int mouseY);
+    /**
+     * Renders one entry of the stock list
+     */
     public abstract void renderEntry(@NotNull GuiGraphics graphics, int scale, V entry, boolean isStackHovered, boolean isRenderingOrders);
+    /**
+     * @return How much one click adds to the order, depending on the held modifier keys
+     */
     public int clickAmount(boolean ctrlDown, boolean shiftDown, boolean altDown) {
         return type.valueHandler().getStepSize(ctrlDown, shiftDown, altDown);
     }
+    /**
+     * @return How much one scroll adds to the order, depending on the held modifier keys
+     */
     public int scrollAmount(boolean ctrlDown, boolean shiftDown, boolean altDown) {
         return type.valueHandler().getStepSize(ctrlDown, shiftDown, altDown);
     }
@@ -123,6 +132,9 @@ public abstract class StockTabScreen<K,V> extends KeeperTabScreen implements Pro
         return false;
     }
 
+    /**
+     * @return Whether the entry matches the text in the search bar
+     */
     public boolean matchesSearch(V stack, String value) {
         return false;
     }
