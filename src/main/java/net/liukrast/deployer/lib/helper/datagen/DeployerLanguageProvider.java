@@ -53,7 +53,7 @@ public interface DeployerLanguageProvider {
         private ShiftBuilder(ItemLike key, String summary, BiConsumer<String, String> adder) {
             this.key = key.asItem().getDescriptionId();
             this.adder = adder;
-            adder.accept(key + ".tooltip.summary", summary);
+            adder.accept(this.key + ".tooltip.summary", summary);
         }
 
         public void addLine(String condition, String behaviour) {
